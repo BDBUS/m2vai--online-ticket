@@ -1,1 +1,986 @@
-jjjj
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BDBUS Online Ticket Counter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #14b8a6;
+            --primary-hover: #0d9488;
+            --bg-dark: #0a0f18;
+            --card-bg: rgba(17, 24, 39, 0.75);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --sold: #ef4444; /* বুকড সিটের জন্য লাল কালার / Color for booked seats */
+            --facebook: #1877F2;
+            --youtube: #FF0000;
+            --instagram: #E1306C;
+            --discord: #5865F2;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at top, #111827 0%, #05070c 80%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 🖼️ ব্যাকগ্রাউন্ড ওয়াটারমার্ক লোগো / Background watermark logo styling */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 380px;
+            height: 380px;
+            background-image: url('images/BDBUS Group Official Logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 📍 টপ নেভিগেশন মেনুবার / Top navigation bar settings */
+        .navbar {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-logo-area { display: flex; align-items: center; gap: 8px; }
+        .nav-logo-area img { width: 30px; height: 30px; border-radius: 50%; }
+        .nav-title { font-size: 14px; font-weight: 700; color: var(--primary); letter-spacing: 0.5px; }
+        .nav-menu { display: flex; gap: 15px; align-items: center; }
+        .nav-item { font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+        .nav-item:hover, .nav-item.active { color: var(--primary); }
+        
+        /* 🚪 লগআউট বাটন স্টাইল / Logout button layout */
+        .nav-logout-btn { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; display: none; transition: all 0.2s; }
+        .nav-logout-btn:hover { background: #ef4444; color: #fff; }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .brand-section { text-align: center; margin-top: 25px; margin-bottom: 10px; }
+        .main-logo { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); box-shadow: 0 0 20px rgba(20, 184, 166, 0.3); background: #111827; }
+        .counter-main-title { font-size: 20px; font-weight: 800; color: #fff; margin: 12px 0 2px 0; letter-spacing: 0.5px; text-transform: uppercase; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+        .group-fullname { font-size: 12px; font-weight: 600; color: var(--primary); margin: 0; letter-spacing: 0.3px; }
+        .greeting-text { color: #fff; font-size: 14px; font-weight: 600; margin-top: 10px; margin-bottom: 5px; text-align: center; }
+
+        /* 🕒 লাইভ ডিজিটাল ঘড়ি স্টাইল / Live digital clock design */
+        .live-clock-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.5) 100%);
+            border: 1px solid rgba(20, 184, 166, 0.2);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .clock-time { font-size: 22px; font-weight: 800; color: var(--primary); font-family: 'Courier New', Courier, monospace; letter-spacing: 1px; text-shadow: 0 0 8px rgba(20, 184, 166, 0.4); }
+        .clock-date { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px; }
+
+        /* 🎂 জন্মদিনের স্লাইডার / Birthday slider styling */
+        .birthday-container {
+            display: none;
+            width: 100%;
+            background: linear-gradient(135deg, rgba(21, 94, 117, 0.6) 0%, rgba(30, 41, 59, 0.6) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 12px 15px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            margin-bottom: 15px;
+        }
+        .bday-title { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 4px; }
+        .bday-slider { position: relative; height: 75px; width: 100%; overflow: hidden; }
+        .bday-card { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; opacity: 0; transform: translateX(100%); transition: all 0.6s ease-in-out; }
+        .bday-card.active { opacity: 1; transform: translateX(0); }
+        .bday-card.exit { opacity: 0; transform: translateX(-100%); }
+        .bday-avatar-wrapper { position: relative; margin-right: 12px; }
+        .bday-avatar { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #fff; object-fit: cover; background: #27272a; }
+        .bday-balloon { position: absolute; top: -10px; right: -6px; font-size: 12px; animation: floatBalloon 2s ease-in-out infinite alternate; }
+        .bday-details { flex-grow: 1; text-align: left; }
+        .bday-name { font-size: 15px; font-weight: bold; color: #fff; margin: 0; }
+        .bday-role { font-size: 11px; color: rgba(255, 255, 255, 0.8); margin: 1px 0; }
+        .bday-id { font-size: 11px; color: #fff; font-weight: 500; margin: 0; }
+        .bday-phone { font-size: 11px; color: #38bdf8; font-weight: bold; margin: 1px 0 0 0; }
+        .bday-cake-icon { font-size: 28px; margin-left: 5px; }
+        @keyframes floatBalloon { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-4px) rotate(8deg); } }
+
+        /* 👥 গ্লাস কার্ড এবং ইনপুট সেটিংস / Glassmorphism layout and input field rules */
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 25px 22px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); margin-top: 15px; margin-bottom: 20px; }
+        .input-group { text-align: left; margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; padding-left: 2px; }
+        .input-group input, .input-group select { width: 100%; padding: 11px 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 14px; transition: all 0.3s; }
+        .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 10px rgba(20, 184, 166, 0.2); background: rgba(15, 23, 42, 0.8); }
+        .input-group select option { background: #0f172a; color: #fff; }
+
+        /* 🔘 পাশাপাশি বাটন লেআউট / Authentication horizontal button row grid */
+        .auth-btn-row { display: flex; gap: 10px; margin-top: 15px; width: 100%; }
+
+        .btn-premium { background: linear-gradient(135deg, var(--primary) 0%, #0f766e 100%); color: #000; border: none; width: 100%; padding: 13px; font-weight: 700; font-size: 15px; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(20, 184, 166, 0.2); transition: all 0.3s; text-align: center; }
+        .btn-premium:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(20, 184, 166, 0.4); }
+        
+        /* 🔘 সেকেন্ডারি বাটন স্টাইল / Secondary dark action button style */
+        .btn-secondary { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-secondary:hover { border-color: var(--primary); box-shadow: 0 5px 18px rgba(20, 184, 166, 0.15); }
+
+        /* ⚠️ নেটওয়ার্ক ওয়ার্নিং বক্স / Network connection warning text container */
+        .network-warning-box { background: rgba(239, 68, 68, 0.15); border: 1px dashed var(--sold); border-radius: 8px; padding: 10px 12px; margin-bottom: 15px; text-align: left; }
+        .warning-heading { color: var(--sold); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+        .warning-desc { font-size: 12px; color: #fecaca; margin: 0; line-height: 1.4; }
+
+        .status-container { display: flex; gap: 15px; justify-content: center; margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; font-size: 12px; }
+        .status-item { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 12px; height: 12px; border-radius: 3px; }
+        .dot.available { background-color: #1e293b; border: 1px solid #475569; }
+        .dot.selected { background-color: var(--primary); }
+        .dot.sold { background-color: var(--sold); }
+
+        /* 🚌 ১+২ প্রিমিয়াম ভিআইপি বাস লেআউট / 1+2 Premium VIP Bus Seat Grid System */
+        .bus-layout {
+            background: rgba(8, 12, 22, 0.9);
+            padding: 20px 15px;
+            border-radius: 14px;
+            border: 1px solid rgba(20, 184, 166, 0.15);
+            display: grid;
+            grid-template-columns: 45px 30px 45px 45px; /* বাম সিট, গলি, ডান সিট ১, ডান সিট ২ / Left, Aisle, Right1, Right2 */
+            gap: 12px 0;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .seat {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: #cbd5e1; border: 1px solid rgba(255,255,255,0.08); height: 38px; width: 45px;
+            border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+            justify-self: center;
+        }
+        
+        .bus-aisle { width: 30px; height: 38px; }
+
+        /* 🚪 দরজা এবং 🎡 স্টিয়ারিং হুইল স্টাইল / Door text and Steering Wheel styling */
+        .bus-door { color: #f87171; font-size: 11px; font-weight: bold; text-transform: uppercase; border: 1px dashed rgba(239, 68, 68, 0.5); border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 45px; height: 38px; background: rgba(239, 68, 68, 0.05); }
+        .seat.driver-steering { background: #1e293b; color: #94a3b8; cursor: default; border-color: transparent; }
+        .seat.driver-steering svg { width: 20px; height: 20px; fill: var(--primary); }
+        
+        .seat:hover:not(.sold):not(.selected):not(.driver-steering) { border-color: var(--primary); color: #fff; }
+        .seat.selected { background: var(--primary); color: #000; border-color: var(--primary); font-weight: 700; box-shadow: 0 0 10px var(--primary); }
+        .seat.sold { background: var(--sold) !important; color: #fff !important; border-color: var(--sold) !important; font-weight: 700; cursor: not-allowed; box-shadow: inset 0 0 8px rgba(0,0,0,0.4); }
+
+        /* 🎫 ডিজিটাল টিকেট এরিয়া / Digital Ticket Card Styling */
+        .ticket-wrapper-outer { display: none; width: 100%; margin-top: 10px; margin-bottom: 25px; }
+        .ticket-card { background: #ffffff; color: #1e293b; padding: 22px; border-radius: 12px; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.6); overflow: hidden; box-sizing: border-box; }
+        .ticket-card::before { content: ""; position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 170px; height: 170px; background-image: url('images/BDBUS Group Official Logo.png'); background-size: contain; background-repeat: no-repeat; background-position: center; opacity: 0.12; pointer-events: none; z-index: 0; }
+        
+        .ticket-top-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #cbd5e1; padding-bottom: 10px; margin-bottom: 12px; z-index: 1; position: relative; }
+        .ticket-top-logo { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        .ticket-top-title { text-align: right; }
+        .ticket-top-title h3 { margin: 0; font-size: 15px; font-weight: 800; color: #0f172a; text-transform: uppercase; }
+        .ticket-top-title p { margin: 1px 0 0 0; font-size: 10px; color: #64748b; font-weight: 700; }
+        
+        .ticket-body { z-index: 1; position: relative; }
+        .ticket-row { display: flex; justify-content: space-between; margin: 8px 0; font-size: 13px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
+        .tk-lbl { font-weight: 600; color: #64748b; }
+        .tk-val { font-weight: 700; color: #0f172a; text-align: right; }
+
+        /* ⏳ টিকেটের ক্রয়ের সময় ডিজাইনের স্টাইল / Digital receipt timestamp row layout */
+        .ticket-row.purchase-timestamp { border-top: 1px solid #cbd5e1; background: #f8fafc; padding: 6px 8px; margin-top: 12px; border-radius: 4px; }
+
+        .ticket-rules-section { margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 10px; text-align: left; font-size: 10px; color: #475569; line-height: 1.4; z-index: 1; position: relative; }
+        .rules-title { font-weight: 700; color: #0f172a; text-transform: uppercase; margin-bottom: 4px; }
+        .ticket-rules-section ol { margin: 0; padding-left: 14px; }
+
+        /* 🎫 টিকেটের এমবেডেড ফুটার / Embedded inside ticket card styling */
+        .ticket-embedded-footer { margin-top: 20px; padding-top: 12px; border-top: 2px solid #0f172a; background: #0b111e; color: #fff; border-radius: 8px; padding: 12px; text-align: center; box-sizing: border-box; }
+        .tk-embedded-dev-title { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 8px; }
+        .tk-embedded-dev-title img { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--primary); }
+        .tk-embedded-dev-title div { text-align: left; }
+        .tk-embedded-dev-title span { display: block; font-size: 8px; color: var(--text-muted); text-transform: uppercase; }
+        .tk-embedded-dev-title h5 { margin: 0; font-size: 13px; color: #fff; font-weight: 700; }
+        
+        .tk-embedded-btn-row { display: flex; gap: 6px; margin-bottom: 5px; }
+        .tk-embedded-btn { color: white; text-decoration: none; padding: 5px 6px; border-radius: 6px; display: flex; align-items: center; gap: 4px; flex: 1; box-sizing: border-box; font-size: 10px; font-weight: 700; }
+        .tk-embedded-btn img { width: 16px; height: 16px; border-radius: 50%; }
+        .tk-embedded-btn.m1 { background: #FF0000; }
+        .tk-embedded-btn.m2 { background: #dc2626; }
+
+        /* 👥 BDBUS অফিশিয়াল ফুটার এরিয়া / BDBUS Official social footer design code */
+        .bdbus-official-footer { margin-top: auto; width: 100%; padding: 25px 0 15px 0; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
+        .foot-social-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 14px; }
+        .foot-circle-btn { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s; }
+        .foot-circle-btn:hover { transform: scale(1.1); }
+        .foot-circle-btn.fb { background-color: var(--facebook); }
+        .foot-circle-btn.yt { background-color: var(--youtube); }
+        .foot-circle-btn.ins { background-image: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+        .foot-circle-btn.x { background-color: #000; border: 1px solid rgba(255,255,255,0.2); }
+        .foot-circle-btn.ds { background-color: var(--discord); }
+        .foot-circle-btn.mail { background-color: #ea4335; }
+        .foot-circle-btn svg { width: 16px; height: 16px; fill: white; }
+        .foot-policy-links { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; display: flex; justify-content: center; gap: 8px; }
+        .foot-policy-links a { color: var(--text-muted); text-decoration: none; }
+        .foot-policy-links a:hover { color: #fff; }
+
+        /* 👑 ডেভলপার কার্ড এরিয়া / Developer profile and links container block */
+        .dev-credit-card { background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; width: 100%; box-sizing: border-box; text-align: center; }
+        .dev-info-box { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 10px; text-align: left; }
+        .dev-img { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--primary); object-fit: cover; }
+        .dev-txt p { margin: 0; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .dev-txt h4 { margin: 1px 0 0 0; font-size: 15px; color: #fff; font-weight: 700; }
+        .dev-channels-row { display: flex; gap: 8px; width: 100%; }
+        .yt-card-btn { color: white; text-decoration: none; padding: 6px 8px; border-radius: 8px; display: flex; align-items: center; gap: 6px; flex: 1; box-sizing: border-box; text-align: left; min-width: 0; transition: transform 0.2s; }
+        .yt-card-btn img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+        .yt-card-btn .btn-text { display: flex; flex-direction: column; min-width: 0; }
+        .yt-card-btn .ch-name { font-size: 12px; font-weight: 800; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .yt-card-btn .ch-sub { font-size: 9px; color: rgba(255, 255, 255, 0.8); margin-top: 1px; }
+        .yt-card-btn:hover { transform: translateY(-1px); }
+        .yt-card-btn.main-ch { background: linear-gradient(135deg, #FF0000 0%, #b91c1c 100%); }
+        .yt-card-btn.sub-ch { background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); }
+
+        .custom-popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111827; border: 2px solid var(--primary); padding: 18px; border-radius: 10px; box-shadow: 0 0 25px rgba(0,0,0,0.8); z-index: 9999; text-align: center; width: 260px; }
+        .custom-popup p { color: #fff; font-weight: bold; margin-bottom: 12px; font-size: 14px; }
+        .custom-popup button { background: var(--primary); border: none; padding: 5px 15px; border-radius: 4px; color: #000; font-weight: bold; cursor: pointer; }
+        .language-top-container { display: flex; justify-content: flex-end; width: 100%; margin-top: 10px; margin-bottom: -5px; padding: 0 20px; box-sizing: border-box; }
+        .lang-pill-box { display: flex; gap: 3px; background: rgba(255,255,255,0.04); padding: 3px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.08); }
+        .lang-pill-btn { background: transparent; border: none; color: var(--text-muted); padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 12px; cursor: pointer; }
+        .lang-pill-btn.active { background: var(--primary); color: #000; }
+    </style>
+</head>
+<body>
+
+    <div id="upcomingPopup" class="custom-popup">
+        <p id="popupMsg">Up Coming...</p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-logo-area">
+            <img src="images/BDBUS Group Official Logo.png" alt="BDBUS">
+            <span class="nav-title">BDBUS PANEL</span>
+        </div>
+        <div class="nav-menu">
+            <span class="nav-item active" id="mHome" onclick="navClick('home')">Home</span>
+            <span class="nav-item" id="mNotice" onclick="showUpcoming()">Notice</span>
+            <button class="nav-logout-btn" id="logoutBtn" onclick="handleLogout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="language-top-container">
+        <div class="lang-pill-box">
+            <button class="lang-pill-btn active" id="btnEn" onclick="changeLanguage('en')">EN</button>
+            <button class="lang-pill-btn" id="btnBn" onclick="changeLanguage('bn')">বাংলা</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="brand-section">
+            <img class="main-logo" src="images/BDBUS Group Official Logo.png" alt="BDBUS Logo">
+            <div class="counter-main-title">BDBUS Online Ticket Counter</div>
+            <div class="group-fullname" id="gName">Bangladesh Bussid Unique Society</div>
+        </div>
+
+        <div id="timeGreeting" class="greeting-text">Welcome to BDBUS Panel</div>
+
+        <div class="live-clock-card">
+            <div class="clock-time" id="liveClockDisplay">00:00:00 AM</div>
+            <div class="clock-date" id="liveClockDate">LOADING DATE...</div>
+        </div>
+
+        <div id="birthdayWidget" class="birthday-container">
+            <div class="bday-title">
+                <span id="bdayTitleText">Today's Birthday</span>
+                <span style="font-size: 11px; opacity:0.8;">🎂</span>
+            </div>
+            <div class="bday-slider" id="bdaySliderContainer"></div>
+        </div>
+
+        <div id="authPage">
+            <div class="glass-card" id="loginBox">
+                <p id="lDesc" style="text-align: center; margin-top:0;">Please login to book your bus seat</p>
+                <div class="input-group">
+                    <label id="lEmailLabel">Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="example@mail.com">
+                </div>
+                <div class="input-group">
+                    <label id="lPassLabel">Password</label>
+                    <input type="password" id="loginPass" placeholder="••••••••">
+                </div>
+                
+                <div class="auth-btn-row">
+                    <button class="btn-premium" id="lBtn" onclick="handleLogin()">Login Now</button>
+                    <button class="btn-premium btn-secondary" id="switchToSignupBtn" onclick="toggleAuthView(false)">Sign Up</button>
+                </div>
+            </div>
+
+            <div class="glass-card" id="signupBox" style="display: none;">
+                <p id="sDesc" style="text-align: center; margin-top:0;">Register to official BDBUS Player Panel</p>
+                <div class="input-group">
+                    <label id="sNameLabel">Full Name</label>
+                    <input type="text" id="signupName" placeholder="e.g. User Name">
+                </div>
+                <div class="input-group">
+                    <label id="sGameLabel">In-Game Name / ID</label>
+                    <input type="text" id="signupGameId" placeholder="e.g. BDBUS_PLAYER">
+                </div>
+                <div class="input-group">
+                    <label id="sDobLabel">Date of Birth</label>
+                    <input type="date" id="signupDob">
+                </div>
+                <div class="input-group">
+                    <label id="sPhoneLabel">Mobile Number</label>
+                    <input type="tel" id="signupPhone" placeholder="e.g. 017XXXXXXXX">
+                </div>
+                <div class="input-group">
+                    <label id="sFbLabel">Facebook Profile Link</label>
+                    <input type="url" id="signupFb" placeholder="https://facebook.com/username">
+                </div>
+                <div class="input-group">
+                    <label id="sEmailLabel">Email Address</label>
+                    <input type="email" id="signupEmail" placeholder="example@mail.com">
+                </div>
+                <div class="input-group">
+                    <label id="sPassLabel">Set Password</label>
+                    <input type="password" id="signupPass" placeholder="Min 6 characters">
+                </div>
+                <div class="input-group">
+                    <label id="sConfirmLabel">Confirm Password</label>
+                    <input type="password" id="signupConfirmPass" placeholder="Type password again">
+                </div>
+                
+                <div class="auth-btn-row">
+                    <button class="btn-premium" id="sBtn" onclick="handleSignup()">Confirm Registration</button>
+                    <button class="btn-premium btn-secondary" id="switchToLoginBtn" onclick="toggleAuthView(true)">Login</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="searchPage" class="glass-card" style="display: none;">
+            <p id="welcomeText" style="margin-bottom: 15px; color: var(--primary); font-weight: bold; text-align: center; font-size:16px;">Welcome, Player!</p>
+            
+            <div class="input-group">
+                <label id="lblFrom">From (Boarding Point)</label>
+                <select id="tripFrom"></select>
+            </div>
+            <div class="input-group">
+                <label id="lblTo">To (Destination Point)</label>
+                <select id="tripTo"></select>
+            </div>
+            <div class="input-group">
+                <label id="lblDate">Journey Date</label>
+                <input type="date" id="tripDate">
+            </div>
+            <div class="input-group">
+                <label id="lblTime">Journey Time</label>
+                <select id="tripTime">
+                    <option value="09:00 AM">09:00 AM (Day Trip)</option>
+                    <option value="02:30 PM">02:30 PM (Noon Trip)</option>
+                    <option value="09:30 PM">09:30 PM (Night Trip)</option>
+                    <option value="11:15 PM">11:15 PM (Midnight Trip)</option>
+                </select>
+            </div>
+
+            <button class="btn-premium" id="btnSelectSeat" onclick="goToCounterPage()" style="margin-top: 10px;">Select Seat 🪑</button>
+        </div>
+
+        <div id="counterPage" class="glass-card" style="display: none; padding: 20px 15px;">
+            <p id="counterHeaderTitle" style="margin-bottom: 12px; color: #cbd5e1; font-weight: bold; text-align: center;">Choose Your Desired Seat</p>
+
+            <div class="status-container">
+                <div class="status-item"><div class="dot available"></div> <span id="stAvail">Available</span></div>
+                <div class="status-item"><div class="dot selected"></div> <span id="stSel">Selected</span></div>
+                <div class="status-item"><div class="dot sold"></div> <span id="stSold">Booked</span></div>
+            </div>
+
+            <div class="bus-layout" id="busGrid"></div>
+
+            <p id="selectedSeatText" style="color: var(--primary); font-weight: 600; margin: 12px 0; font-size: 14px; text-align: center;">Selected Seat: None</p>
+            
+            <div class="network-warning-box">
+                <div class="warning-heading">
+                    <span>⚠️</span> <span id="wHead">Important Notice / গুরুত্বপূর্ণ সতর্কতা</span>
+                </div>
+                <p class="warning-desc" id="wDesc">
+                    <strong>EN:</strong> Please do not attempt to book or confirm your ticket if your internet connection is unstable.<br>
+                    <strong>বাংলা:</strong> আপনার ইন্টারনেট সংযোগে কোনো সমস্যা বা স্লো থাকলে দয়া করে টিকিট কাটবেন না।
+                </p>
+            </div>
+
+            <div class="auth-btn-row">
+                <button class="btn-premium btn-secondary" id="btnBackToSearch" onclick="backToSearchPage()" style="flex: 0.4;">Back</button>
+                <button class="btn-premium" id="cBtn" onclick="buyTicket()" style="flex: 1;">Confirm Ticket & Download</button>
+            </div>
+        </div>
+
+        <div id="ticketPage" class="ticket-wrapper-outer">
+            <div class="ticket-card" id="printableTicketArea">
+                <div class="ticket-top-bar">
+                    <img class="ticket-top-logo" src="images/BDBUS Group Official Logo.png" alt="Logo">
+                    <div class="ticket-top-title">
+                        <h3>BDBUS DIGITAL TICKET</h3>
+                        <p>Official Online Counter</p>
+                    </div>
+                </div>
+                <div class="ticket-body">
+                    <div class="ticket-row"><span class="tk-lbl" id="tlId">Member ID:</span><span class="tk-val" id="tMemberId" style="color:#0d9488;"></span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlName">Player Name:</span><span class="tk-val" id="tName"></span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlGame">Game ID:</span><span class="tk-val" id="tGameId"></span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlPhone">Mobile No:</span><span class="tk-val" id="tPhone"></span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlFrom">From:</span><span class="tk-val" id="tFrom"></span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlTo">To:</span><span class="tk-val" id="tTo"></span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlDate">Date:</span><span class="tk-val" id="tDate"></span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlTime">Time:</span><span class="tk-val" id="tTime"></span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlSeat">Seat Number:</span><span class="tk-val" id="tSeat" style="color: #ef4444; font-size:15px;"></span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlRoom">Room Name:</span><span class="tk-val">BDBUS_MEGA_TRIP</span></div>
+                    <div class="ticket-row"><span class="tk-lbl" id="tlPass">Room Password:</span><span class="tk-val" style="color:#ef4444;">BDBUS77</span></div>
+                    
+                    <div class="ticket-row purchase-timestamp">
+                        <span class="tk-lbl" id="tlIssue">Issue Time & Date:</span>
+                        <span class="tk-val" id="tIssueTimestamp" style="color: #0f172a; font-family: monospace;">---</span>
+                    </div>
+                </div>
+
+                <div class="ticket-rules-section">
+                    <div class="rules-title" id="rlTitle">Terms & Rules / নির্দেশনাবলী:</div>
+                    <ol id="rlList">
+                        <li>Please join the Multiplayer Room at least 10 minutes before departure.</li>
+                        <li>Maintain formal and respectful driving codes during society convoys.</li>
+                        <li>Any form of intentional ramming or toxic behavior will result in a ban.</li>
+                    </ol>
+                </div>
+
+                <div class="ticket-embedded-footer">
+                    <div class="tk-embedded-dev-title">
+                        <img src="images/M2Vai Official YouTube Channel Logo.png" alt="M2Vai">
+                        <div>
+                            <span>Website Created By</span>
+                            <h5>M2Vai</h5>
+                        </div>
+                    </div>
+                    <div class="tk-embedded-btn-row">
+                        <div class="tk-embedded-btn m1">
+                            <img src="images/M2Vai Official YouTube Channel Logo.png" alt="YT">
+                            <span>M2Vai</span>
+                        </div>
+                        <div class="tk-embedded-btn m2">
+                            <img src="images/Traveller M2Vai.png" alt="Traveller">
+                            <span>Traveller</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="bdbus-official-footer">
+            <div class="foot-social-row">
+                <a href="https://facebook.com/groups/771005197556072/" target="_blank" class="foot-circle-btn fb"><svg viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48,2 12c0,4.84,3.44,8.87,8,9.8V15H8v-3h2V9.5C10,7.57,11.57,6,13.5,6H16v3h-2c-0.55,0-1,0.45-1,1v2h3v3h-3v6.95C18.05,21.45,22,17.19,22,12z"/></svg></a>
+                <a href="https://youtube.com/@m2vai?si=g6qPsRiIdnSKTeWy" target="_blank" class="foot-circle-btn yt"><svg viewBox="0 0 24 24"><path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+                <button onclick="showUpcoming()" class="foot-circle-btn ins"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></button>
+                <button onclick="showUpcoming()" class="foot-circle-btn x"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></button>
+                <a href="https://discord.gg/C7jnVua2Tp" target="_blank" class="foot-circle-btn ds"><svg viewBox="0 0 127.14 96.36"><path d="M107.7,8.07A105.15,105.15,0,0,0,77.26,0a77.19,77.19,0,0,0-3.3,6.83A96.67,96.67,0,0,0,53.22,6.83,77.19,77.19,0,0,0,49.88,0,105.15,105.15,0,0,0,19.44,8.07C3.66,31.58-1.86,54.65,1,77.53A105.73,105.73,0,0,0,32,96.36a77.7,77.7,0,0,0,6.63-10.85,68.43,68.43,0,0,1-10.4-5c.87-.64,1.71-1.32,2.51-2a75.43,75.43,0,0,0,72.6,0c.8,0.69,1.64,1.37,2.51,2a68.43,68.43,0,0,1-10.4,5,77.7,77.7,0,0,0,6.63,10.85,105.73,105.73,0,0,0,31.06-18.83C129.87,50.69,124.06,27.93,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53S36.18,40.36,42.45,40.36,53.93,46,53.82,53,48.72,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.24,60,73.24,53S78.41,40.36,84.69,40.36,96.17,46,96.06,53,91,65.69,84.69,65.69Z"/></svg></a>
+                <a href="mailto:bdbusofficial@gmail.com" class="foot-circle-btn mail"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+            </div>
+            
+            <div class="foot-policy-links">
+                <a href="#" onclick="showUpcoming()">Privacy Policy</a> | 
+                <a href="#" onclick="showUpcoming()">Terms & Conditions</a> | 
+                <a href="#" onclick="showUpcoming()">Refund Policy</a>
+            </div>
+
+            <div class="dev-credit-card">
+                <div class="dev-info-box">
+                    <img class="dev-img" src="images/M2Vai Official YouTube Channel Logo.png" alt="M2Vai">
+                    <div class="dev-txt">
+                        <p id="devLbl">Website Created By</p>
+                        <h4>M2Vai</h4>
+                    </div>
+                </div>
+                <div class="dev-channels-row">
+                    <a href="https://youtube.com/@m2vai?si=g6qPsRiIdnSKTeWy" target="_blank" class="yt-card-btn main-ch">
+                        <img src="images/M2Vai Official YouTube Channel Logo.png" alt="M2Vai"> 
+                        <div class="btn-text">
+                            <span class="ch-name">M2Vai</span>
+                            <span class="ch-sub" id="sub1">Subscribe Now</span>
+                        </div>
+                    </a>
+                    <a href="https://youtube.com/@travellerm2vai?si=vv90hoFIT4VYiy6r" target="_blank" class="yt-card-btn sub-ch">
+                        <img src="images/Traveller M2Vai.png" alt="Traveller"> 
+                        <div class="btn-text">
+                            <span class="ch-name">Traveller</span>
+                            <span class="ch-sub" id="sub2">Subscribe Now</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let currentLang = 'en';
+        let users = JSON.parse(localStorage.getItem('busUsers')) || {};
+        let globalSoldSeats = JSON.parse(localStorage.getItem('busSoldSeats')) || ['A2', 'B3', 'C2', 'D1']; 
+        let loggedInUser = null;
+        let currentSelectedSeat = null;
+        let birthdayInterval = null;
+
+        const bdDistricts = ["Dhaka", "Chittagong", "Sylhet", "Rajshahi", "Khulna", "Barisal", "Rangpur", "Mymensingh", "Bagerhat", "Bandarban", "Barguna", "Brahmanbaria", "Bograw", "Chandpur", "Chuadanga", "Comilla", "Cox's Bazar", "Dinajpur", "Faridpur", "Feni", "Gaibandha", "Gazipur", "Gopalganj", "Habiganj", "Jamalpur", "Jessore", "Jhalokati", "Jhenaidah", "Joypurhat", "Khagrachhari", "Kishoreganj", "Kurigram", "Kushtia", "Lakshmipur", "Lalmonirhat", "Madaripur", "Magura", "Manikganj", "Meherpur", "Moulvibazar", "Munshiganj", "Naogaon", "Narail", "Narayanganj", "Narsingdi", "Natore", "Nawabganj", "Netrokona", "Nilphamari", "Noakhali", "Pabna", "Panchagarh", "Patuakhali", "Pirojpur", "Rajbari", "Rangamati", "Satkhira", "Shariatpur", "Sherpur", "Sirajganj", "Sunamganj", "Tangail", "Thakurgaon"];
+
+        if (Object.keys(users).length === 0) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            users["player1@mail.com"] = { memberId: "BDBUS-1001", name: "Alpha Player", gameId: "Senior Captain", dob: todayStr, phone: "01710563923", fb: "https://facebook.com/groups/771005197556072/", pass: "123456" };
+            localStorage.setItem('busUsers', JSON.stringify(users));
+        }
+
+        window.onload = function() {
+            populateDistricts();
+            startLiveClock();
+            const savedSession = localStorage.getItem('bdbusActiveSession');
+            if(savedSession && users[savedSession]) {
+                loggedInUser = users[savedSession];
+                showSearchPage();
+            } else {
+                showAuthPage();
+            }
+            updateGreeting();
+            setTodayDateInForm();
+        }
+
+        // 🕒 লাইভ ডিজিটাল ঘড়ি এবং তারিখ লজিক / Realtime digital clock thread loop engine
+        function startLiveClock() {
+            setInterval(() => {
+                const now = new Date();
+                let hours = now.getHours();
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const seconds = now.getSeconds().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                const formattedHours = hours.toString().padStart(2, '0');
+                
+                const timeString = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
+                document.getElementById('liveClockDisplay').innerText = timeString;
+
+                const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+                let dateString = now.toLocaleDateString('en-US', options);
+                if (currentLang === 'bn') {
+                    document.getElementById('liveClockDate').innerText = "আজকের তারিখ: " + dateString;
+                } else {
+                    document.getElementById('liveClockDate').innerText = "LIVE DATE: " + dateString;
+                }
+            }, 1000);
+        }
+
+        function getLiveTimestampString() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const timeStr = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+            const dd = now.getDate().toString().padStart(2, '0');
+            const mm = (now.getMonth() + 1).toString().padStart(2, '0');
+            const yyyy = now.getFullYear();
+            return `${timeStr} | ${dd}/${mm}/${yyyy}`;
+        }
+
+        function populateDistricts() {
+            const fromSelect = document.getElementById('tripFrom');
+            const toSelect = document.getElementById('tripTo');
+            fromSelect.innerHTML = ''; toSelect.innerHTML = '';
+            
+            bdDistricts.sort().forEach(dist => {
+                let opt1 = document.createElement('option'); opt1.value = dist; opt1.innerText = dist;
+                let opt2 = document.createElement('option'); opt2.value = dist; opt2.innerText = dist;
+                fromSelect.appendChild(opt1); toSelect.appendChild(opt2);
+            });
+            toSelect.value = "Cox's Bazar";
+        }
+
+        function setTodayDateInForm() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('tripDate').value = today;
+        }
+
+        const langData = {
+            en: {
+                gName: "Bangladesh Bussid Unique Society", popupMsg: "Up Coming...", sub1: "Subscribe Now", sub2: "Subscribe Now", bdayTitleText: "Today's Birthday",
+                lDesc: "Please login to book your bus seat", lEmailLabel: "Email Address", lPassLabel: "Password", lBtn: "Login Now", switchToSignupBtn: "Sign Up",
+                sDesc: "Register to official BDBUS Player Panel", sNameLabel: "Full Name", sGameLabel: "In-Game Name / ID", sDobLabel: "Date of Birth", sPhoneLabel: "Mobile Number", sFbLabel: "Facebook Profile Link", sEmailLabel: "Email Address", sPassLabel: "Set Password", sConfirmLabel: "Confirm Password", sBtn: "Confirm Registration", switchToLoginBtn: "Login",
+                welcome: "Welcome, Player!", stAvail: "Available", stSel: "Selected", stSold: "Booked", seatNone: "Selected Seat: None", seatSel: "Selected Seat: ", cBtn: "Confirm Ticket & Download",
+                tlId: "Member ID:", tlName: "Player Name:", tlGame: "Game ID:", tlPhone: "Mobile No:", tlSeat: "Seat Number:", tlRoom: "Room Name:", tlPass: "Room Password:", tlFrom: "From:", tlTo: "To:", tlDate: "Date:", tlTime: "Time:",
+                tlIssue: "Issue Time & Date:", btnSelectSeat: "Select Seat 🪑", counterHeaderTitle: "Choose Your Desired Seat", btnBackToSearch: "Back",
+                devLbl: "Website Created By", lblFrom: "From (Boarding Point)", lblTo: "To (Destination Point)", lblDate: "Journey Date", lblTime: "Journey Time",
+                wHead: "Important Notice", wDesc: "<strong>EN:</strong> Please do not attempt to book or confirm your ticket if your internet connection is unstable.<br><strong>বাংলা:</strong> আপনার ইন্টারনেট সংযোগে কোনো সমস্যা বা স্লো থাকলে দয়া করে টিকিট কাটবেন না।",
+                rlTitle: "Terms & Rules:",
+                alertFill: "Please fill all fields!", alertPassLen: "Password must be at least 6 characters!", alertNoMatch: "Passwords do not match!", alertExist: "Account already exists!", alertSuccess: "Success! Member ID: ", alertLoginFail: "Invalid Credentials!", alertSelectSeat: "Please select a seat!"
+            },
+            bn: {
+                gName: "বাংলাদেশ বুসিড ইউনিক সোসাইটি", popupMsg: "খুব শীঘ্রই আসছে...", sub1: "সাবস্ক্রাইব করুন", sub2: "সাবস্ক্রাইব করুন", bdayTitleText: "আজকের জন্মদিন 🎂",
+                lDesc: "টিকিট বুকিং করতে আপনার অ্যাকাউন্ট লগইন করুন", lEmailLabel: "ইমেইল এড্রেস", lPassLabel: "পাসওয়ার্ড", lBtn: "লগইন করুন", switchToSignupBtn: "সাইন আপ",
+                sDesc: "BDBUS অফিশিয়াল মেম্বার প্যানেলে রেজিস্ট্রেশন করুন", sNameLabel: "আপনার সম্পূর্ণ নাম", sGameLabel: "গেম ইউজার নেম / ID", sDobLabel: "জন্ম তারিখ", sPhoneLabel: "মোবাইল নম্বর (সচল)", sFbLabel: "ফেসবুক প্রোফাইল লিংক", sEmailLabel: "ইমেইল এড্রেস", sPassLabel: "পাসওয়ার্ড সেট করুন", sConfirmLabel: "পাসওয়ার্ড নিশ্চিত করুন", sBtn: "রেজিস্ট্রেশন নিশ্চিত করুন", switchToLoginBtn: "লগইন",
+                welcome: "স্বাগতম, প্লেয়ার!", stAvail: "খালি", stSel: "নির্বাচিত", stSold: "বুকড", seatNone: "নির্বাচিত সিট: কোনো সিট সিলেক্ট করা হয়নি", seatSel: "নির্বাচিত সিট: ", cBtn: "টিকিট কনফার্ম ও ডাউনলোড",
+                tlId: "মেম্বার আইডি:", tlName: "যাত্রীর নাম:", tlGame: "গেম আইডি:", tlPhone: "মোবাইল নম্বর:", tlSeat: "আসন নম্বর:", tlRoom: "রুমের নাম:", tlPass: "রুম পাসওয়ার্ড:", tlFrom: "যাত্রা শুরু:", tlTo: "গন্তব্য:", tlDate: "তারিখ:", tlTime: "সময়:",
+                tlIssue: "ক্রয়ের সময় ও তারিখ:", btnSelectSeat: "সিট চয়েস করুন 🪑", counterHeaderTitle: "আপনার পছন্দের আসনটি সিলেক্ট করুন", btnBackToSearch: "পেছনে যান",
+                devLbl: "ওয়েবসাইট তৈরি করেছেন", lblFrom: "কোথা থেকে (বোর্ডিং পয়েন্ট)", lblTo: "কোথায় (গন্তব্য পয়েন্ট)", lblDate: "যাত্রার তারিখ", lblTime: "যাত্রার সময়",
+                wHead: "গুরুত্বপূর্ণ সতর্কতা", wDesc: "<strong>EN:</strong> Please do not attempt to book or confirm your ticket if your internet connection is unstable.<br><strong>বাংলা:</strong> আপনার ইন্টারনেট সংযোগে কোনো সমস্যা বা স্লো থাকলে দয়া করে টিকিট কাটবেন না।",
+                rlTitle: "নির্দেশনাবলী ও নিয়মাবলী:",
+                alertFill: "দয়া করে সব ঘর পূরণ করুন!", alertPassLen: "পাসওয়ার্ড সর্বনিম্ন ৬ অক্ষরের হতে হবে!", alertNoMatch: "পাসওয়ার্ড মেলেনি!", alertExist: "এই ইমেইলে অলরেডি অ্যাকাউন্ট আছে!", alertSuccess: "সফল হয়েছে! মেম্বার আইডি: ", alertLoginFail: "ভুল ইমেইল বা পাসওয়ার্ড!", alertSelectSeat: "দয়া করে একটি সিট সিলেক্ট করুন!"
+            }
+        };
+
+        function showUpcoming() {
+            document.getElementById('popupMsg').innerText = langData[currentLang].popupMsg;
+            document.getElementById('upcomingPopup').style.display = 'block';
+        }
+        function closePopup() { document.getElementById('upcomingPopup').style.display = 'none'; }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+            document.getElementById('btnBn').classList.toggle('active', lang === 'bn');
+            
+            const d = langData[lang];
+            for (let key in d) {
+                let el = document.getElementById(key);
+                if (el) el.innerHTML = d[key];
+            }
+            updateGreeting();
+            if(loggedInUser) {
+                checkBirthdays();
+                document.getElementById('welcomeText').innerText = (lang === 'bn' ? "স্বাগতম, " : "Welcome, ") + loggedInUser.gameId + "!";
+            }
+            if (!currentSelectedSeat) {
+                document.getElementById('selectedSeatText').innerText = d.seatNone;
+            } else {
+                document.getElementById('selectedSeatText').innerText = d.seatSel + currentSelectedSeat;
+            }
+            updateTicketRulesLanguage();
+        }
+
+        function updateTicketRulesLanguage() {
+            const rlList = document.getElementById('rlList');
+            if(currentLang === 'bn') {
+                rlList.innerHTML = `
+                    <li>মাল্টিপ্লেয়ার ম্যাচ বা কনভয় শুরু হওয়ার অন্তত ১০ মিনিট আগে রুমে যুক্ত হোন।</li>
+                    <li>সোসাইটির নিয়ম মেনে ড্রাইভিং কোড ও স্পিড লিমিট বজায় রাখুন।</li>
+                    <li>ইচ্ছাকৃতভাবে অন্য কোনো মেম্বারকে র‍্যামিং বা টক্সিক আচরণ করলে সরাসরি ব্যান করা হবে।</li>
+                `;
+            } else {
+                rlList.innerHTML = `
+                    <li>Please join the Multiplayer Room at least 10 minutes before departure.</li>
+                    <li>Maintain formal and respectful driving codes during society convoys.</li>
+                    <li>Any form of intentional ramming or toxic behavior will result in a ban.</li>
+                `;
+            }
+        }
+
+        function updateGreeting() {
+            const hrs = new Date().getHours();
+            let greet = "";
+            if (currentLang === 'en') {
+                if (hrs >= 5 && hrs < 12) greet = "Good Morning! 🌅";
+                else if (hrs >= 12 && hrs < 17) greet = "Good Afternoon! ☀️";
+                else if (hrs >= 17 && hrs < 23) greet = "Good Evening! 🌆";
+                else greet = "Good Night! 🌌";
+            } else {
+                if (hrs >= 5 && hrs < 12) greet = "শুভ সকাল! 🌅";
+                else if (hrs >= 12 && hrs < 17) greet = "শুভ দুপুর! ☀️";
+                else if (hrs >= 17 && hrs < 23) greet = "শুভ সন্ধ্যা! 🌆";
+                else greet = "শুভ রাত্রি! 🌌";
+            }
+            document.getElementById('timeGreeting').innerText = greet;
+        }
+
+        function toggleAuthView(showLogin) {
+            document.getElementById('loginBox').style.display = showLogin ? 'block' : 'none';
+            document.getElementById('signupBox').style.display = showLogin ? 'none' : 'block';
+        }
+
+        function handleSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const gameId = document.getElementById('signupGameId').value.trim();
+            const dob = document.getElementById('signupDob').value;
+            const phone = document.getElementById('signupPhone').value.trim();
+            const fb = document.getElementById('signupFb').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const pass = document.getElementById('signupPass').value;
+            const confirmPass = document.getElementById('signupConfirmPass').value;
+            const d = langData[currentLang];
+
+            if(!name || !gameId || !dob || !phone || !fb || !email || !pass || !confirmPass) { alert(d.alertFill); return; }
+            if(pass.length < 6) { alert(d.alertPassLen); return; }
+            if(pass !== confirmPass) { alert(d.alertNoMatch); return; }
+            if(users[email]) { alert(d.alertExist); return; }
+
+            const generatedId = "BDBUS-" + (1001 + Object.keys(users).length);
+            users[email] = { memberId: generatedId, name: name, gameId: gameId, dob: dob, phone: phone, fb: fb, pass: pass };
+            localStorage.setItem('busUsers', JSON.stringify(users));
+            
+            alert(d.alertSuccess + generatedId);
+            toggleAuthView(true);
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value;
+            const d = langData[currentLang];
+
+            if(users[email] && users[email].pass === pass) {
+                loggedInUser = users[email];
+                localStorage.setItem('bdbusActiveSession', email);
+                showSearchPage();
+            } else { alert(d.alertLoginFail); }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('bdbusActiveSession');
+            loggedInUser = null;
+            currentSelectedSeat = null;
+            showAuthPage();
+        }
+
+        function showAuthPage() {
+            document.getElementById('authPage').style.display = 'block';
+            document.getElementById('searchPage').style.display = 'none';
+            document.getElementById('counterPage').style.display = 'none';
+            document.getElementById('birthdayWidget').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('mHome').getAnimations();
+            toggleAuthView(true);
+        }
+
+        // 🔄 সফল লগইনে শুধু ধাপ ১ দেখাবে / Route Data view controller triggered on auth success
+        function showSearchPage() {
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('searchPage').style.display = 'block';
+            document.getElementById('counterPage').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'block';
+            document.getElementById('welcomeText').innerText = (currentLang === 'bn' ? "স্বাগতম, " : "Welcome, ") + loggedInUser.gameId + "!";
+            checkBirthdays();
+        }
+
+        // 🪑 সিট প্ল্যানে যাওয়ার লজিক / Logic function to transit from step 1 to step 2 seat grid
+        function goToCounterPage() {
+            const dateVal = document.getElementById('tripDate').value;
+            const d = langData[currentLang];
+            if(!dateVal) { alert(d.alertFill); return; }
+
+            document.getElementById('searchPage').style.display = 'none';
+            document.getElementById('counterPage').style.display = 'block';
+            generateSeats();
+        }
+
+        // 🔙 কাউন্টার থেকে পুনরায় হোমপেজে ব্যাক আসার লজিক / Back navigation handling from grid back to route form
+        function backToSearchPage() {
+            document.getElementById('counterPage').style.display = 'none';
+            document.getElementById('searchPage').style.display = 'block';
+        }
+
+        function navClick(target) {
+            if(!loggedInUser) { showAuthPage(); }
+            else { showSearchPage(); }
+        }
+
+        function generateSeats() {
+            const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+            const grid = document.getElementById('busGrid');
+            grid.innerHTML = '';
+
+            const door = document.createElement('div');
+            door.className = 'bus-door';
+            door.innerText = 'Door';
+            grid.appendChild(door);
+
+            const topAisle = document.createElement('div');
+            topAisle.className = 'bus-aisle';
+            grid.appendChild(topAisle);
+
+            grid.appendChild(document.createElement('div')); 
+            
+            const steering = document.createElement('div');
+            steering.className = 'seat driver-steering';
+            steering.innerHTML = `<svg viewBox="0 0 512 512"><path d="M256 48C140.9 48 48 140.9 48 256s92.9 208 208 208 208-92.9 208-208S371.1 48 256 48zm0 40c24.2 0 47.1 5.7 67.7 15.9L283.4 170c-8.5-3.9-17.8-6-27.4-6s-18.9 2.1-27.4 6l-40.3-66.1C208.9 93.7 231.8 88 256 88zm-97.1 31.9l40.2 65.9c-15.1 11.2-25.7 27.6-29.2 46.2H89.2c4.4-44.4 29.8-82.6 69.7-112.1zm-69.7 152.1h80.1c3.5 18.6 14.1 35 29.2 46.2l-40.2 65.9c-39.9-29.5-65.3-67.7-69.7-112.1zm112.1 133.2l40.3-66.1c8.5 3.9 17.8 6 27.4 6s18.9-2.1 27.4-6l40.3 66.1c-20.6 10.2-43.5 15.9-67.7 15.9s-47.1-5.7-67.7-15.9zm154.8-21.1l-40.2-65.9c15.1-11.2 25.7-27.6 29.2-46.2h80.1c-4.4 44.4-29.8 82.6-69.7 112.1zm69.7-152.1h-80.1c-3.5-18.6-14.1-35-29.2-46.2l40.2-65.9c39.9 29.5 65.3 67.7 69.7 112.1zM256 214c-23.2 0-42 18.8-42 42s18.8 42 42 42 42-18.8 42-42-18.8-42-42-42z"/></svg>`;
+            grid.appendChild(steering);
+
+            rows.forEach(row => {
+                createSeatElement(row + '1', grid);
+                const aisle = document.createElement('div');
+                aisle.className = 'bus-aisle';
+                grid.appendChild(aisle);
+                createSeatElement(row + '2', grid);
+                createSeatElement(row + '3', grid);
+            });
+        }
+
+        function createSeatElement(seatId, targetGrid) {
+            const btn = document.createElement('button');
+            btn.className = 'seat';
+            btn.innerText = seatId;
+
+            if(globalSoldSeats.includes(seatId)) {
+                btn.classList.add('sold');
+            } else {
+                btn.onclick = () => {
+                    const prev = document.querySelector('.seat.selected');
+                    if(prev) prev.classList.remove('selected');
+                    
+                    const d = langData[currentLang];
+                    if(currentSelectedSeat === seatId) {
+                        currentSelectedSeat = null;
+                        document.getElementById('selectedSeatText').innerText = d.seatNone;
+                    } else {
+                        btn.classList.add('selected');
+                        currentSelectedSeat = seatId;
+                        document.getElementById('selectedSeatText').innerText = d.seatSel + seatId;
+                    }
+                };
+            }
+            targetGrid.appendChild(btn);
+        }
+
+        function checkBirthdays() {
+            clearInterval(birthdayInterval);
+            const container = document.getElementById('bdaySliderContainer');
+            container.innerHTML = '';
+            const today = new Date();
+            const todayMMDD = (today.getMonth() + 1).toString().padStart(2, '0') + '-' + today.getDate().toString().padStart(2, '0');
+            let birthdayUsers = [];
+            
+            for (let email in users) {
+                if (users[email].dob) {
+                    const userDob = new Date(users[email].dob);
+                    const userMMDD = (userDob.getMonth() + 1).toString().padStart(2, '0') + '-' + userDob.getDate().toString().padStart(2, '0');
+                    if (userMMDD === todayMMDD) birthdayUsers.push(users[email]);
+                }
+            }
+            
+            if (birthdayUsers.length > 0) {
+                document.getElementById('birthdayWidget').style.display = 'block';
+                birthdayUsers.forEach((user, index) => {
+                    let p = user.phone || "";
+                    let maskedPhone = p.length >= 5 ? p.substring(0, 5) + "******" : p;
+                    let fbUsername = "BDBUS";
+                    if(user.fb && user.fb.includes("facebook.com/")) {
+                        let parts = user.fb.split("facebook.com/");
+                        if(parts[1] && !parts[1].includes("groups")) fbUsername = parts[1].split("/")[0].split("?")[0];
+                    }
+                    const card = document.createElement('div');
+                    card.className = `bday-card ${index === 0 ? 'active' : ''}`;
+                    card.innerHTML = `
+                        <div class="bday-avatar-wrapper">
+                            <img class="bday-avatar" src="https://graph.facebook.com/${fbUsername}/picture?type=large" onerror="this.src='images/BDBUS Group Official Logo.png'">
+                            <span class="bday-balloon">🎈</span>
+                        </div>
+                        <div class="bday-details">
+                            <h4 class="bday-name">${user.name}</h4>
+                            <p class="bday-role">${user.gameId}</p>
+                            <p class="bday-id">ID: ${user.memberId}</p>
+                            <p class="bday-phone">${maskedPhone}</p>
+                        </div>
+                        <span class="bday-cake-icon">🎂</span>
+                    `;
+                    container.appendChild(card);
+                });
+                
+                if (birthdayUsers.length > 1) {
+                    let currentSlide = 0;
+                    const cards = document.querySelectorAll('.bday-card');
+                    birthdayInterval = setInterval(() => {
+                        cards[currentSlide].classList.remove('active');
+                        cards[currentSlide].classList.add('exit');
+                        let prevSlide = currentSlide;
+                        currentSlide = (currentSlide + 1) % cards.length;
+                        cards[currentSlide].className = 'bday-card active';
+                        setTimeout(() => { cards[prevSlide].classList.remove('exit'); }, 600);
+                    }, 3000);
+                }
+            } else { document.getElementById('birthdayWidget').style.display = 'none'; }
+        }
+
+        function buyTicket() {
+            const d = langData[currentLang];
+            if(!currentSelectedSeat) { alert(d.alertSelectSeat); return; }
+            
+            const fromVal = document.getElementById('tripFrom').value;
+            const toVal = document.getElementById('tripTo').value;
+            const dateVal = document.getElementById('tripDate').value;
+            const timeVal = document.getElementById('tripTime').value;
+
+            document.getElementById('tMemberId').innerText = loggedInUser.memberId;
+            document.getElementById('tName').innerText = loggedInUser.name;
+            document.getElementById('tGameId').innerText = loggedInUser.gameId;
+            document.getElementById('tPhone').innerText = loggedInUser.phone;
+            document.getElementById('tSeat').innerText = currentSelectedSeat;
+            document.getElementById('tFrom').innerText = fromVal;
+            document.getElementById('tTo').innerText = toVal;
+            document.getElementById('tDate').innerText = dateVal;
+            document.getElementById('tTime').innerText = timeVal;
+
+            const currentLiveTimestamp = getLiveTimestampString();
+            document.getElementById('tIssueTimestamp').innerText = currentLiveTimestamp;
+
+            const ticketContainer = document.getElementById('ticketPage');
+            ticketContainer.style.display = 'block';
+
+            const targetDiv = document.getElementById('printableTicketArea');
+            
+            setTimeout(() => {
+                html2canvas(targetDiv, {
+                    useCORS: true,
+                    scale: 2,
+                    backgroundColor: "#ffffff"
+                }).then(canvas => {
+                    const image = canvas.toDataURL("image/png");
+                    const link = document.createElement('a');
+                    link.download = `BDBUS_Ticket_${currentSelectedSeat}.png`;
+                    link.href = image;
+                    link.click();
+
+                    globalSoldSeats.push(currentSelectedSeat);
+                    localStorage.setItem('busSoldSeats', JSON.stringify(globalSoldSeats));
+                    
+                    currentSelectedSeat = null;
+                    document.getElementById('selectedSeatText').innerText = d.seatNone;
+                    
+                    // টিকিট কাটার পর পুনরায় হোম ফর্ম পেজে ফিরিয়ে নিয়ে যাওয়া
+                    document.getElementById('counterPage').style.display = 'none';
+                    document.getElementById('searchPage').style.display = 'block';
+                });
+            }, 500);
+        }
+    </script>
+</body>
+</html>
