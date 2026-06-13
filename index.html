@@ -4,2089 +4,1382 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>M2Vai Online Ticket Counter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script href="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
-        /* CSS Root and Premium Dark Glowing Theme Styling */
-        :root {
-            --bg-dark: #0d1117;
-            --card-bg: #161b22;
-            --neon-green: #00cc99;
-            --neon-blue: #00a3ff;
-            --text-light: #f0f6fc;
-            --text-muted: #8b949e;
-            --danger: #ff4d4d;
-            --warning: #ffaa00;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            user-select: none;
-        }
-
+        /* প্রিমিয়াম ডার্ক থিম ও গ্লোয়িং ইফেক্টস */
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-light);
+            background-color: #0d1117;
+            color: #e6edf3;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow-x: hidden;
-            min-height: 100vh;
-            position: relative;
         }
-
-        /* Master Background Watermark Setup */
-        body::before {
-            content: "";
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.6);
+        }
+        .neon-text {
+            text-shadow: 0 0 8px rgba(20, 184, 166, 0.6);
+        }
+        /* M2Vai ওয়াটারমার্ক */
+        .watermark-bg {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 60vw;
-            height: 60vw;
-            background-image: var(--wm-img);
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain;
-            opacity: 0.03; /* Kept very light to ensure top text readability */
-            z-index: -1;
+            width: 60%;
+            opacity: 0.04;
             pointer-events: none;
+            z-index: 0;
         }
-
-        /* Top Header Styling across Page 2, 3, 4 */
-        header {
-            background-color: var(--card-bg);
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 2px solid #21262d;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        /* কাস্টম স্ক্রলবার */
+        ::-webkit-scrollbar {
+            width: 6px;
         }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .header-logo {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-        }
-
-        .header-title {
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: var(--text-light);
-        }
-
-        .header-center {
-            flex: 1;
-            max-width: 400px;
-            margin: 0 15px;
-            position: relative;
-        }
-
-        .search-box {
-            width: 100%;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            padding: 8px 12px 8px 35px;
-            border-radius: 6px;
-            color: var(--text-light);
-            outline: none;
-            transition: 0.3s;
-        }
-
-        .search-box:focus {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 8px rgba(0, 163, 255, 0.3);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .lang-btn {
-            background: #21262d;
-            border: 1px solid #30363d;
-            color: var(--text-light);
-            padding: 6px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            display: flex;
-            gap: 5px;
-        }
-
-        .lang-btn span.active {
-            color: var(--neon-green);
-            font-weight: bold;
-        }
-
-        .menu-toggle {
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-light);
-        }
-
-        /* Sliding Hamburger Sidebar Navigation Menu */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            right: -280px;
-            width: 280px;
-            height: 100vh;
-            background: var(--card-bg);
-            border-left: 2px solid #21262d;
-            z-index: 1000;
-            transition: 0.3s ease;
-            padding: 20px;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-        }
-
-        .sidebar.open {
-            right: 0;
-        }
-
-        .sidebar-close {
-            text-align: right;
-            font-size: 1.4rem;
-            cursor: pointer;
-            margin-bottom: 20px;
-            color: var(--text-muted);
-        }
-
-        .sidebar-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 14px;
-            color: var(--text-light);
-            text-decoration: none;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: 0.2s;
-            margin-bottom: 5px;
-        }
-
-        .sidebar-menu-item:hover {
-            background: #21262d;
-            color: var(--neon-green);
-        }
-
-        /* Floating Live Widget Area (Clock & Greeting Banner) */
-        .live-widget-area {
-            text-align: center;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .greeting-text {
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .live-clock-card {
-            background: rgba(22, 27, 34, 0.8);
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            display: inline-block;
-            padding: 10px 25px;
-        }
-
-        .clock-time {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--neon-green);
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(0, 204, 153, 0.2);
-        }
-
-        .clock-date {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-top: 3px;
-        }
-
-        /* Notice Board Component Layout */
-        .notice-container {
-            background: #161b22;
-            border-top: 1px solid #30363d;
-            border-bottom: 1px solid #30363d;
-            display: flex;
-            align-items: center;
-            height: 40px;
-            overflow: hidden;
-        }
-
-        .notice-label {
-            background: var(--danger);
-            color: white;
-            padding: 0 15px;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            font-size: 0.9rem;
-            white-space: nowrap;
-            z-index: 10;
-            box-shadow: 3px 0 5px rgba(0,0,0,0.3);
-        }
-
-        .notice-marquee {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .notice-text {
-            position: absolute;
-            white-space: nowrap;
-            animation: scroll-notice 25s linear infinite;
-            font-size: 0.95rem;
-            line-height: 40px;
-        }
-
-        @keyframes scroll-notice {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-
-        /* Active Members Running List (Marquee layout) */
-        .active-members-bar {
-            background: #0d1117;
-            border-bottom: 1px solid #21262d;
-            height: 65px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
-
-        .active-members-track {
-            display: flex;
-            gap: 30px;
-            position: absolute;
-            animation: scroll-members 35s linear infinite;
-        }
-
-        .active-member-card {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--card-bg);
-            padding: 6px 12px;
-            border-radius: 30px;
-            border: 1px solid #30363d;
-            min-width: 210px;
-        }
-
-        .active-avatar-wrapper {
-            position: relative;
-            width: 38px;
-            height: 38px;
-        }
-
-        .active-avatar {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #21262d;
-        }
-
-        .active-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #2ea44f;
-            border-radius: 50%;
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            border: 2px solid var(--card-bg);
-            box-shadow: 0 0 6px #2ea44f;
-        }
-
-        .active-info {
-            display: flex;
-            flex-direction: column;
-            font-size: 0.75rem;
-            line-height: 1.2;
-        }
-
-        .active-uid { color: var(--neon-blue); font-weight: bold; }
-        .active-name { color: var(--text-light); font-weight: 500; }
-        .active-role { color: var(--text-muted); font-size: 0.7rem; }
-
-        @keyframes scroll-members {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        /* Application Layout View Panels Container */
-        .page-panel {
-            display: none;
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 0 15px 100px 15px;
-        }
-
-        .page-panel.active-view {
-            display: block;
-        }
-
-        /* Form Controls Setup (Login/Registration Inputs) */
-        .auth-container {
-            background-color: var(--card-bg);
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-
-        .main-glowing-logo {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            margin: 0 auto 15px auto;
-            display: block;
-            border: 3px solid var(--neon-green);
-            box-shadow: 0 0 20px rgba(0, 204, 153, 0.4);
-        }
-
-        .form-heading {
-            font-size: 1.4rem;
-            margin-bottom: 5px;
-            letter-spacing: 0.5px;
-        }
-
-        .form-subheading {
-            font-size: 0.85rem;
-            color: #58a6ff;
-            margin-bottom: 25px;
-        }
-
-        .form-instruction {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            text-align: left;
-            margin-bottom: 18px;
-            position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-        }
-
-        .input-ctrl {
-            width: 100%;
-            background-color: #0d1117;
-            border: 1px solid #30363d;
-            padding: 10px 12px;
-            border-radius: 6px;
-            color: var(--text-light);
-            outline: none;
-            font-size: 0.95rem;
-            transition: 0.2s;
-        }
-
-        .input-ctrl:focus {
-            border-color: var(--neon-green);
-        }
-
-        .pass-toggle-icon {
-            position: absolute;
-            right: 12px;
-            top: 35px;
-            cursor: pointer;
-            color: var(--text-muted);
-            z-index: 5;
-        }
-
-        .pass-match-msg {
-            font-size: 0.75rem;
-            margin-top: 4px;
-            font-weight: 500;
-        }
-
-        /* Combined Left-Right Auth Button Set styling matching user request */
-        .auth-btn-row {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .btn-prime {
-            flex: 1;
-            padding: 12px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            outline: none;
-            transition: 0.2s;
-            border: none;
-        }
-
-        .btn-login-style {
-            background-color: var(--neon-green);
-            color: #0d1117;
-            box-shadow: 0 0 15px rgba(0, 204, 153, 0.3);
-        }
-
-        .btn-login-style:hover {
-            opacity: 0.9;
-        }
-
-        .btn-signup-style {
-            background-color: #21262d;
-            color: var(--text-light);
-            border: 1px solid #30363d;
-        }
-
-        .btn-signup-style:hover {
-            background-color: #30363d;
-        }
-
-        /* Dropdown Search Box Filter Interface elements */
-        .searchable-dropdown {
-            position: relative;
-        }
-
-        .dropdown-options-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 500;
-            display: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-
-        .dropdown-option-item {
-            padding: 10px 12px;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-
-        .dropdown-option-item:hover {
-            background: #21262d;
-            color: var(--neon-green);
-        }
-
-        /* Seat Grid Matrix Component Layout styling */
-        .bus-container-box {
-            background: var(--card-bg);
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 15px;
-        }
-
-        .fare-display-banner {
-            background: rgba(0, 163, 255, 0.1);
-            border: 1px solid rgba(0, 163, 255, 0.3);
-            border-radius: 6px;
-            padding: 10px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: #58a6ff;
-            margin-bottom: 20px;
-        }
-
-        .seat-legend-row {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 25px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .legend-pill {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .legend-indicator {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-        }
-
-        .grid-matrix-layout {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-width: 320px;
-            margin: 0 auto;
-        }
-
-        .seat-matrix-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .seat-matrix-row.aisle-gap {
-            margin-bottom: 15px;
-        }
-
-        .seat-node {
-            flex: 1;
-            aspect-ratio: 1;
-            max-width: 50px;
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .seat-node.selected-seat {
-            background-color: #2ea44f !important;
-            border-color: #34d058 !important;
-            color: white;
-        }
-
-        .seat-node.booked-seat {
-            background-color: var(--danger) !important;
-            border-color: #ff6e6e !important;
-            color: white;
-            cursor: not-allowed;
-        }
-
-        .seat-node.invisible-spacer {
-            background: transparent;
-            border: none;
-            pointer-events: none;
-        }
-
-        /* Modal Dialog Popup Windows styling */
-        .dialog-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(4px);
-            z-index: 2000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .dialog-box {
-            background: var(--card-bg);
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 420px;
-            padding: 25px;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .dialog-header {
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #21262d;
-            padding-bottom: 8px;
-            color: var(--neon-green);
-        }
-
-        .dialog-close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: var(--text-muted);
-        }
-
-        /* Profile Sheet styling Layout */
-        .profile-card-layout {
-            background: var(--card-bg);
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .profile-avatar-uploader {
-            position: relative;
-            width: 110px;
-            height: 110px;
-            margin: 0 auto 15px auto;
-        }
-
-        .profile-display-pic {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #30363d;
+        ::-webkit-scrollbar-track {
             background: #0d1117;
         }
-
-        .avatar-edit-badge {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            background: var(--neon-blue);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            cursor: pointer;
-            border: 2px solid var(--card-bg);
+        ::-webkit-scrollbar-thumb {
+            background: #14b8a6;
+            border-radius: 3px;
         }
-
-        .profile-data-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #21262d;
-            font-size: 0.95rem;
-        }
-
-        .profile-data-label { color: var(--text-muted); }
-        .profile-data-val { font-weight: 500; }
-        .profile-wallet-amt { color: var(--neon-green); font-weight: bold; font-size: 1.1rem; }
-
-        /* Master Global Sticky Bottom Navigation Footer Block styling */
-        footer {
-            background-color: #0d1117;
-            border-top: 1px solid #21262d;
-            padding: 25px 15px;
-            text-align: center;
-            width: 100%;
-            position: relative;
-            margin-top: auto;
-        }
-
-        .footer-social-row {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .social-circle-btn {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            text-decoration: none;
-            transition: 0.2s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-
-        .social-circle-btn:hover {
-            transform: translateY(-3px);
-        }
-
-        .policy-links-line {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-        }
-
-        .policy-links-line a {
-            color: var(--text-muted);
-            text-decoration: none;
-            margin: 0 8px;
-        }
-
-        .creator-branding-card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 10px;
-            padding: 15px;
-            max-width: 440px;
-            margin: 0 auto;
-        }
-
-        .creator-info-block {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .creator-mini-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-        }
-
-        .creator-text-meta {
-            text-align: left;
-            font-size: 0.8rem;
-            line-height: 1.3;
-        }
-
-        .creator-label-span { color: var(--text-muted); }
-        .creator-name-span { font-size: 1rem; font-weight: bold; display: block; }
-
-        .reward-action-grid {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn-channel-subscribe {
-            flex: 1;
-            background: #cc0000;
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 10px 12px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.2s;
-            box-shadow: 0 4px 12px rgba(204,0,0,0.2);
-        }
-
-        .btn-channel-subscribe:hover {
-            background: #b30000;
-        }
-
-        .btn-channel-subscribe img {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        /* Official Printable Passenger Ticket Element container matching 1000032501.jpg */
-        .printable-ticket-wrapper {
-            background: white;
-            color: #0f141c;
-            border-radius: 12px;
-            padding: 25px;
-            width: 100%;
-            max-width: 420px;
-            margin: 0 auto;
-            position: relative;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        /* Printable ticket watermark setup matching user layout */
-        .printable-ticket-wrapper::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 65%;
-            height: 65%;
-            background-image: var(--wm-img);
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: contain;
-            opacity: 0.08; /* Perfectly balanced for clear visibility without overlapping data fields */
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .ticket-inner-content {
-            position: relative;
-            z-index: 5;
-        }
-
-        .ticket-header-block {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 2px dashed #cbd5e1;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-        }
-
-        .ticket-header-logo {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .ticket-header-titles {
-            text-align: left;
-            line-height: 1.2;
-        }
-
-        .ticket-main-title {
-            font-size: 1.15rem;
-            font-weight: 800;
-            color: #0f141c;
-            letter-spacing: 0.5px;
-        }
-
-        .ticket-sub-title {
-            font-size: 0.75rem;
-            color: #64748b;
-            font-weight: 600;
-        }
-
-        .ticket-data-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 0.9rem;
-        }
-
-        .ticket-field-lbl {
-            color: #475569;
-            font-weight: 600;
-        }
-
-        .ticket-field-val {
-            color: #0f141c;
-            font-weight: 700;
-            text-align: right;
-        }
-
-        .ticket-field-val.highlighted-seat {
-            color: #ef4444;
-            font-size: 1.1rem;
-        }
-
-        .ticket-timestamp-banner {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 8px;
-            text-align: center;
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin: 15px 0;
-            color: #334155;
-        }
-
-        .ticket-rules-block {
-            border-top: 2px dashed #cbd5e1;
-            padding-top: 12px;
-            margin-top: 15px;
-            font-size: 0.72rem;
-            color: #334155;
-            line-height: 1.4;
-            text-align: left;
-        }
-
-        .ticket-rules-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #0f141c;
-            font-size: 0.75rem;
-        }
-
-        .ticket-rules-list {
-            padding-left: 12px;
-        }
-
-        /* Embedded Ticket Footer block matching user screenshot request */
-        .ticket-footer-embed {
-            background: #0d1117;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 15px;
-            text-align: center;
-            color: white;
-        }
-
-        /* Generic Utility Styles */
-        .w-100 { width: 100%; }
-        .mb-3 { margin-bottom: 15px; }
-        .mt-3 { margin-top: 15px; }
-        .cursor-pointer { cursor: pointer; }
     </style>
 </head>
-<body>
+<body class="relative min-h-screen flex flex-col justify-between">
 
-    <header id="app-main-header" style="display: none;">
-        <div class="header-left">
-            <img class="header-logo app-logo-src" src="" alt="Logo">
-            <span class="header-title">M2Vai PANEL</span>
-        </div>
-        <div class="header-center">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" class="search-box" id="global-search-input" placeholder="আইডি দিয়ে সার্চ করুন...">
-        </div>
-        <div class="header-right">
-            <button class="lang-btn" id="language-toggle-btn">
-                <span id="lang-en">EN</span> | <span id="lang-bn" class="active">বাংলা</span>
+    <img src="image/M2Vai Official YouTube Channel Logo.png" alt="M2Vai Watermark" class="watermark-bg">
+
+    <header id="top-header" class="hidden sticky top-0 z-50 bg-[#161b22]/90 backdrop-blur border-b border-teal-500/20 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <button id="menu-btn" class="text-teal-400 text-2xl focus:outline-none hover:text-teal-300">
+                <i class="fa-solid fa-bars"></i>
             </button>
-            <i class="fa-solid fa-bars menu-toggle" id="sidebar-trigger"></i>
+            <div class="flex items-center space-x-2">
+                <img src="image/M2Vai Official YouTube Channel Logo.png" alt="Logo" class="w-8 h-8 rounded-full border border-teal-500/50">
+                <span class="font-bold text-lg tracking-wider text-teal-400 neon-text">M2Vai PANEL</span>
+            </div>
+        </div>
+        
+        <div class="relative flex-1 max-w-xs mx-4">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-sm"></i>
+            <input type="text" id="global-search" placeholder="আইডি দিয়ে মেম্বার সার্চ..." class="w-full bg-[#0d1117] border border-teal-500/30 rounded-full pl-9 pr-4 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 transition">
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <div class="bg-[#0d1117] px-2 py-1 rounded border border-teal-500/20 text-xs flex space-x-1">
+                <span class="bg-teal-500 text-black px-1.5 py-0.5 rounded font-bold cursor-pointer">EN</span>
+                <span class="text-gray-400 px-1.5 py-0.5 cursor-pointer hover:text-white">বাংলা</span>
+            </div>
+            <div class="text-right hidden sm:block">
+                <p class="text-xs text-gray-400">Wallet Balance</p>
+                <p class="text-sm font-bold text-teal-400" id="header-wallet">0 BDT</p>
+            </div>
         </div>
     </header>
 
-    <nav class="sidebar" id="app-sidebar">
-        <div class="sidebar-close" id="sidebar-close-btn"><i class="fa-solid fa-xmark"></i></div>
-        <div class="sidebar-menu-item" id="menu-opt-profile">
-            <i class="fa-solid fa-user"></i> <span class="lng-txt" data-en="Profile" data-bn="Profile">Profile</span>
-        </div>
-        <div class="sidebar-menu-item" id="menu-opt-admin" style="display: none;">
-            <i class="fa-solid fa-user-gear"></i> <span class="lng-txt" data-en="Admin Panel" data-bn="Admin Panel">Admin Panel</span>
-        </div>
-        <div class="sidebar-menu-item" id="menu-opt-contact">
-            <i class="fa-solid fa-address-book"></i> <span class="lng-txt" data-en="Contact" data-bn="Contact">Contact</span>
-        </div>
-        <div class="sidebar-menu-item" id="menu-opt-logout" style="color: var(--danger);">
-            <i class="fa-solid fa-right-from-bracket"></i> <span class="lng-txt" data-en="Logout" data-bn="লগআউট">লগআউট</span>
-        </div>
-    </nav>
-
-    <div id="app-live-widgets" style="display: none;">
-        <div class="live-widget-area">
-            <div class="greeting-text" id="live-greeting-banner">Good Morning! 🌅</div>
-            <div class="live-clock-card">
-                <div class="clock-time" id="widget-live-time">00:00:00 AM</div>
-                <div class="clock-date" id="widget-live-date">SAT, JUN 13, 2026</div>
-            </div>
-        </div>
-
-        <div class="notice-container">
-            <div class="notice-label" id="notice-label-text">নোটিশ বোর্ড</div>
-            <div class="notice-marquee">
-                <div class="notice-text" id="moving-notice-payload">ওয়েবসাইটে আপনাকে স্বাগতম! টিকিট বুকিং করার জন্য আপনার রুট এবং বাসের ধরন নির্বাচন করুন।</div>
-            </div>
-        </div>
-
-        <div class="active-members-bar">
-            <div class="active-members-track" id="active-members-marquee-track">
+    <div id="sidebar-menu" class="fixed inset-y-0 left-0 w-64 bg-[#161b22] border-r border-teal-500/20 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out flex flex-col justify-between shadow-2xl">
+        <div class="p-5">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-4 mb-5">
+                <div class="flex items-center space-x-2">
+                    <img src="image/M2Vai Official YouTube Channel Logo.png" class="w-6 h-6 rounded-full">
+                    <span class="font-bold text-teal-400">Menu Options</span>
                 </div>
+                <button id="close-menu" class="text-gray-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <nav class="space-y-4">
+                <button onclick="switchPage('page2')" class="w-full flex items-center space-x-3 text-left py-2 px-3 rounded hover:bg-[#21262d] text-gray-300 hover:text-teal-400 transition">
+                    <i class="fa-solid fa-bus w-5"></i> <span>Bus Ticket Booking</span>
+                </button>
+                <button id="menu-profile-btn" class="w-full flex items-center space-x-3 text-left py-2 px-3 rounded hover:bg-[#21262d] text-gray-300 hover:text-teal-400 transition">
+                    <i class="fa-solid fa-user w-5"></i> <span>Profile</span>
+                </button>
+                <button id="menu-admin-btn" class="w-full flex items-center space-x-3 text-left py-2 px-3 rounded hover:bg-[#21262d] text-gray-300 hover:text-teal-400 transition hidden">
+                    <i class="fa-solid fa-user-shield w-5 text-red-400"></i> <span class="text-red-400 font-semibold">Admin Panel</span>
+                </button>
+                <button id="menu-contact-btn" class="w-full flex items-center space-x-3 text-left py-2 px-3 rounded hover:bg-[#21262d] text-gray-300 hover:text-teal-400 transition">
+                    <i class="fa-solid fa-address-book w-5"></i> <span>Contact</span>
+                </button>
+            </nav>
+        </div>
+        <div class="p-5 border-t border-gray-700">
+            <button id="logout-btn" class="w-full bg-red-600/20 text-red-400 border border-red-600/30 py-2 rounded flex items-center justify-center space-x-2 hover:bg-red-600 hover:text-white transition">
+                <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+            </button>
         </div>
     </div>
 
+    <main class="flex-grow z-10 max-w-6xl w-full mx-auto p-4 flex flex-col justify-center">
 
-    <main class="page-panel active-view" id="panel-view-auth">
-        <div class="live-widget-area" style="margin-bottom: 20px;">
-            <div class="greeting-text" id="auth-greeting-banner">Good Morning! 🌅</div>
-            <div class="live-clock-card">
-                <div class="clock-time" id="auth-live-time">00:00:00 AM</div>
-                <div class="clock-date" id="auth-live-date">SAT, JUN 13, 2026</div>
+        <div id="global-notice-bar" class="hidden mb-4 bg-[#161b22] border border-teal-500/20 rounded p-2 overflow-hidden whitespace-nowrap relative">
+            <div class="inline-block animate-marquee text-teal-300 text-sm font-medium" id="live-notice-text">
+                📢 স্বাগতম M2Vai অনলাইন টিকিট কাউন্টারে! নতুন রেজিস্ট্রেশনে পাচ্ছেন ৩০০০ BDT ফ্রি বোনাস! যে কোনো সিট বুকিং ১ ঘণ্টা পর অটো-রিসেট হয়ে যাবে। টিকিট ডাউনলোড করলে সরাসরি হোম পেজে রিডাইরেক্ট হবেন।
             </div>
         </div>
+        <style>
+            @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+            }
+            .animate-marquee {
+                animation: marquee 25s linear infinite;
+            }
+        </style>
 
-        <div class="auth-container">
-            <img class="main-glowing-logo app-logo-src" src="" alt="M2Vai Counter Logo">
-            <h1 class="form-heading">M2Vai ONLINE TICKET COUNTER</h1>
-            <p class="form-subheading">Bangladesh Bussid Unique Society</p>
-            <p class="form-instruction" id="auth-prompt-message">Please login to book your bus seat</p>
-
-            <form id="auth-master-form" onsubmit="event.preventDefault();">
-                <div class="form-group" id="group-player-name" style="display: none;">
-                    <label class="lng-txt" data-en="Player Name" data-bn="প্লেয়ারের নাম">প্লেয়ারের নাম</label>
-                    <input type="text" class="input-ctrl" id="auth-field-name">
+        <section id="page1" class="w-full max-w-md mx-auto py-6">
+            <div class="text-center mb-6">
+                <div class="inline-block relative p-2 rounded-full border-2 border-teal-500/30 neon-glow mb-3">
+                    <img src="image/M2Vai Official YouTube Channel Logo.png" alt="M2Vai Logo" class="w-24 h-24 rounded-full">
                 </div>
-                <div class="form-group" id="group-game-id" style="display: none;">
-                    <label class="lng-txt" data-en="Game ID" data-bn="গেম আইডি">গেম আইডি</label>
-                    <input type="text" class="input-ctrl" id="auth-field-gameid">
+                <h1 class="text-2xl font-bold tracking-wide text-white uppercase">M2Vai <span class="text-teal-400">Online Ticket Counter</span></h1>
+                <p class="text-xs text-gray-400 tracking-widest mt-1">Bangladesh Bussid Unique Society</p>
+                
+                <div class="mt-4 bg-[#161b22] border border-teal-500/20 rounded-xl p-3 max-w-xs mx-auto">
+                    <p class="text-xs text-gray-400 uppercase tracking-wider mb-1" id="greeting-text">Good Evening! 🌆</p>
+                    <p class="text-xl font-mono font-bold text-teal-400" id="live-clock">18:50:33 PM</p>
+                    <p class="text-[10px] text-gray-500 font-mono mt-0.5" id="live-date">SAT, JUN 13, 2026</p>
                 </div>
-                <div class="form-group" id="group-mobile-no" style="display: none;">
-                    <label class="lng-txt" data-en="Mobile No (Optional)" data-bn="মোবাইল নম্বর (ঐচ্ছিক)">মোবাইল নম্বর (ঐচ্ছিক)</label>
-                    <input type="text" class="input-ctrl" id="auth-field-phone">
-                </div>
-                <div class="form-group">
-                    <label class="lng-txt" data-en="Email Address" data-bn="ইমেইল এড্রেস">ইমেইল এড্রেস</label>
-                    <input type="email" class="input-ctrl" id="auth-field-email" required>
-                </div>
-                <div class="form-group">
-                    <label class="lng-txt" data-en="Password" data-bn="পাসওয়ার্ড">পাসওয়ার্ড</label>
-                    <input type="password" class="input-ctrl" id="auth-field-pass" required>
-                    <i class="fa-solid fa-eye pass-toggle-icon" onclick="AppEngine.togglePasswordVisibility('auth-field-pass', this)"></i>
-                </div>
-                <div class="form-group" id="group-confirm-pass" style="display: none;">
-                    <label class="lng-txt" data-en="Confirm Password" data-bn="কনফার্ম পাসওয়ার্ড">কনফার্ম পাসওয়ার্ড</label>
-                    <input type="password" class="input-ctrl" id="auth-field-confirmpass">
-                    <i class="fa-solid fa-eye pass-toggle-icon" onclick="AppEngine.togglePasswordVisibility('auth-field-confirmpass', this)"></i>
-                    <div class="pass-match-msg" id="pass-match-indicator"></div>
-                </div>
-
-                <div class="auth-btn-row">
-                    <button type="button" class="btn-prime btn-login-style" id="auth-action-left" onclick="AppEngine.handlePrimaryAuthAction()">Login Now</button>
-                    <button type="button" class="btn-prime btn-signup-style" id="auth-action-right" onclick="AppEngine.toggleAuthMode()">Sign Up Now</button>
-                </div>
-            </form>
-        </div>
-    </main>
-
-
-    <main class="page-panel" id="panel-view-route">
-        <div class="auth-container">
-            <h2 class="mb-3 lng-txt" data-en="Select Your Destination" data-bn="যাত্রার বিবরণী">যাত্রার বিবরণী</h2>
-            
-            <div class="form-group searchable-dropdown">
-                <label class="lng-txt" data-en="From (Departure District)" data-bn="কোথা থেকে (শুরুর জেলা)">কোথা থেকে (শুরুর জেলা)</label>
-                <input type="text" class="input-ctrl" id="route-input-from" placeholder="টাইপ করুন..." oninput="AppEngine.filterDistricts(this, 'from-list')" onfocus="AppEngine.showDistricts('from-list')">
-                <div class="dropdown-options-list" id="from-list"></div>
             </div>
 
-            <div class="form-group searchable-dropdown">
-                <label class="lng-txt" data-en="To (Destination District)" data-bn="কোথায় যাবেন (গন্তব্য জেলা)">কোথায় যাবেন (গন্তব্য জেলা)</label>
-                <input type="text" class="input-ctrl" id="route-input-to" placeholder="টাইপ করুন..." oninput="AppEngine.filterDistricts(this, 'to-list')" onfocus="AppEngine.showDistricts('to-list')">
-                <div class="dropdown-options-list" id="to-list"></div>
+            <div id="login-box" class="bg-[#161b22] border border-teal-500/20 rounded-2xl p-6 shadow-xl">
+                <p class="text-sm text-gray-400 text-center mb-5">Please login to book your bus seat</p>
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Email Address</label>
+                        <input type="email" id="login-email" required class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-teal-400 transition">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-semibold text-gray-400 uppercase">Password</label>
+                            <a href="#" class="text-xs text-teal-400 hover:underline">Forget password?</a>
+                        </div>
+                        <div class="relative">
+                            <input type="password" id="login-pass" required class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg pl-3 pr-10 py-2.5 text-white text-sm focus:outline-none focus:border-teal-400 transition">
+                            <button type="button" onclick="togglePass('login-pass', this)" class="absolute right-3 top-3 text-gray-400 hover:text-white"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 pt-2">
+                        <button type="submit" class="w-1/2 bg-teal-500 text-black font-bold text-sm py-2.5 rounded-lg neon-glow hover:bg-teal-400 transition duration-200">Login Now</button>
+                        <button type="button" onclick="toggleAuthBox('signup')" class="w-1/2 bg-[#21262d] text-gray-300 font-bold text-sm py-2.5 rounded-lg border border-gray-700 hover:bg-[#30363d] hover:text-white transition duration-200">Sign Up Now</button>
+                    </div>
+                </form>
             </div>
 
-            <div class="form-group">
-                <label class="lng-txt" data-en="Bus Category" data-bn="বাসের ধরন">বাসের ধরন</label>
-                <select class="input-ctrl" id="route-select-type" onchange="AppEngine.calculateDynamicFare()">
-                    <option value="">-- নির্বাচন করুন --</option>
-                    <option value="Non-AC">Non-AC Bus</option>
-                    <option value="AC">AC Bus</option>
-                </select>
+            <div id="signup-box" class="hidden bg-[#161b22] border border-teal-500/20 rounded-2xl p-6 shadow-xl">
+                <p class="text-sm text-gray-400 text-center mb-5">Create a new account & get <span class="text-teal-400 font-bold">3000 BDT</span> Bonus!</p>
+                <form id="signup-form" class="space-y-3">
+                    <div>
+                        <label class="block text-xs text-gray-400 uppercase mb-0.5">Full Name</label>
+                        <input type="text" id="reg-name" required class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs text-gray-400 uppercase mb-0.5">In-Game Name/ID</label>
+                            <input type="text" id="reg-gameid" required class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 uppercase mb-0.5">Date of Birth</label>
+                            <input type="date" id="reg-dob" required class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400 text-gray-400">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 uppercase mb-0.5">Mobile Number <span class="text-gray-500 text-[10px]">(Optional)</span></label>
+                        <input type="tel" id="reg-phone" class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 uppercase mb-0.5">Facebook Profile Link</label>
+                        <input type="url" id="reg-fb" required class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 uppercase mb-0.5">Email Address</label>
+                        <input type="email" id="reg-email" required class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs text-gray-400 uppercase mb-0.5">Set Password</label>
+                            <div class="relative">
+                                <input type="password" id="reg-pass" required oninput="validatePasswords()" class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg pl-3 pr-8 py-2 text-white text-sm focus:outline-none focus:border-teal-400">
+                                <button type="button" onclick="togglePass('reg-pass', this)" class="absolute right-2 top-2 text-gray-500"><i class="fa-solid fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 uppercase mb-0.5">Confirm Password</label>
+                            <div class="relative">
+                                <input type="password" id="reg-cpass" required oninput="validatePasswords()" class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg pl-3 pr-8 py-2 text-white text-sm focus:outline-none focus:border-teal-400">
+                                <button type="button" onclick="togglePass('reg-cpass', this)" class="absolute right-2 top-2 text-gray-500"><i class="fa-solid fa-eye"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="pass-match-msg" class="text-xs font-semibold text-center mt-1 h-4"></p>
+                    
+                    <div class="flex space-x-3 pt-1">
+                        <button type="submit" id="signup-btn" class="w-1/2 bg-teal-500 text-black font-bold text-sm py-2 rounded-lg neon-glow hover:bg-teal-400 transition duration-200">Register</button>
+                        <button type="button" onclick="toggleAuthBox('login')" class="w-1/2 bg-[#21262d] text-gray-300 font-bold text-sm py-2 rounded-lg border border-gray-700 hover:bg-[#30363d] transition duration-200">Back to Login</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section id="page2" class="hidden w-full max-w-2xl mx-auto py-4">
+            <div class="bg-[#161b22] border border-teal-500/20 rounded p-1.5 overflow-hidden whitespace-nowrap mb-5">
+                <div class="inline-block animate-marquee text-xs text-gray-400" id="active-members-marquee">
+                    🟢 Active Users Status: Loading live members tracker...
+                </div>
             </div>
 
-            <div class="fare-display-banner" id="route-fare-banner" style="display: none;">
-                Fare: 0 BDT
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 bg-[#161b22] border border-teal-500/20 rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-lg font-bold text-teal-400 mb-4 border-b border-gray-700 pb-2"><i class="fa-solid fa-route mr-2"></i>বুকিং ও রুট সিলেকশন</h2>
+                    <form id="booking-form" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="relative">
+                                <label class="block text-xs text-gray-400 uppercase mb-1">From (কোথা থেকে)</label>
+                                <input type="text" id="from-search" required autocomplete="off" placeholder="জেলা খুঁজুন..." class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400">
+                                <div id="from-dropdown" class="absolute z-20 left-0 right-0 max-h-40 overflow-y-auto bg-[#161b22] border border-gray-700 rounded-b shadow-lg hidden text-sm"></div>
+                            </div>
+                            <div class="relative">
+                                <label class="block text-xs text-gray-400 uppercase mb-1">To (কোথায় যাবেন)</label>
+                                <input type="text" id="to-search" required autocomplete="off" placeholder="জেলা খুঁজুন..." class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400">
+                                <div id="to-dropdown" class="absolute z-20 left-0 right-0 max-h-40 overflow-y-auto bg-[#161b22] border border-gray-700 rounded-b shadow-lg hidden text-sm"></div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs text-gray-400 uppercase mb-1">Journey Date</label>
+                                <input type="date" id="journey-date" required class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400 text-gray-400">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 uppercase mb-1">Journey Time</label>
+                                <select id="journey-time" required class="w-full bg-[#0d1117] border border-teal-500/30 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-teal-400 text-gray-400">
+                                    <option value="08:00 AM">08:00 AM (Morning)</option>
+                                    <option value="02:00 PM">02:00 PM (Afternoon)</option>
+                                    <option value="09:30 PM">09:30 PM (Night)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs text-gray-400 uppercase mb-2">Bus Type (বাসের ধরন)</label>
+                            <div class="flex space-x-4">
+                                <label class="flex items-center space-x-2 bg-[#0d1117] border border-teal-500/20 px-4 py-2.5 rounded-lg cursor-pointer hover:border-teal-400 flex-1">
+                                    <input type="radio" name="bus-type" value="Non-AC" checked onchange="calculateFare()" class="accent-teal-500">
+                                    <span class="text-sm font-medium">Non-AC Coach</span>
+                                </label>
+                                <label class="flex items-center space-x-2 bg-[#0d1117] border border-teal-500/20 px-4 py-2.5 rounded-lg cursor-pointer hover:border-teal-400 flex-1">
+                                    <input type="radio" name="bus-type" value="AC" onchange="calculateFare()" class="accent-teal-500">
+                                    <span class="text-sm font-medium text-teal-400">Premium AC</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#0d1117] border border-dashed border-teal-500/30 rounded-xl p-4 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-gray-400">Estimated Ticket Fare</p>
+                                <p class="text-sm font-semibold text-gray-300" id="route-display">রুট সিলেক্ট করুন</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-2xl font-bold text-teal-400" id="fare-amount">0</span> <span class="text-xs text-teal-400 font-bold">BDT</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-teal-500 text-black font-bold text-base py-3 rounded-xl neon-glow hover:bg-teal-400 transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-chair"></i> <span>Select Seat 🪑</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-[#161b22] border border-teal-500/20 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-teal-400 border-b border-gray-700 pb-2 mb-3"><i class="fa-solid fa-wallet mr-1"></i>ফ্রি ফান্ড বা ওয়ালেট বোনাস</h3>
+                        <p class="text-xs text-gray-400 mb-4">যাতায়াত ভাড়া বেশি হলে নিচের টাস্কগুলো শেষ করে ওয়ালেটে ফান্ড বাড়িয়ে নিন:</p>
+                        
+                        <div class="space-y-3">
+                            <button onclick="runYoutubeTask('sub')" class="w-full bg-red-600/10 text-red-400 border border-red-600/30 text-xs py-2.5 px-3 rounded-lg hover:bg-red-600 hover:text-white transition flex items-center justify-between">
+                                <span class="flex items-center"><i class="fa-brands fa-youtube mr-2 text-base"></i> M2Vai চ্যানেল সাবস্ক্রাইব</span>
+                                <span class="font-bold">+৫০০০ BDT</span>
+                            </button>
+                            <button onclick="runYoutubeTask('video')" class="w-full bg-teal-600/10 text-teal-400 border border-teal-600/30 text-xs py-2.5 px-3 rounded-lg hover:bg-teal-600 hover:text-white transition flex items-center justify-between">
+                                <span class="flex items-center"><i class="fa-solid fa-play mr-2"></i> ভিডিও দেখুন (১ মিনিট+)</span>
+                                <span class="font-bold">+২০০০ BDT</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bg-[#0d1117] rounded-xl p-3 border border-gray-800 text-center">
+                        <p class="text-[11px] text-gray-400">Your Current Balance</p>
+                        <p class="text-xl font-bold text-teal-400 mt-0.5" id="p2-wallet">0 BDT</p>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <button type="button" class="btn-prime btn-login-style w-100" onclick="AppEngine.navigateToSeatSelection()">Select Seat 🪑</button>
-        </div>
-    </main>
-
-
-    <main class="page-panel" id="panel-view-seats">
-        <div class="bus-container-box">
-            <h3 class="text-center mb-3 lng-txt" data-en="Select Preferred Seat" data-bn="পছন্দের সিট বেছে নিন">পছন্দের সিট বেছে নিন</h3>
-            <div class="seat-legend-row">
-                <div class="legend-pill"><div class="legend-indicator" style="background:#21262d;"></div><span class="lng-txt" data-en="Available" data-bn="খালি">খালি</span></div>
-                <div class="legend-pill"><div class="legend-indicator" style="background:#2ea44f;"></div><span class="lng-txt" data-en="Selected" data-bn="পছন্দকৃত">পছন্দকৃত</span></div>
-                <div class="legend-pill"><div class="legend-indicator" style="background:var(--danger);"></div><span class="lng-txt" data-en="Booked" data-bn="বুকড">বুকড</span></div>
-            </div>
-
-            <div class="grid-matrix-layout" id="bus-seats-grid-target"></div>
-
-            <div class="auth-btn-row" style="margin-top: 25px;">
-                <button type="button" class="btn-prime btn-signup-style" onclick="AppEngine.switchView('panel-view-route')">Back</button>
-                <button type="button" class="btn-prime btn-login-style" onclick="AppEngine.processSeatReservationConfirm()">Confirm Ticket & Download</button>
-            </div>
-        </div>
-    </main>
-
-
-    <main class="page-panel" id="panel-view-ticket">
-        <div class="printable-ticket-wrapper" id="master-render-ticket-node">
-            <div class="ticket-inner-content">
-                <div class="ticket-header-block">
-                    <img class="ticket-header-logo app-logo-src" src="" alt="M2Vai Logo">
-                    <div class="ticket-header-titles">
-                        <div class="ticket-main-title">M2Vai Online Ticket</div>
-                        <div class="ticket-sub-title">Official Online Counter</div>
+        <section id="page3" class="hidden w-full max-w-xl mx-auto py-4">
+            <div class="bg-[#161b22] border border-teal-500/20 rounded-2xl p-6 shadow-xl">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-teal-400">ডায়নামিক সিট প্ল্যান</h2>
+                        <p class="text-xs text-gray-400" id="seat-coach-title">Coach Type: Loading...</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 animate-pulse"><i class="fa-solid fa-clock mr-1"></i>সিট ব্লকিং সেশন: ১ ঘণ্টা</p>
                     </div>
                 </div>
 
-                <div class="ticket-data-row"><span class="ticket-field-lbl">Member ID:</span><span class="ticket-field-val" id="tk-val-mid">0000</span></div>
-                <div class="ticket-data-row"><span class="ticket-field-lbl">Player Name:</span><span class="ticket-field-val" id="tk-val-pname">M2Vai</span></div>
-                <div class="ticket-data-row"><span class="ticket-field-lbl">Game ID:</span><span class="ticket-field-val" id="tk-val-gid">M2Vai</span></div>
-                <div class="ticket-data-row"><span class="ticket-field-lbl">Mobile No:</span><span class="ticket-field-val" id="tk-val-phone">N/A</span></div>
-                <div class="ticket-data-row"><span class="ticket-field-lbl">From:</span><span class="ticket-field-val" id="tk-val-from">-</span></div>
-                <div class="ticket-data-row"><span class="ticket-field-lbl">To:</span><span class="ticket-field-val" id="tk-val-to">-</span></div>
-                <div class="ticket-data-row"><span class="ticket-field-lbl">Bus Category:</span><span class="ticket-field-val" id="tk-val-btype">-</span></div>
-                <div class="ticket-data-row"><span class="ticket-field-lbl">Fare Paid:</span><span class="ticket-field-val" id="tk-val-fare">0 BDT</span></div>
-                <div class="ticket-data-row"><span class="ticket-field-lbl">Seat Number:</span><span class="ticket-field-val highlighted-seat" id="tk-val-seat">-</span></div>
-
-                <div class="ticket-timestamp-banner" id="tk-val-issuedate">Issue Time & Date: --:--:-- | --/--/----</div>
-
-                <div class="ticket-rules-block">
-                    <div class="ticket-rules-title">TERMS & RULES / নির্দেশনাবলী:</div>
-                    <ol class="ticket-rules-list">
-                        <li>Please join the Multiplayer Room at least 10 minutes before departure. / অনুগ্রহ করে বাস ছাড়ার অন্তত ১০ মিনিট পূর্বে মাল্টিপ্লেয়ার রুমে যুক্ত হন।</li>
-                        <li>Maintain formal and respectful driving codes during society convoys. / সোসাইটি কনভয় চলাকালীন মার্জিত এবং সম্মানজনক ড্রাইভিং কোড বজায় রাখুন।</li>
-                        <li>Any form of intentional ramming or toxic behavior will result in a ban. / ইচ্ছাকৃতভাবে ধাক্কা দেওয়া বা যেকোনো ধরনের উগ্র আচরণের জন্য আইডি ব্যান করা হবে।</li>
-                    </ol>
+                <div class="flex justify-center space-x-6 text-xs mb-6 bg-[#0d1117] py-2 rounded-lg border border-gray-800">
+                    <div class="flex items-center space-x-1.5">
+                        <div class="w-4 h-4 bg-[#21262d] border border-gray-600 rounded"></div>
+                        <span class="text-gray-400">Available</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <div class="w-4 h-4 bg-teal-500 rounded"></div>
+                        <span class="text-teal-400 font-medium">Selected</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <div class="w-4 h-4 bg-red-600 rounded"></div>
+                        <span class="text-red-400 font-medium">Booked</span>
+                    </div>
                 </div>
 
-                <div class="ticket-footer-embed">
-                    <div class="creator-info-block" style="margin-bottom:0;">
-                        <img class="creator-mini-logo app-logo-src" src="" alt="Branding">
-                        <div class="creator-text-meta">
-                            <span class="creator-label-span">WEBSITE CREATED BY</span>
-                            <span class="creator-name-span">M2Vai</span>
+                <div class="w-full bg-[#0d1117] border border-gray-700 rounded-lg p-2 mb-6 flex justify-between items-center text-xs text-gray-400">
+                    <span><i class="fa-solid fa-door-open mr-1"></i> Entrance</span>
+                    <span class="bg-gray-800 px-3 py-1 rounded border border-gray-600 font-semibold"><i class="fa-solid fa-steering-wheel mr-1"></i> Driver</span>
+                </div>
+
+                <div id="bus-cabin-grid" class="space-y-3 bg-[#0d1117] p-4 rounded-xl border border-teal-500/10 max-h-96 overflow-y-auto"></div>
+
+                <div class="mt-6 pt-4 border-t border-gray-700 space-y-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-400">নির্বাচিত সিট:</span>
+                        <span class="font-bold text-white" id="selected-seats-list">কোনোটি না</span>
+                    </div>
+                    <div class="flex justify-between text-base border-t border-dashed border-gray-800 pt-2">
+                        <span class="text-gray-400">মোট প্রদেয় ভাড়া:</span>
+                        <span class="text-xl font-bold text-teal-400"><span id="total-fare-display">0</span> BDT</span>
+                    </div>
+
+                    <div class="flex space-x-3 pt-2">
+                        <button onclick="switchPage('page2')" class="w-1/4 bg-[#21262d] text-gray-300 font-bold py-3 rounded-xl border border-gray-700 hover:bg-[#30363d] transition">Back</button>
+                        <button id="book-ticket-btn" class="w-3/4 bg-teal-500 text-black font-bold py-3 rounded-xl neon-glow hover:bg-teal-400 transition text-center">Confirm Ticket & Download</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="page4" class="hidden w-full max-w-lg mx-auto py-4">
+            <div id="digital-ticket-card" class="bg-white text-black rounded-2xl p-6 shadow-2xl relative overflow-hidden border-4 border-double border-gray-300">
+                <img src="image/M2Vai Official YouTube Channel Logo.png" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 opacity-[0.03] pointer-events-none">
+                
+                <div class="text-center border-b-2 border-dashed border-gray-400 pb-3 mb-4">
+                    <h2 class="text-xl font-black uppercase tracking-wider text-gray-900">M2Vai ONLINE TICKET</h2>
+                    <p class="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Official Online Counter</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-xs font-medium">
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold tracking-tight">Member ID</p>
+                        <p id="t-id" class="text-sm font-bold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold tracking-tight">Player Name</p>
+                        <p id="t-name" class="text-sm font-bold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold tracking-tight">Game ID</p>
+                        <p id="t-gameid" class="text-sm font-bold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold tracking-tight">Mobile No</p>
+                        <p id="t-phone" class="text-sm font-bold text-gray-900"></p>
+                    </div>
+                    
+                    <div class="col-span-2 border-t border-gray-200 my-1"></div>
+
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold tracking-tight">From (বোর্ডিং)</p>
+                        <p id="t-from" class="text-sm font-bold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold tracking-tight">To (গন্তব্য)</p>
+                        <p id="t-to" class="text-sm font-bold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold tracking-tight">Journey Date & Time</p>
+                        <p id="t-datetime" class="text-sm font-bold text-gray-900"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-gray-400 font-bold tracking-tight">Coach Type</p>
+                        <p id="t-coachtype" class="text-sm font-bold text-teal-600"></p>
+                    </div>
+                    
+                    <div class="col-span-2 bg-gray-100 p-2.5 rounded-lg border border-gray-200 flex justify-between items-center mt-2">
+                        <span class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Seat Number(s)</span>
+                        <span id="t-seats" class="text-base font-black text-red-600 tracking-widest"></span>
+                    </div>
+                </div>
+
+                <div class="mt-5 pt-3 border-t-2 border-dashed border-gray-300 text-[10px] text-gray-500 space-y-1 bg-gray-50 p-2.5 rounded-lg">
+                    <p class="font-bold text-center text-red-600 uppercase tracking-wide mb-1">📢 সোসাইটি কাউন্টার নির্দেশনাবলী 📢</p>
+                    <p>১. টিকিট বুকিং সম্পূর্ণ অনলাইন কোড এবং রুলস দ্বারা নিয়ন্ত্রিত।</p>
+                    <p>২. ভ্রমণের সময় টিকিটটির এই পিকচার ফাইলটি অবশ্যই কাউন্টারে প্রদর্শন করতে হবে।</p>
+                    <p>৩. নিয়মের পরিপন্থী কোনো আচরণ বা হ্যাকিং এর চেষ্টা করলে মেম্বার আইডি ব্যান করা হবে।</p>
+                    <div class="text-center pt-2 text-[9px] font-mono text-gray-400" id="t-issuetime"></div>
+                </div>
+            </div>
+
+            <div class="mt-5 max-w-md mx-auto">
+                <button id="download-ticket-btn" class="w-full bg-teal-500 text-black font-black py-3 rounded-xl neon-glow hover:bg-teal-400 transition flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-circle-down"></i> <span>Download Ticket (PNG File)</span>
+                </button>
+            </div>
+        </section>
+
+        <section id="sub-profile" class="hidden w-full max-w-md mx-auto py-4">
+            <div class="bg-[#161b22] border border-teal-500/20 rounded-2xl p-6 shadow-xl relative">
+                <h2 class="text-lg font-bold text-teal-400 border-b border-gray-700 pb-2 mb-4"><i class="fa-solid fa-id-card mr-2"></i>মেম্বার প্রোফাইল কার্ড</h2>
+                
+                <div class="flex flex-col items-center space-y-3 mb-5">
+                    <div class="relative group">
+                        <div class="w-24 h-24 rounded-full bg-[#0d1117] border-2 border-teal-500/50 flex items-center justify-center overflow-hidden" id="profile-avatar-box">
+                            <i class="fa-solid fa-user-tie text-4xl text-gray-500" id="default-avatar-icon"></i>
+                            <img id="user-uploaded-img" class="w-full h-full object-cover hidden">
+                        </div>
+                        <label class="absolute bottom-0 right-0 bg-teal-500 text-black w-7 h-7 rounded-full flex items-center justify-center cursor-pointer shadow hover:bg-teal-400 transition">
+                            <input type="file" id="avatar-input" accept="image/png" class="hidden">
+                            <i class="fa-solid fa-camera text-xs"></i>
+                        </label>
+                    </div>
+                    <p class="text-[10px] text-gray-400">সর্বোচ্চ 300KB (শুধুমাত্র PNG ফরম্যাট)</p>
+                </div>
+
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between border-b border-gray-800 pb-1.5"><span class="text-gray-400">Member Number:</span> <span id="p-id" class="font-bold text-teal-400"></span></div>
+                    <div class="flex justify-between border-b border-gray-800 pb-1.5"><span class="text-gray-400">Full Name:</span> <span id="p-name" class="font-medium text-white"></span></div>
+                    <div class="flex justify-between border-b border-gray-800 pb-1.5"><span class="text-gray-400">In-Game Nick:</span> <span id="p-gameid" class="font-medium text-white"></span></div>
+                    <div class="flex justify-between border-b border-gray-800 pb-1.5"><span class="text-gray-400">Birth Date:</span> <span id="p-dob" class="text-white font-mono"></span></div>
+                    <div class="flex justify-between border-b border-gray-800 pb-1.5"><span class="text-gray-400">Phone/Contact:</span> <span id="p-phone" class="text-white"></span></div>
+                    <div class="flex justify-between border-b border-gray-800 pb-1.5"><span class="text-gray-400">Email Login:</span> <span id="p-email" class="text-white"></span></div>
+                    <div class="flex justify-between border-b border-gray-800 pb-1.5"><span class="text-gray-400">Facebook URL:</span> <a id="p-fb" target="_blank" class="text-teal-400 hover:underline text-xs truncate max-w-[180px]">Link</a></div>
+                    <div class="flex justify-between items-center bg-[#0d1117] p-3 rounded-lg border border-gray-800 mt-4">
+                        <span class="text-gray-400 font-semibold"><i class="fa-solid fa-wallet mr-1 text-teal-500"></i> আপনার ওয়ালেট ফান্ড:</span>
+                        <span id="p-wallet" class="text-xl font-bold text-teal-400"></span>
+                    </div>
+                </div>
+                <button onclick="switchPage('page2')" class="w-full mt-5 bg-[#21262d] text-gray-300 font-bold py-2 rounded-xl border border-gray-700 hover:bg-[#30363d] transition">ফিরে যান</button>
+            </div>
+        </section>
+
+        <section id="sub-admin" class="hidden w-full max-w-3xl mx-auto py-4">
+            <div class="bg-[#161b22] border border-red-500/20 rounded-2xl p-6 shadow-xl">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-3 mb-4">
+                    <h2 class="text-lg font-bold text-red-400 flex items-center"><i class="fa-solid fa-user-shield mr-2"></i> M2Vai এডমিন ও মোডারেশন কন্ট্রোল প্যানেল</h2>
+                    <span id="admin-role-badge" class="bg-red-500 text-black text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider"></span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-[#0d1117] p-4 rounded-xl border border-gray-800 space-y-4">
+                        <h3 class="text-sm font-bold text-gray-300 border-b border-gray-800 pb-1.5"><i class="fa-solid fa-users-cog mr-1"></i> সদস্য ব্যবস্থাপনা ও ফান্ড গিফট</h3>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">মেম্বার আইডি খুঁজুন</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="adm-search-id" placeholder="যেমন: 0001" class="bg-[#161b22] border border-gray-700 rounded px-2 py-1 text-sm text-white focus:outline-none w-2/3">
+                                <button onclick="adminFetchMember()" class="bg-teal-500 text-black px-3 py-1 rounded text-xs font-bold w-1/3 hover:bg-teal-400">Search</button>
+                            </div>
+                        </div>
+
+                        <div id="adm-member-card" class="bg-[#161b22] p-3 rounded border border-gray-700 hidden text-xs space-y-2">
+                            <p class="font-bold text-white">নাম: <span id="adm-m-name" class="text-teal-400"></span> (<span id="adm-m-id"></span>)</p>
+                            <p class="text-gray-400">রোল: <span id="adm-m-role" class="text-yellow-400 uppercase"></span> | স্ট্যাটাস: <span id="adm-m-status"></span></p>
+                            <p class="text-gray-400">ফান্ড: <span id="adm-m-wallet" class="text-green-400"></span> BDT</p>
+                            
+                            <div class="pt-2 border-t border-gray-800 space-y-2" id="adm-actions-container">
+                                <div class="flex space-x-2">
+                                    <button id="btn-ban" onclick="adminToggleBan()" class="bg-red-600 text-white px-2 py-1 rounded font-bold flex-1 hover:bg-red-500 text-[11px]">Ban Member</button>
+                                    <button id="btn-role" onclick="adminToggleRole()" class="bg-yellow-500 text-black px-2 py-1 rounded font-bold flex-1 hover:bg-yellow-400 text-[11px]">Make Mod</button>
+                                </div>
+                                <div class="flex space-x-2 items-center">
+                                    <input type="number" id="adm-gift-amt" placeholder="Gift Amount" class="bg-[#0d1117] border border-gray-700 rounded px-2 py-1 text-white w-2/3">
+                                    <button onclick="adminGiftWallet()" class="bg-green-600 text-white px-2 py-1 rounded font-bold w-1/3 hover:bg-green-500">Gift BDT</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#0d1117] p-4 rounded-xl border border-gray-800 space-y-4 flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-300 border-b border-gray-800 pb-1.5"><i class="fa-solid fa-rotate mr-1"></i> সিট ও কাউন্টার ম্যানেজমেন্ট</h3>
+                            <p class="text-xs text-gray-400 mb-2">বাসের বুকিং হওয়া সমস্ত সিট তাৎক্ষণিক খালি করতে নিচের বাটনটি ব্যবহার করুন:</p>
+                            <button onclick="adminResetSeats()" class="w-full bg-red-600/20 text-red-400 border border-red-600/40 py-2 rounded text-xs font-bold hover:bg-red-600 hover:text-white transition">
+                                <i class="fa-solid fa-trash-can mr-1"></i> সমস্ত বাসের বুকিং সিট রিসেট করুন
+                            </button>
+                        </div>
+
+                        <div id="adm-notice-section" class="pt-3 border-t border-gray-800">
+                            <h3 class="text-sm font-bold text-gray-300 pb-1.5"><i class="fa-solid fa-bullhorn mr-1"></i> স্ক্রলিং নোটিশ আপডেট</h3>
+                            <textarea id="adm-notice-input" rows="2" class="w-full bg-[#161b22] border border-gray-700 rounded p-2 text-xs text-white focus:outline-none mb-2" placeholder="নতুন নোটিশ এখানে লিখুন..."></textarea>
+                            <button onclick="adminUpdateNotice()" class="w-full bg-teal-500 text-black text-xs font-bold py-2 rounded hover:bg-teal-400">Update Live Notice</button>
                         </div>
                     </div>
                 </div>
+                <button onclick="switchPage('page2')" class="w-full mt-5 bg-[#21262d] text-gray-300 font-bold py-2 rounded-xl border border-gray-700 hover:bg-[#30363d] transition">ড্যাশবোর্ডে ফিরে যান</button>
             </div>
-        </div>
+        </section>
 
-        <button type="button" class="btn-prime btn-login-style w-100 mt-3" onclick="AppEngine.downloadTicketAsImage()">Download Ticket</button>
+        <section id="sub-contact" class="hidden w-full max-w-md mx-auto py-4 text-center">
+            <div class="bg-[#161b22] border border-teal-500/20 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-lg font-bold text-teal-400 border-b border-gray-700 pb-2 mb-5"><i class="fa-solid fa-circle-nodes mr-2"></i>অফিশিয়াল সোশ্যাল মিডিয়া নেটওয়ার্ক</h2>
+                <div class="grid grid-cols-2 gap-4" id="contact-page-links">
+                    </div>
+                <button onclick="switchPage('page2')" class="w-full mt-6 bg-[#21262d] text-gray-300 font-bold py-2 rounded-xl border border-gray-700 hover:bg-[#30363d] transition">ড্যাশবোর্ডে ফিরে যান</button>
+            </div>
+        </section>
+
     </main>
 
-
-    <div class="dialog-overlay" id="dialog-view-profile">
-        <div class="dialog-box">
-            <div class="dialog-close-btn" onclick="AppEngine.closeAllModals()"><i class="fa-solid fa-xmark"></i></div>
-            <div class="dialog-header lng-txt" data-en="Member Profile" data-bn="মেম্বার প্রোফাইল">মেম্বার প্রোফাইল</div>
-            <div class="profile-card-layout">
-                <div class="profile-avatar-uploader">
-                    <img class="profile-display-pic" id="prof-display-avatar" src="" alt="User Pic">
-                    <label class="avatar-edit-badge" for="avatar-file-input">
-                        <i class="fa-solid fa-camera"></i>
-                    </label>
-                    <input type="file" id="avatar-file-input" accept="image/png" style="display:none;" onchange="AppEngine.handleAvatarUpload(this)">
-                </div>
-
-                <div class="profile-data-row"><span class="profile-data-label">Member ID</span><span class="profile-data-val" id="prof-val-id">-</span></div>
-                <div class="profile-data-row"><span class="profile-data-label">Name</span><span class="profile-data-val" id="prof-val-name">-</span></div>
-                <div class="profile-data-row"><span class="profile-data-label">Game ID</span><span class="profile-data-val" id="prof-val-gid">-</span></div>
-                <div class="profile-data-row"><span class="profile-data-label">Email</span><span class="profile-data-val" id="prof-val-email">-</span></div>
-                <div class="profile-data-row"><span class="profile-data-label">Designation</span><span class="profile-data-val" id="prof-val-role">-</span></div>
-                <div class="profile-data-row" style="border:none;"><span class="profile-data-label">Wallet Balance</span><span class="profile-wallet-amt" id="prof-val-wallet">0 BDT</span></div>
+    <footer class="z-10 bg-[#161b22] border-t border-teal-500/10 px-4 py-5 text-center space-y-4">
+        <div class="flex justify-center space-x-5 text-xl" id="footer-social-icons">
             </div>
+        
+        <div class="flex justify-center space-x-4 text-xs text-gray-500">
+            <a href="#" class="hover:text-teal-400 transition">Privacy Policy</a>
+            <span>|</span>
+            <a href="#" class="hover:text-teal-400 transition">Terms & Conditions</a>
+            <span>|</span>
+            <a href="#" class="hover:text-teal-400 transition">Refund Policy</a>
         </div>
-    </div>
 
-    <div class="dialog-overlay" id="dialog-view-rewards">
-        <div class="dialog-box" style="text-align: center;">
-            <div class="dialog-close-btn" onclick="AppEngine.closeAllModals()"><i class="fa-solid fa-xmark"></i></div>
-            <div class="dialog-header lng-txt" data-en="Insufficient Wallet Balance" data-bn="ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই">ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই</div>
-            <p class="mb-3 lng-txt" data-en="Complete tasks below to instantly earn BDT rewards to your wallet profile!" data-bn="নিচের কাজগুলো সম্পন্ন করে তাৎক্ষণিকভাবে আপনার প্রোফাইলে টাকা ইনকাম করুন!">নিচের কাজগুলো সম্পন্ন করে তাৎক্ষণিকভাবে আপনার প্রোফাইলে টাকা ইনকাম করুন!</p>
-            
-            <div class="form-group">
-                <button class="btn-prime btn-login-style w-100 mb-3" style="background:#ffaa00; color:#000;" onclick="AppEngine.triggerVideoRewardTask()">
-                    <i class="fa-solid fa-video"></i> <span class="lng-txt" data-en="Watch Video 1 Min+ (+2000 BDT)" data-bn="১ মিনিট ভিডিও দেখুন (+২০০০ BDT)">১ মিনিট ভিডিও দেখুন (+২০০০ BDT)</span>
-                </button>
-                <button class="btn-prime btn-channel-subscribe w-100" onclick="AppEngine.triggerSubscribeRewardTask()">
-                    <i class="fa-solid fa-bell"></i> <span class="lng-txt" data-en="Subscribe M2Vai Channel (+5000 BDT)" data-bn="M2Vai চ্যানেল সাবস্ক্রাইব করুন (+৫০০০ BDT)">M2Vai চ্যানেল সাবস্ক্রাইব করুন (+৫০০০ BDT)</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="dialog-overlay" id="dialog-view-admin">
-        <div class="dialog-box" style="max-width: 500px; max-height: 85vh; overflow-y: auto;">
-            <div class="dialog-close-btn" onclick="AppEngine.closeAllModals()"><i class="fa-solid fa-xmark"></i></div>
-            <div class="dialog-header">Staff Admin Panel Dashboard</div>
-            
-            <div class="form-group">
-                <label>Search User Profile by Numeric ID</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" class="input-ctrl" id="ad-search-uid" placeholder="e.g. 0001">
-                    <button class="btn-prime btn-login-style" style="padding:5px 15px;" onclick="AppEngine.executeAdminUserSearch()">Search</button>
-                </div>
-            </div>
-
-            <div id="admin-search-result-card" style="display:none; background:#0d1117; padding:15px; border-radius:8px; border:1px solid #30363d; margin-bottom:15px;">
-                <p><strong>User:</strong> <span id="ad-res-name">-</span> (<span id="ad-res-uid">-</span>)</p>
-                <p><strong>Status:</strong> <span id="ad-res-status">-</span></p>
-                <p><strong>Current Role:</strong> <span id="ad-res-role">-</span></p>
-                
-                <div class="mt-3" style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <button class="btn-prime btn-signup-style ctrl-admin-only" style="padding:6px; font-size:0.8rem;" id="btn-ad-toggleban" onclick="AppEngine.adminToggleBanStatus()">Ban/Unban User</button>
-                    <button class="btn-prime btn-signup-style ctrl-admin-only" style="padding:6px; font-size:0.8rem;" onclick="AppEngine.adminPromoteRole()">Change Staff Designation</button>
-                    <button class="btn-prime btn-login-style ctrl-admin-only" style="padding:6px; font-size:0.8rem; background:var(--neon-blue);" onclick="AppEngine.adminGiftFundsWallet()">Gift Wallet Balance</button>
-                </div>
-            </div>
-
-            <div class="form-heading" style="font-size:1rem; margin:15px 0 8px 0;">Active Booked Seats Management</div>
-            <button class="btn-prime btn-signup-style w-100" style="border-color:var(--danger); color:var(--danger);" onclick="AppEngine.resetAllBookedSeatsManual()">Reset All System Seats Now</button>
-        </div>
-    </div>
-
-    <div class="dialog-overlay" id="dialog-view-contact">
-        <div class="dialog-box" style="text-align: center;">
-            <div class="dialog-close-btn" onclick="AppEngine.closeAllModals()"><i class="fa-solid fa-xmark"></i></div>
-            <div class="dialog-header lng-txt" data-en="Official Support Channels" data-bn="অফিশিয়াল যোগাযোগ মাধ্যম">অফিশিয়াল যোগাযোগ মাধ্যম</div>
-            <div class="footer-social-row" id="contact-modal-social-target" style="margin-top:20px;"></div>
-        </div>
-    </div>
-
-
-    <footer id="app-main-footer">
-        <div class="footer-social-row" id="footer-social-icons-target">
-            </div>
-        <div class="policy-links-line">
-            <a href="#" onclick="alert('Privacy Policy Block')">Privacy Policy</a> | 
-            <a href="#" onclick="alert('Terms & Conditions Block')">Terms & Conditions</a> | 
-            <a href="#" onclick="alert('Refund Policy Block')">Refund Policy</a>
-        </div>
-        <div class="creator-branding-card">
-            <div class="creator-info-block">
-                <img class="creator-mini-logo app-logo-src" src="" alt="M2Vai Core Logo">
-                <div class="creator-text-meta">
-                    <span class="creator-label-span">WEBSITE CREATED BY</span>
-                    <span class="creator-name-span">M2Vai</span>
-                </div>
-            </div>
-            <div class="reward-action-grid">
-                <button type="button" class="btn-prime btn-channel-subscribe" onclick="AppEngine.redirectToChannel('yt1')">
-                    <img class="app-logo-src" src="" alt="yt1">
-                    <div>M2Vai <span style="display:block; font-size:0.65rem; font-weight:normal; opacity:0.8;">Subscribe Now</span></div>
-                </button>
-                <button type="button" class="btn-prime btn-channel-subscribe" style="background:#7a1515;" onclick="AppEngine.redirectToChannel('yt2')">
-                    <img class="app-logo-src" src="" alt="yt2">
-                    <div>Traveller <span style="display:block; font-size:0.65rem; font-weight:normal; opacity:0.8;">Subscribe Now</span></div>
-                </button>
+        <div class="max-w-md mx-auto border-t border-gray-800 pt-3 text-center">
+            <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-2 flex items-center justify-center">
+                <img src="image/M2Vai Official YouTube Channel Logo.png" class="w-4 h-4 rounded-full mr-1.5"> WEBSITE CREATED BY M2Vai
+            </p>
+            <div class="flex space-x-3">
+                <a href="https://youtube.com/@m2vai?si=ls4xlp9EG8hjwE7B" target="_blank" class="w-1/2 bg-red-600 text-white font-black text-xs py-2 px-3 rounded-md flex items-center justify-center space-x-1.5 hover:bg-red-700 transition">
+                    <img src="image/M2Vai Official YouTube Channel Logo.png" class="w-4 h-4 rounded-full"> <span>M2Vai Subscribe Now</span>
+                </a>
+                <a href="https://youtube.com/@travellerm2vai?si=PDkl_nDGIb5il-bj" target="_blank" class="w-1/2 bg-red-700 text-white font-black text-xs py-2 px-3 rounded-md flex items-center justify-center space-x-1.5 hover:bg-red-800 transition">
+                    <img src="image/Traveller M2Vai.png" class="w-4 h-4 rounded-full"> <span>Traveller Subscribe Now</span>
+                </a>
             </div>
         </div>
     </footer>
 
-
     <script>
-        /**
-         * Global Channel Links Configuration Management Object
-         * Easily modify asset links here to apply globally instantly across elements
-         */
-        const GLOBAL_CONFIG = {
-            logo_url: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=150", // এখানে আপনার লোগোর ডিরেক্ট লিঙ্ক বসাবেন
-            fb_group: "https://facebook.com/groups/771005197556072/",
-            yt_m2vai: "https://youtube.com/@m2vai?si=ls4xlp9EG8hjwE7B",
-            yt_traveller: "https://youtube.com/@travellerm2vai?si=PDkl_nDGIb5il-bj",
-            instagram: "https://www.instagram.com/m2vai380?igsh=MzBrZmx0aTU4MW1u",
-            threads: "https://www.threads.com/@m2vai380",
-            discord: "https://discord.gg/GJ2F36gE8D",
-            gmail: "info.m2vai380@gmail.com",
-            video_task_url: "https://youtu.be/aYwYMretqvE?si=mb0PkhaaiU8GmnT7"
-        };
+        // ডাটাবেজ গ্লোবাল মেমোরি স্টেটমেন্ট (LocalStorage-এ ডেটা স্টোর হবে)
+        if(!localStorage.getItem('m2vai_members')) {
+            localStorage.setItem('m2vai_members', JSON.stringify([]));
+        }
+        if(!localStorage.getItem('m2vai_seats_booked')) {
+            localStorage.setItem('m2vai_seats_booked', JSON.stringify({}));
+        }
+        if(!localStorage.getItem('m2vai_live_notice')) {
+            localStorage.setItem('m2vai_live_notice', "📢 স্বাগতম M2Vai অনলাইন টিকিট কাউন্টারে! নতুন রেজিস্ট্রেশনে পাচ্ছেন ৩০০০ BDT ফ্রি বোনাস! যে কোনো সিট বুকিং ১ ঘণ্টা পর অটো-রিসেট হয়ে যাবে।");
+        }
 
-        // Complete List of 64 Districts of Bangladesh for drop-down search indexing engine
-        const BANGLADESH_DISTRICTS = [
-            "Bagerhat", "Bandarban", "Barguna", "Barishal", "Bhola", "Bogra", "Brahmanbaria", "Chandpur", 
-            "Chittagong", "Chuadanga", "Comilla", "Cox's Bazar", "Dhaka", "Dinajpur", "Faridpur", "Feni", 
-            "Gaibandha", "Gazipur", "Gopalganj", "Habiganj", "Jamalpur", "Jashore", "Jhalokati", "Jhenaidah", 
-            "Joypurhat", "Khagrachhari", "Khulna", "Kishoreganj", "Kurigram", "Kushtia", "Lakshmipur", "Lalmonirhat", 
-            "Madaripur", "Magura", "Manikganj", "Meherpur", "Moulvibazar", "Munshiganj", "Mymensingh", "Naogaon", 
-            "Narail", "Narayanganj", "Narsingdi", "Natore", "Netrokona", "Nilphamari", "Noakhali", "Pabna", 
-            "Panchagarh", "Patuakhali", "Pirojpur", "Rajbari", "Rajshahi", "Rangamati", "Rangpur", "Satkhira", 
-            "Shariatpur", "Sherpur", "Sirajganj", "Sunamganj", "Sylhet", "Tangail", "Thakurgaon"
+        // ৬৪ জেলার ডাটাবেজ তালিকা
+        const bangladeshDistricts = [
+            "Bagerhat", "Bandarban", "Barguna", "Barishal", "Bhola", "Bogra", "Brahmanbaria", "Chandpur", "Chapai Nawabganj", 
+            "Chattogram", "Chuadanga", "Cox's Bazar", "Cumilla", "Dhaka", "Dinajpur", "Faridpur", "Feni", "Gaibandha", 
+            "Gazipur", "Gopalganj", "Habiganj", "Jamalpur", "Jashore", "Jhalokati", "Jhenaidah", "Joypurhat", "Khagrachhari", 
+            "Khulna", "Kishoreganj", "Kurigram", "Kushtia", "Lakshmipur", "Lalmonirhat", "Madaripur", "Magura", "Manikganj", 
+            "Meherpur", "Moulvibazar", "Munshiganj", "Mymensingh", "Naogaon", "Narail", "Narayanganj", "Narsingdi", "Natore", 
+            "Netrokona", "Nilphamari", "Noakhali", "Pabna", "Panchagarh", "Patuakhali", "Pirojpur", "Rajbari", "Rajshahi", 
+            "Rangamati", "Rangpur", "Satkhira", "Shariatpur", "Sherpur", "Sirajganj", "Sunamganj", "Sylhet", "Tangail", "Thakurgaon"
         ];
 
-        // Central Application Core Engine
-        const AppEngine = (() => {
-            // Local state initializations backed by secure local storage repositories
-            let users = JSON.parse(localStorage.getItem('ticket_app_users')) || [];
-            let currentSession = JSON.parse(sessionStorage.getItem('ticket_app_session')) || null;
-            let globalSeats = JSON.parse(localStorage.getItem('ticket_app_seats')) || {};
-            let currentLang = localStorage.getItem('ticket_app_lang') || 'bn';
-            let currentSelectedSeat = null;
-            let currentSelectedFare = 0;
-            let authMode = 'login'; // login or signup
-
-            // Fake Dynamic Active Mock Members Pool data for scrolling marquee element track
-            const mockActivePool = [
-                { id: "0001", name: "Rahat Khan", role: "Member", avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80" },
-                { id: "0002", name: "Sabbir Ahmed", role: "Counter Master", avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80" },
-                { id: "0005", name: "Tanvir Hasan", role: "Moderator", avatar: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=80" },
-                { id: "0009", name: "Asif Iqbal", role: "Member", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80" }
-            ];
-
-            return {
-                init: function() {
-                    this.applyConfigAssets();
-                    this.setupSystemClock();
-                    this.setupFormListeners();
-                    this.renderActiveMembersTrack();
-                    this.renderFooterSocials();
-                    this.applyLanguageDictionary(currentLang);
-                    this.validateSessionExpiryCheck();
-
-                    // Check for seat auto expiration loop intervals (1 Hour expiration checks)
-                    setInterval(() => this.enforceSeatAutoResetLapse(), 30000);
-                    this.enforceSeatAutoResetLapse();
-                },
-
-                applyConfigAssets: function() {
-                    document.documentElement.style.setProperty('--wm-img', `url('${GLOBAL_CONFIG.logo_url}')`);
-                    document.querySelectorAll('.app-logo-src').forEach(img => {
-                        img.src = GLOBAL_CONFIG.logo_url;
-                    });
-                },
-
-                setupSystemClock: function() {
-                    const updateTime = () => {
-                        const now = new Date();
-                        let hours = now.getHours();
-                        const minutes = String(now.getMinutes()).padStart(2, '0');
-                        const seconds = String(now.getSeconds()).padStart(2, '0');
-                        const ampm = hours >= 12 ? 'AM' : 'PM';
-                        hours = hours % 12;
-                        hours = hours ? hours : 12; 
-                        const timeStr = `${String(hours).padStart(2,'0')}:${minutes}:${seconds} ${ampm}`;
-
-                        const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-                        const months = ['JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC', 'JAN', 'FEB', 'MAR', 'APR', 'MAY'];
-                        // Forcing clock context synchronization with runtime environment variable constraints
-                        const dateStr = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
-
-                        let greeting = "Good Morning! 🌅";
-                        if (now.getHours() >= 12 && now.getHours() < 16) greeting = "Good Afternoon! ☀️";
-                        else if (now.getHours() >= 16 && now.getHours() < 20) greeting = "Good Evening! 🌆";
-                        else if (now.getHours() >= 20 || now.getHours() < 4) greeting = "Good Night! 🌌";
-
-                        const elements = ['widget-live-time', 'auth-live-time', 'widget-live-date', 'auth-live-date', 'live-greeting-banner', 'auth-greeting-banner'];
-                        elements.forEach(id => {
-                            const el = document.getElementById(id);
-                            if (el) {
-                                if (id.includes('time')) el.textContent = timeStr;
-                                if (id.includes('date')) el.textContent = dateStr;
-                                if (id.includes('greeting')) el.textContent = greeting;
-                            }
-                        });
-                    };
-                    setInterval(updateTime, 1000);
-                    updateTime();
-                },
-
-                setupFormListeners: function() {
-                    // Password match indicator monitoring context loop
-                    const checkPassMatch = () => {
-                        const p = document.getElementById('auth-field-pass').value;
-                        const cp = document.getElementById('auth-field-confirmpass').value;
-                        const indicator = document.getElementById('pass-match-indicator');
-                        if(!cp) { indicator.textContent = ""; return; }
-                        if(p === cp) {
-                            indicator.textContent = currentLang === 'bn' ? "পাসওয়ার্ড মিলেছে!  " : "Password Matched!  ";
-                            indicator.style.color = "var(--neon-green)";
-                        } else {
-                            indicator.textContent = currentLang === 'bn' ? "পাসওয়ার্ড মেলেনি! ❌" : "Password and Confirm Password do not match! ❌";
-                            indicator.style.color = "var(--danger)";
-                        }
-                    };
-                    document.getElementById('auth-field-pass').addEventListener('input', checkPassMatch);
-                    document.getElementById('auth-field-confirmpass').addEventListener('input', checkPassMatch);
-
-                    // Dropdown click closing management binds
-                    document.addEventListener('click', (e) => {
-                        if (!e.target.closest('.searchable-dropdown')) {
-                            document.getElementById('from-list').style.display = 'none';
-                            document.getElementById('to-list').style.display = 'none';
-                        }
-                    });
-
-                    // Global Sidebar triggers
-                    document.getElementById('sidebar-trigger').addEventListener('click', () => {
-                        document.getElementById('app-sidebar').classList.add('open');
-                    });
-                    document.getElementById('sidebar-close-btn').addEventListener('click', () => {
-                        document.getElementById('app-sidebar').classList.remove('open');
-                    });
-
-                    // Navigation Menu Links routing action bindings
-                    document.getElementById('menu-opt-profile').addEventListener('click', () => { this.openModalView('dialog-view-profile'); });
-                    document.getElementById('menu-opt-contact').addEventListener('click', () => { this.openModalView('dialog-view-contact'); });
-                    document.getElementById('menu-opt-admin').addEventListener('click', () => { this.openModalView('dialog-view-admin'); });
-                    document.getElementById('menu-opt-logout').addEventListener('click', () => { this.executeSystemLogoutProcess(); });
-
-                    // Language toggle bar trigger switcher element
-                    document.getElementById('language-toggle-btn').addEventListener('click', () => {
-                        currentLang = currentLang === 'bn' ? 'en' : 'bn';
-                        localStorage.setItem('ticket_app_lang', currentLang);
-                        this.applyLanguageDictionary(currentLang);
-                        checkPassMatch();
-                    });
-                },
-
-                applyLanguageDictionary: function(lang) {
-                    const isEn = lang === 'en';
-                    document.getElementById('lang-en').className = isEn ? 'active' : '';
-                    document.getElementById('lang-bn').className = isEn ? '' : 'active';
-
-                    // Update local interface placeholder labels context
-                    document.getElementById('global-search-input').placeholder = isEn ? "Search by Member ID..." : "আইডি দিয়ে সার্চ করুন...";
-                    document.getElementById('notice-label-text').textContent = isEn ? "Notice Board" : "নোটিশ বোর্ড";
-                    document.getElementById('moving-notice-payload').textContent = isEn ? 
-                        "Welcome to our website! Select your preferred routing paths and bus categories to begin booking seats." : 
-                        "ওয়েবসাইটে আপনাকে স্বাগতম! টিকিট বুকিং করার জন্য আপনার রুট এবং বাসের ধরন নির্বাচন করুন।";
-
-                    if(authMode === 'login') {
-                        document.getElementById('auth-prompt-message').textContent = isEn ? "Please login to book your bus seat" : "বাসের সিট বুক করতে অনুগ্রহ করে লগইন করুন";
-                    }
-
-                    document.querySelectorAll('.lng-txt').forEach(el => {
-                        const targetTxt = isEn ? el.getAttribute('data-en') : el.getAttribute('data-bn');
-                        if (targetTxt) el.textContent = targetTxt;
-                    });
-                },
-
-                renderActiveMembersTrack: function() {
-                    const track = document.getElementById('active-members-marquee-track');
-                    track.innerHTML = "";
-                    // Duplicate elements array slice allocation structure to maintain smooth looped infinite scroll alignment layout
-                    const completeList = [...mockActivePool, ...mockActivePool, ...mockActivePool];
-                    completeList.forEach(member => {
-                        const card = document.createElement('div');
-                        card.className = "active-member-card";
-                        card.innerHTML = `
-                            <div class="active-avatar-wrapper">
-                                <img class="active-avatar" src="${member.avatar}" alt="User">
-                                <div class="active-dot"></div>
-                            </div>
-                            <div class="active-info">
-                                <span class="active-uid">ID: ${member.id}</span>
-                                <span class="active-name">${member.name}</span>
-                                <span class="active-role">${member.role}</span>
-                            </div>
-                        `;
-                        track.appendChild(card);
-                    });
-                },
-
-                renderFooterSocials: function() {
-                    const targets = ['footer-social-icons-target', 'contact-modal-social-target'];
-                    const channelsData = [
-                        { icon: "fa-brands fa-facebook-f", link: GLOBAL_CONFIG.fb_group, bg: "#1877f2" },
-                        { icon: "fa-brands fa-youtube", link: GLOBAL_CONFIG.yt_m2vai, bg: "#ff0000" },
-                        { icon: "fa-brands fa-instagram", link: GLOBAL_CONFIG.instagram, bg: "#e1306c" },
-                        { icon: "fa-brands fa-x-twitter", link: GLOBAL_CONFIG.threads, bg: "#000000" },
-                        { icon: "fa-brands fa-discord", link: GLOBAL_CONFIG.discord, bg: "#5865f2" },
-                        { icon: "fa-solid fa-envelope", link: `mailto:${GLOBAL_CONFIG.gmail}`, bg: "#ea4335" }
-                    ];
-
-                    targets.forEach(targetId => {
-                        const box = document.getElementById(targetId);
-                        if(box) {
-                            box.innerHTML = "";
-                            channelsData.forEach(ch => {
-                                const a = document.createElement('a');
-                                a.className = "social-circle-btn";
-                                a.href = ch.link;
-                                a.target = "_blank";
-                                a.style.backgroundColor = ch.bg;
-                                a.innerHTML = `<i class="${ch.icon}"></i>`;
-                                box.appendChild(a);
-                            });
-                        }
-                    });
-                },
-
-                togglePasswordVisibility: function(fieldId, iconEl) {
-                    const field = document.getElementById(fieldId);
-                    if(field.type === 'password') {
-                        field.type = 'text';
-                        iconEl.className = "fa-solid fa-eye-slash pass-toggle-icon";
-                    } else {
-                        field.type = 'password';
-                        iconEl.className = "fa-solid fa-eye pass-toggle-icon";
-                    }
-                },
-
-                toggleAuthMode: function() {
-                    authMode = authMode === 'login' ? 'signup' : 'login';
-                    const isSignup = authMode === 'signup';
-
-                    document.getElementById('group-player-name').style.display = isSignup ? 'block' : 'none';
-                    document.getElementById('group-game-id').style.display = isSignup ? 'block' : 'none';
-                    document.getElementById('group-mobile-no').style.display = isSignup ? 'block' : 'none';
-                    document.getElementById('group-confirm-pass').style.display = isSignup ? 'block' : 'none';
-
-                    const isEn = currentLang === 'en';
-                    document.getElementById('auth-prompt-message').textContent = isSignup ? 
-                        (isEn ? "Create a membership account context profile" : "টিকিট কাটতে মেম্বারশিপ অ্যাকাউন্ট তৈরি করুন") : 
-                        (isEn ? "Please login to book your bus seat" : "বাসের সিট বুক করতে অনুগ্রহ করে লগইন করুন");
-
-                    document.getElementById('auth-action-left').textContent = isSignup ? "Sign Up Now" : "Login Now";
-                    document.getElementById('auth-action-right').textContent = isSignup ? "Back to Login" : "Sign Up Now";
-                },
-
-                handlePrimaryAuthAction: function() {
-                    if(authMode === 'login') {
-                        this.executeSystemLoginProcess();
-                    } else {
-                        this.executeSystemRegistrationProcess();
-                    }
-                },
-
-                executeSystemRegistrationProcess: function() {
-                    const email = document.getElementById('auth-field-email').value.trim();
-                    const pass = document.getElementById('auth-field-pass').value;
-                    const cpass = document.getElementById('auth-field-confirmpass').value;
-                    const name = document.getElementById('auth-field-name').value.trim();
-                    const gid = document.getElementById('auth-field-gameid').value.trim();
-                    const phone = document.getElementById('auth-field-phone').value.trim();
-
-                    if(!email || !pass || !name || !gid) {
-                        alert(currentLang === 'bn' ? "অনুগ্রহ করে সব আবশ্যিক ফিল্ড পূরণ করুন!" : "Please fill out all mandatory input items!");
-                        return;
-                    }
-                    if(pass !== cpass) {
-                        alert(currentLang === 'bn' ? "পাসওয়ার্ড দুটি মেলেনি!" : "Passwords mismatch error constraint!");
-                        return;
-                    }
-                    if(users.some(u => u.email === email)) {
-                        alert(currentLang === 'bn' ? "এই ইমেইল দিয়ে অলরেডি অ্যাকাউন্ট খোলা আছে!" : "Email database record intersection conflict!");
-                        return;
-                    }
-
-                    // Auto generate incrementing numeric ID padding strings matching constraint criteria request
-                    const nextIdStr = String(users.length + 1).padStart(4, '0');
-                    
-                    // Super Admin check validation rule against master configuration address assignment parameters
-                    let designationRole = "Member";
-                    if(email.toLowerCase() === GLOBAL_CONFIG.gmail.toLowerCase()) {
-                        designationRole = "Admin";
-                    }
-
-                    const newUserObj = {
-                        id: nextIdStr,
-                        name: name,
-                        gameid: gid,
-                        phone: phone || "N/A",
-                        email: email,
-                        password: pass,
-                        role: designationRole,
-                        wallet: 3000, // Starting registration gift bonus allocation
-                        avatar: "",
-                        isBanned: false
-                    };
-
-                    users.push(newUserObj);
-                    localStorage.setItem('ticket_app_users', JSON.stringify(users));
-
-                    alert((currentLang === 'bn' ? "রেজিস্ট্রেশন সফল হয়েছে! আইডি নাম্বার: " : "Registration success! Assigned UID: ") + nextIdStr);
-                    this.toggleAuthMode();
-                    document.getElementById('auth-field-email').value = email;
-                    document.getElementById('auth-field-pass').value = pass;
-                },
-
-                executeSystemLoginProcess: function() {
-                    const email = document.getElementById('auth-field-email').value.trim();
-                    const pass = document.getElementById('auth-field-pass').value;
-
-                    if(!email || !pass) {
-                        alert(currentLang === 'bn' ? "ইমেইল এবং পাসওয়ার্ড দিন!" : "Credentials required context constraint!");
-                        return;
-                    }
-
-                    const userMatch = users.find(u => u.email === email && u.password === pass);
-                    if(!userMatch) {
-                        alert(currentLang === 'bn' ? "ভুল ইমেইল অথবা পাসওয়ার্ড!" : "Invalid authorization credentials criteria match error!");
-                        return;
-                    }
-
-                    if(userMatch.isBanned) {
-                        alert(currentLang === 'bn' ? "আপনার অ্যাকাউন্টটি ব্যান করা হয়েছে! অ্যাডমিনের সাথে যোগাযোগ করুন।" : "This profile context has been banned from the node core network framework!");
-                        return;
-                    }
-
-                    // Active Session Token Timestamp establishment parameters
-                    currentSession = {
-                        user: userMatch,
-                        loginTimestamp: Date.now()
-                    };
-                    sessionStorage.setItem('ticket_app_session', JSON.stringify(currentSession));
-
-                    this.synchronizeUIPanelStatesOnStateChange();
-                },
-
-                validateSessionExpiryCheck: function() {
-                    if(currentSession) {
-                        // 30 Minutes Session Timeout Check Loop rules
-                        const lapse = Date.now() - currentSession.loginTimestamp;
-                        if(lapse > 30 * 60 * 1000) {
-                            this.executeSystemLogoutProcess();
-                        } else {
-                            this.synchronizeUIPanelStatesOnStateChange();
-                        }
-                    } else {
-                        this.switchView('panel-view-auth');
-                    }
-                },
-
-                executeSystemLogoutProcess: function() {
-                    currentSession = null;
-                    sessionStorage.removeItem('ticket_app_session');
-                    this.switchView('panel-view-auth');
-                    document.getElementById('app-main-header').style.display = 'none';
-                    document.getElementById('app-live-widgets').style.display = 'none';
-                },
-
-                synchronizeUIPanelStatesOnStateChange: function() {
-                    if(!currentSession) return;
-                    
-                    // Refresh and grab the latest user data from the local storage database
-                    const dynamicFreshUserData = users.find(u => u.id === currentSession.user.id);
-                    if (dynamicFreshUserData) {
-                        currentSession.user = dynamicFreshUserData;
-                        sessionStorage.setItem('ticket_app_session', JSON.stringify(currentSession));
-                    }
-
-                    document.getElementById('app-main-header').style.display = 'flex';
-                    document.getElementById('app-live-widgets').style.display = 'block';
-
-                    // Restrict administrative button visibilities to matched token signatures context
-                    const role = currentSession.user.role;
-                    if(role === 'Admin' || role === 'Moderator' || role === 'Counter Master') {
-                        document.getElementById('menu-opt-admin').style.display = 'flex';
-                    } else {
-                        document.getElementById('menu-opt-admin').style.display = 'none';
-                    }
-
-                    this.switchView('panel-view-route');
-                    this.populateProfileModalUIData();
-                },
-
-                switchView: function(viewPanelId) {
-                    document.querySelectorAll('.page-panel').forEach(panel => {
-                        panel.classList.remove('active-view');
-                    });
-                    document.getElementById(viewPanelId).classList.add('active-view');
-                    document.getElementById('app-sidebar').classList.remove('open');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                },
-
-                populateProfileModalUIData: function() {
-                    if(!currentSession) return;
-                    const u = currentSession.user;
-                    document.getElementById('prof-val-id').textContent = u.id;
-                    document.getElementById('prof-val-name').textContent = u.name;
-                    document.getElementById('prof-val-gid').textContent = u.gameid;
-                    document.getElementById('prof-val-email').textContent = u.email;
-                    document.getElementById('prof-val-role').textContent = u.role;
-                    document.getElementById('prof-val-wallet').textContent = `${u.wallet} BDT`;
-                    document.getElementById('prof-display-avatar').src = u.avatar || GLOBAL_CONFIG.logo_url;
-                },
-
-                handleAvatarUpload: function(inputEl) {
-                    const file = inputEl.files[0];
-                    if(!file) return;
-
-                    if(file.type !== "image/png") {
-                        alert(currentLang === 'bn' ? "শুধুমাত্র PNG ফরম্যাটের ছবি আপলোড করা যাবে!" : "PNG formatting profiles image sheets type requirement match constraint violation!");
-                        return;
-                    }
-                    if(file.size > 300 * 1024) {
-                        alert(currentLang === 'bn' ? "ছবির সাইজ সর্বোচ্চ 300 KB হতে পারবে!" : "File boundary scale overhead limit! Max limit 300KB allowed.");
-                        return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const base64Data = e.target.result;
-                        
-                        // Update active operational databases instances sheets
-                        const dbUser = users.find(usr => usr.id === currentSession.user.id);
-                        dbUser.avatar = base64Data;
-                        localStorage.setItem('ticket_app_users', JSON.stringify(users));
-
-                        currentSession.user.avatar = base64Data;
-                        sessionStorage.setItem('ticket_app_session', JSON.stringify(currentSession));
-
-                        document.getElementById('prof-display-avatar').src = base64Data;
-                        alert(currentLang === 'bn' ? "প্রোফাইল পিকচার আপডেট হয়েছে!" : "Avatar matrix storage save complete!");
-                    };
-                    reader.readAsDataURL(file);
-                },
-
-                showDistricts: function(listId) {
-                    const targetBox = document.getElementById(listId);
-                    targetBox.innerHTML = "";
-                    BANGLADESH_DISTRICTS.forEach(d => {
-                        const div = document.createElement('div');
-                        div.className = "dropdown-option-item";
-                        div.textContent = d;
-                        div.onclick = () => {
-                            const inputId = listId === 'from-list' ? 'route-input-from' : 'route-input-to';
-                            document.getElementById(inputId).value = d;
-                            targetBox.style.display = 'none';
-                            this.calculateDynamicFare();
-                        };
-                        targetBox.appendChild(div);
-                    });
-                    targetBox.style.display = 'block';
-                },
-
-                filterDistricts: function(inputEl, listId) {
-                    const query = inputEl.value.toLowerCase();
-                    const targetBox = document.getElementById(listId);
-                    targetBox.innerHTML = "";
-                    const filtered = BANGLADESH_DISTRICTS.filter(d => d.toLowerCase().includes(query));
-                    
-                    if(filtered.length === 0) {
-                        targetBox.style.display = 'none';
-                        return;
-                    }
-
-                    filtered.forEach(d => {
-                        const div = document.createElement('div');
-                        div.className = "dropdown-option-item";
-                        div.textContent = d;
-                        div.onclick = () => {
-                            inputEl.value = d;
-                            targetBox.style.display = 'none';
-                            this.calculateDynamicFare();
-                        };
-                        targetBox.appendChild(div);
-                    });
-                    targetBox.style.display = 'block';
-                },
-
-                calculateDynamicFare: function() {
-                    const from = document.getElementById('route-input-from').value;
-                    const to = document.getElementById('route-input-to').value;
-                    const type = document.getElementById('route-select-type').value;
-                    const banner = document.getElementById('route-fare-banner');
-
-                    if(!from || !to || !type) {
-                        banner.style.display = 'none';
-                        currentSelectedFare = 0;
-                        return;
-                    }
-
-                    // Establish consistent route numeric hash mapping to assign structured randomized fare valuations
-                    let hashVal = 0;
-                    for (let i = 0; i < from.length; i++) hashVal += from.charCodeAt(i);
-                    for (let i = 0; i < to.length; i++) hashVal += to.charCodeAt(i);
-
-                    let baseFareCalc = 450 + (hashVal % 650);
-                    if(type === 'AC') baseFareCalc = Math.round(baseFareCalc * 1.65);
-
-                    currentSelectedFare = baseFareCalc;
-                    banner.textContent = (currentLang === 'bn' ? "ভাড়া: " : "Fare: ") + currentSelectedFare + " BDT";
-                    banner.style.display = 'block';
-                },
-
-                navigateToSeatSelection: function() {
-                    const from = document.getElementById('route-input-from').value;
-                    const to = document.getElementById('route-input-to').value;
-                    const type = document.getElementById('route-select-type').value;
-
-                    if(!from || !to || !type) {
-                        alert(currentLang === 'bn' ? "অনুগ্রহ করে গন্তব্য এবং বাসের ধরন নির্বাচন করুন!" : "Incomplete routing paths configuration payload parameters!");
-                        return;
-                    }
-                    if(from.toLowerCase() === to.toLowerCase()) {
-                        alert(currentLang === 'bn' ? "যাত্রার স্থান এবং গন্তব্য একই হতে পারে না!" : "Departure and terminal routing boundaries overlap error constraint!");
-                        return;
-                    }
-
-                    this.generateDynamicVisualSeatLayoutGrid(type);
-                    this.switchView('panel-view-seats');
-                },
-
-                generateDynamicVisualSeatLayoutGrid: function(busType) {
-                    const targetGrid = document.getElementById('bus-seats-grid-target');
-                    targetGrid.innerHTML = "";
-                    currentSelectedSeat = null;
-
-                    const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
-                    const routeKey = `${document.getElementById('route-input-from').value}-${document.getElementById('route-input-to').value}-${busType}`;
-                    const activeRouteBookedRegistry = globalSeats[routeKey] || [];
-
-                    rows.forEach(r => {
-                        const rowContainer = document.createElement('div');
-                        rowContainer.className = "seat-matrix-row";
-
-                        // Conditional layouts: AC (1+2 setup layout mapping rules) vs Non-AC (2+2 setup layout mapping rules)
-                        if(busType === 'AC') {
-                            // Column 1
-                            const s1 = `${r}1`;
-                            rowContainer.appendChild(this.buildSeatNodeUnitElement(s1, activeRouteBookedRegistry));
-                            // Spacer Aisle Gap
-                            const spacer = document.createElement('div');
-                            spacer.className = "seat-node invisible-spacer";
-                            rowContainer.appendChild(spacer);
-                            // Column 2 & 3
-                            const s2 = `${r}2`;
-                            const s3 = `${r}3`;
-                            rowContainer.appendChild(this.buildSeatNodeUnitElement(s2, activeRouteBookedRegistry));
-                            rowContainer.appendChild(this.buildSeatNodeUnitElement(s3, activeRouteBookedRegistry));
-                        } else {
-                            // Non-AC standard 2+2 layout structure configuration
-                            const s1 = `${r}1`;
-                            const s2 = `${r}2`;
-                            rowContainer.appendChild(this.buildSeatNodeUnitElement(s1, activeRouteBookedRegistry));
-                            rowContainer.appendChild(this.buildSeatNodeUnitElement(s2, activeRouteBookedRegistry));
-                            // Spacer Aisle Gap
-                            const spacer = document.createElement('div');
-                            spacer.className = "seat-node invisible-spacer";
-                            rowContainer.appendChild(spacer);
-                            
-                            const s3 = `${r}3`;
-                            const s4 = `${r}4`;
-                            rowContainer.appendChild(this.buildSeatNodeUnitElement(s3, activeRouteBookedRegistry));
-                            rowContainer.appendChild(this.buildSeatNodeUnitElement(s4, activeRouteBookedRegistry));
-                        }
-
-                        targetGrid.appendChild(rowContainer);
-                    });
-                },
-
-                buildSeatNodeUnitElement: function(seatCodeId, bookedRegistry) {
-                    const node = document.createElement('div');
-                    const isBooked = bookedRegistry.some(b => b.seat === seatCodeId);
-                    node.className = "seat-node" + (isBooked ? " booked-seat" : "");
-                    node.textContent = seatCodeId;
-
-                    if(!isBooked) {
-                        node.onclick = () => {
-                            document.querySelectorAll('.seat-node').forEach(n => n.classList.remove('selected-seat'));
-                            node.classList.add('selected-seat');
-                            currentSelectedSeat = seatCodeId;
-                        };
-                    }
-                    return node;
-                },
-
-                processSeatReservationConfirm: function() {
-                    if(!currentSelectedSeat) {
-                        alert(currentLang === 'bn' ? "অনুগ্রহ করে একটি সিট সিলেক্ট করুন!" : "No active structural node selected context parameter exception!");
-                        return;
-                    }
-
-                    // Enforce live core wallet accounting sheets checking validations loop bounds rules
-                    const activeFreshUserObject = users.find(u => u.id === currentSession.user.id);
-                    if(activeFreshUserObject.wallet < currentSelectedFare) {
-                        this.openModalView('dialog-view-rewards');
-                        return;
-                    }
-
-                    // Commit deduction allocations to memory structures banks
-                    activeFreshUserObject.wallet -= currentSelectedFare;
-                    localStorage.setItem('ticket_app_users', JSON.stringify(users));
-
-                    // Store reservation block allocations on master maps
-                    const busType = document.getElementById('route-select-type').value;
-                    const routeKey = `${document.getElementById('route-input-from').value}-${document.getElementById('route-input-to').value}-${busType}`;
-                    
-                    if(!globalSeats[routeKey]) globalSeats[routeKey] = [];
-                    globalSeats[routeKey].push({
-                        seat: currentSelectedSeat,
-                        userId: activeFreshUserObject.id,
-                        timestamp: Date.now()
-                    });
-                    localStorage.setItem('ticket_app_seats', JSON.stringify(globalSeats));
-
-                    // Compile payload definitions to print engine module sheets
-                    this.compileDigitalTicketPrintInvoicePayload(activeFreshUserObject);
-                    this.switchView('panel-view-ticket');
-                },
-
-                compileDigitalTicketPrintInvoicePayload: function(userObj) {
-                    document.getElementById('tk-val-mid').textContent = userObj.id;
-                    document.getElementById('tk-val-pname').textContent = userObj.name;
-                    document.getElementById('tk-val-gid').textContent = userObj.gameid;
-                    document.getElementById('tk-val-phone').textContent = userObj.phone;
-                    document.getElementById('tk-val-from').textContent = document.getElementById('route-input-from').value;
-                    document.getElementById('tk-val-to').textContent = document.getElementById('route-input-to').value;
-                    document.getElementById('tk-val-btype').textContent = document.getElementById('route-select-type').value + " Bus";
-                    document.getElementById('tk-val-fare').textContent = currentSelectedFare + " BDT";
-                    document.getElementById('tk-val-seat').textContent = currentSelectedSeat;
-
-                    const now = new Date();
-                    const stamp = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')} | ${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
-                    document.getElementById('tk-val-issuedate').textContent = (currentLang === 'bn' ? "ইস্যু সময় ও তারিখ: " : "Issue Time & Date: ") + stamp;
-                },
-
-                downloadTicketAsImage: function() {
-                    const targetNode = document.getElementById('master-render-ticket-node');
-                    // Invoke external asynchronous capture engine parsing frameworks bindings context
-                    html2canvas(targetNode, { useCORS: true, scale: 2 }).then(canvas => {
-                        const base64Png = canvas.toDataURL('image/png');
-                        const linkTrigger = document.createElement('a');
-                        linkTrigger.download = `M2Vai_Ticket_${document.getElementById('tk-val-seat').textContent}.png`;
-                        linkTrigger.href = base64Png;
-                        linkTrigger.click();
-
-                        // Immediate redirect loop route resetting parameters after context generation downburst
-                        setTimeout(() => {
-                            alert(currentLang === 'bn' ? "টিকিট সফলভাবে ডাউনলোড হয়েছে!" : "Digital document invoice processing complete!");
-                            AppEngine.synchronizeUIPanelStatesOnStateChange();
-                        }, 500);
-                    });
-                },
-
-                triggerVideoRewardTask: function() {
-                    alert(currentLang === 'bn' ? "ভিডিও লিংকে নিয়ে যাওয়া হচ্ছে। দয়া করে অন্তত ১ মিনিট ভিডিওটি ব্যাকগ্রাউন্ডে চালু রাখুন।" : "Redirecting to stream sequence framework node block. Maintain 60 seconds watch profile.");
-                    window.open(GLOBAL_CONFIG.video_task_url, '_blank');
-                    
-                    // Fire underlying watch validation timing mechanisms locks safely
-                    setTimeout(() => {
-                        const targetUser = users.find(u => u.id === currentSession.user.id);
-                        targetUser.wallet += 2000; // Reward adjustment context variables
-                        localStorage.setItem('ticket_app_users', JSON.stringify(users));
-                        this.populateProfileModalUIData();
-                        this.closeAllModals();
-                        alert(currentLang === 'bn' ? "অভিনন্দন! ১ মিনিট ভিডিও দেখার জন্য ২০০০ BDT আপনার ওয়ালেটে যোগ হয়েছে।" : "Video task reward credential applied +2000 BDT allocated.");
-                    }, 61000); // 61 Seconds dynamic precision enforcement clock limits lock
-                },
-
-                triggerSubscribeRewardTask: function() {
-                    window.open(GLOBAL_CONFIG.yt_m2vai, '_blank');
-                    setTimeout(() => {
-                        const targetUser = users.find(u => u.id === currentSession.user.id);
-                        targetUser.wallet += 5000; // Channel subscription award scaling mapping
-                        localStorage.setItem('ticket_app_users', JSON.stringify(users));
-                        this.populateProfileModalUIData();
-                        this.closeAllModals();
-                        alert(currentLang === 'bn' ? "অভিনন্দন! চ্যানেল সাবস্ক্রাইব করার জন্য ৫০০০ BDT আপনার ওয়ালেটে যোগ হয়েছে।" : "Subscription award validation sequence finalized! +5000 BDT committed.");
-                    }, 2000);
-                },
-
-                redirectToChannel: function(chCode) {
-                    const targetUrl = chCode === 'yt1' ? GLOBAL_CONFIG.yt_m2vai : GLOBAL_CONFIG.yt_traveller;
-                    window.open(targetUrl, '_blank');
-                },
-
-                openModalView: function(modalId) {
-                    this.closeAllModals();
-                    document.getElementById(modalId).style.display = 'flex';
-                },
-
-                closeAllModals: function() {
-                    document.querySelectorAll('.dialog-overlay').forEach(overlay => {
-                        overlay.style.display = 'none';
-                    });
-                },
-
-                enforceSeatAutoResetLapse: function() {
-                    let mapsModified = false;
-                    const oneHourWindowLimit = 60 * 60 * 1000;
-                    const timeMark = Date.now();
-
-                    for (const rKey in globalSeats) {
-                        const freshRegistry = globalSeats[rKey].filter(block => (timeMark - block.timestamp) < oneHourWindowLimit);
-                        if(freshRegistry.length !== globalSeats[rKey].length) {
-                            globalSeats[rKey] = freshRegistry;
-                            mapsModified = true;
-                        }
-                    }
-
-                    if(mapsModified) {
-                        localStorage.setItem('ticket_app_seats', JSON.stringify(globalSeats));
-                        if(document.getElementById('panel-view-seats').classList.contains('active-view')) {
-                            this.generateDynamicVisualSeatLayoutGrid(document.getElementById('route-select-type').value);
-                        }
-                    }
-                },
-
-                executeAdminUserSearch: function() {
-                    const queryUid = document.getElementById('ad-search-uid').value.trim();
-                    const targetUser = users.find(u => u.id === queryUid);
-                    const wrapper = document.getElementById('admin-search-result-card');
-
-                    if(!targetUser) {
-                        wrapper.style.display = 'none';
-                        alert("No user record criteria matched inside tracking cluster!");
-                        return;
-                    }
-
-                    document.getElementById('ad-res-name').textContent = targetUser.name;
-                    document.getElementById('ad-res-uid').textContent = targetUser.id;
-                    document.getElementById('ad-res-status').textContent = targetUser.isBanned ? "BANNED / INACTIVE" : "ACTIVE / CLEAR";
-                    document.getElementById('ad-res-status').style.color = targetUser.isBanned ? "var(--danger)" : "var(--neon-green)";
-                    document.getElementById('ad-res-role').textContent = targetUser.role;
-
-                    // Dynamically control operations capabilities maps based on operator validation authorization scopes
-                    const activeStaffRole = currentSession.user.role;
-                    document.querySelectorAll('.ctrl-admin-only').forEach(btn => {
-                        btn.style.display = (activeStaffRole === 'Admin') ? 'inline-block' : 'none';
-                    });
-
-                    wrapper.style.setAttribute('data-target-uid', targetUser.id);
-                    wrapper.style.display = 'block';
-                },
-
-                adminToggleBanStatus: function() {
-                    const uid = document.getElementById('admin-search-result-card').style.getAttribute('data-target-uid');
-                    const uObj = users.find(u => u.id === uid);
-                    if(uObj.role === 'Admin') { alert("Cannot modify core server host nodes roles configuration mapping parameters!"); return; }
-                    
-                    uObj.isBanned = !uObj.isBanned;
-                    localStorage.setItem('ticket_app_users', JSON.stringify(users));
-                    this.executeAdminUserSearch();
-                    alert("User restriction network layer parameters recalculated!");
-                },
-
-                adminPromoteRole: function() {
-                    const uid = document.getElementById('admin-search-result-card').style.getAttribute('data-target-uid');
-                    const uObj = users.find(u => u.id === uid);
-                    if(uObj.role === 'Admin') return;
-
-                    const choice = prompt("Enter designation classification assignment targeting sequence profile:\n1 for Moderator\n2 for Counter Master\n3 for Standard Member");
-                    if(choice === '1') uObj.role = 'Moderator';
-                    else if(choice === '2') uObj.role = 'Counter Master';
-                    else if(choice === '3') uObj.role = 'Member';
-
-                    localStorage.setItem('ticket_app_users', JSON.stringify(users));
-                    this.executeAdminUserSearch();
-                    alert("User system permission access tokens updated successfully.");
-                },
-
-                adminGiftFundsWallet: function() {
-                    const uid = document.getElementById('admin-search-result-card').style.getAttribute('data-target-uid');
-                    const uObj = users.find(u => u.id === uid);
-                    const amtStr = prompt("Enter gift valuation credit balancing adjustment integer amount (BDT):");
-                    const amtInt = parseInt(amtStr);
-                    if(isNaN(amtInt) || amtInt <= 0) return;
-
-                    uObj.wallet += amtInt;
-                    localStorage.setItem('ticket_app_users', JSON.stringify(users));
-                    this.executeAdminUserSearch();
-                    alert(`Successfully gifted ${amtInt} BDT to account wallet portfolio balance matrix.`);
-                },
-
-                resetAllBookedSeatsManual: function() {
-                    if(confirm("Are you sure you want to completely clear and drop all system seat maps?")) {
-                        globalSeats = {};
-                        localStorage.setItem('ticket_app_seats', JSON.stringify(globalSeats));
-                        alert("Database configuration seats matrices wiped!");
-                        this.closeAllModals();
-                        if(document.getElementById('panel-view-seats').classList.contains('active-view')) {
-                            this.generateDynamicVisualSeatLayoutGrid(document.getElementById('route-select-type').value);
-                        }
-                    }
-                }
-            };
-        })();
-
-        // Bootstrap Core Application Layer Initialization on complete document delivery downflow
-        document.addEventListener("DOMContentLoaded", () => {
-            AppEngine.init();
+        // সোশ্যাল মিডিয়া লিংক কনফিগারেশন অবজেক্ট
+        const socialLinks = {
+            fbGroup: "https://facebook.com/groups/771005197556072/",
+            ytM2vai: "https://youtube.com/@m2vai?si=ls4xlp9EG8hjwE7B",
+            ytTraveller: "https://youtube.com/@travellerm2vai?si=PDkl_nDGIb5il-bj",
+            instagram: "https://www.instagram.com/m2vai380?igsh=MzBrZmx0aTU4MW1u",
+            twitter: "https://www.threads.com/@m2vai380",
+            discord: "https://discord.gg/GJ2F36gE8D",
+            gmail: "mailto:info.m2vai380@gmail.com"
+        };
+
+        // বর্তমান অ্যাক্টিভ সেশন স্টেট ট্র্যাকার
+        let activeUser = null;
+        let currentBooking = null;
+        let selectedSeats = [];
+        let historyStack = ['page1'];
+
+        // অ্যাপ্লিকেশন ইনিশিয়ালাইজেশন
+        window.addEventListener('DOMContentLoaded', () => {
+            initClock();
+            renderSocialLinks();
+            setupDropdownSearch('from-search', 'from-dropdown');
+            setupDropdownSearch('to-search', 'to-dropdown');
+            checkActiveSession();
+            document.getElementById('live-notice-text').innerText = localStorage.getItem('m2vai_live_notice');
+
+            // অটো সিট রিসেট ইন্টারভাল প্রতি ১০ সেকেন্ডে চেক করবে ১ ঘণ্টা পার হয়েছে কিনা
+            setInterval(checkSeatExpiry, 10000);
         });
+
+        // পাসওয়ার্ড ভিজিবিলিটি টগল (চোখের আইকন)
+        function togglePass(id, btn) {
+            const input = document.getElementById(id);
+            if(input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            }
+        }
+
+        // লাইভ ঘড়ি সিস্টেম (২০২৬ ফরম্যাট সিঙ্ক)
+        function initClock() {
+            setInterval(() => {
+                const now = new Date();
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; 
+                document.getElementById('live-clock').innerText = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+                
+                // উইশ গ্রিটিং মেসেজ জেনারেটর
+                let greeting = "Good Evening! 🌆";
+                if(now.getHours() >= 5 && now.getHours() < 12) greeting = "Good Morning! 🌅";
+                else if(now.getHours() >= 12 && now.getHours() < 17) greeting = "Good Afternoon! ☀️";
+                document.getElementById('greeting-text').innerText = greeting;
+            }, 1000);
+        }
+
+        // সোশ্যাল মিডিয়া রেন্ডারিং ইঞ্জিন
+        function renderSocialLinks() {
+            const iconsBox = document.getElementById('footer-social-icons');
+            iconsBox.innerHTML = `
+                <a href="${socialLinks.fbGroup}" target="_blank" class="text-blue-500 hover:scale-110 transition"><i class="fa-brands fa-facebook"></i></a>
+                <a href="${socialLinks.ytM2vai}" target="_blank" class="text-red-500 hover:scale-110 transition"><i class="fa-brands fa-youtube"></i></a>
+                <a href="${socialLinks.instagram}" target="_blank" class="text-pink-500 hover:scale-110 transition"><i class="fa-brands fa-instagram"></i></a>
+                <a href="${socialLinks.twitter}" target="_blank" class="text-white hover:scale-110 transition"><i class="fa-brands fa-threads"></i></a>
+                <a href="${socialLinks.discord}" target="_blank" class="text-indigo-500 hover:scale-110 transition"><i class="fa-brands fa-discord"></i></a>
+                <a href="${socialLinks.gmail}" class="text-red-400 hover:scale-110 transition"><i class="fa-solid fa-envelope"></i></a>
+            `;
+
+            const contactGrid = document.getElementById('contact-page-links');
+            contactGrid.innerHTML = `
+                <a href="${socialLinks.fbGroup}" target="_blank" class="bg-blue-600/10 border border-blue-600/30 text-blue-400 p-3 rounded-xl font-bold flex items-center justify-center space-x-2 text-sm"><i class="fa-brands fa-facebook text-lg"></i> <span>Facebook Group</span></a>
+                <a href="${socialLinks.ytM2vai}" target="_blank" class="bg-red-600/10 border border-red-600/30 text-red-400 p-3 rounded-xl font-bold flex items-center justify-center space-x-2 text-sm"><i class="fa-brands fa-youtube text-lg"></i> <span>YouTube Main</span></a>
+                <a href="${socialLinks.instagram}" target="_blank" class="bg-pink-600/10 border border-pink-600/30 text-pink-400 p-3 rounded-xl font-bold flex items-center justify-center space-x-2 text-sm"><i class="fa-brands fa-instagram text-lg"></i> <span>Instagram</span></a>
+                <a href="${socialLinks.twitter}" target="_blank" class="bg-gray-600/10 border border-gray-600/30 text-white p-3 rounded-xl font-bold flex items-center justify-center space-x-2 text-sm"><i class="fa-brands fa-threads text-lg"></i> <span>Threads (X)</span></a>
+                <a href="${socialLinks.discord}" target="_blank" class="bg-indigo-600/10 border border-indigo-600/30 text-indigo-400 p-3 rounded-xl font-bold flex items-center justify-center space-x-2 text-sm"><i class="fa-brands fa-discord text-lg"></i> <span>Discord Server</span></a>
+                <a href="${socialLinks.gmail}" class="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-xl font-bold flex items-center justify-center space-x-2 text-sm"><i class="fa-solid fa-envelope text-lg"></i> <span>Official Email</span></a>
+            `;
+        }
+
+        // সার্চেবল ড্রপডাউন জেলা সিলেকশন মেকানিজম
+        function setupDropdownSearch(inputId, dropdownId) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+
+            input.addEventListener('focus', () => filterDistricts(input, dropdown));
+            input.addEventListener('input', () => filterDistricts(input, dropdown));
+            
+            document.addEventListener('click', (e) => {
+                if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        }
+
+        function filterDistricts(input, dropdown) {
+            const val = input.value.toLowerCase();
+            dropdown.innerHTML = '';
+            const filtered = bangladeshDistricts.filter(d => d.toLowerCase().includes(val));
+            
+            if(filtered.length === 0) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+            
+            dropdown.classList.remove('hidden');
+            filtered.forEach(dist => {
+                const item = document.createElement('div');
+                item.className = "px-3 py-2 hover:bg-teal-500 hover:text-black cursor-pointer border-b border-gray-800 transition text-white";
+                item.innerText = dist;
+                item.onclick = () => {
+                    input.value = dist;
+                    dropdown.classList.add('hidden');
+                    calculateFare();
+                };
+                dropdown.appendChild(item);
+            });
+        }
+
+        // পেজ দৃশ্যমানতা কন্ট্রোলার এবং ব্রাউজার হিস্ট্রি পুশ ব্যাক লজিক (Anti-Page Cut)
+        function switchPage(pageId) {
+            // সমস্ত সেকশন হাইড করা
+            ['page1', 'page2', 'page3', 'page4', 'sub-profile', 'sub-admin', 'sub-contact'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            
+            // টার্গেট পেজ শো করা
+            document.getElementById(pageId).classList.remove('hidden');
+            
+            // হেডার এবং নোটিশ দৃশ্যমানতা নির্ধারণ
+            if (pageId === 'page1') {
+                document.getElementById('top-header').classList.add('hidden');
+                document.getElementById('global-notice-bar').classList.add('hidden');
+            } else {
+                document.getElementById('top-header').classList.remove('hidden');
+                document.getElementById('global-notice-bar').classList.remove('hidden');
+            }
+
+            // হিস্ট্রি ট্র্যাকিং স্ট্যাক বিল্ডআপ
+            if(historyStack[historyStack.length - 1] !== pageId) {
+                historyStack.push(pageId);
+            }
+            
+            // সেশন মেমরিতে পেজ স্টেট সংরক্ষণ (রিফ্রেশ প্রটেকশন লক)
+            sessionStorage.setItem('m2vai_current_page', pageId);
+        }
+
+        // ব্রাউজার ব্যাক বাটন বা হার্ডওয়্যার ব্যাক প্রেস ইন্টারসেপশন প্রোটেকশন
+        window.addEventListener('popstate', (event) => {
+            if(activeUser && historyStack.length > 1) {
+                // ব্রাউজারের ব্যাক অ্যাকশন রুখে আমাদের সিঙ্গেল পেজ ব্যাকে নিয়ে যাওয়া
+                historyStack.pop(); // বর্তমান পেজ রিমুভ
+                const prevPage = historyStack[historyStack.length - 1];
+                history.pushState(null, null, window.location.href);
+                switchPage(prevPage);
+            } else {
+                history.pushState(null, null, window.location.href);
+            }
+        });
+        history.pushState(null, null, window.location.href);
+
+        // এন্টি-রিফ্রেশ সেশন সেভ রিকোভারি
+        function checkActiveSession() {
+            const savedUser = sessionStorage.getItem('m2vai_active_user');
+            const savedTime = sessionStorage.getItem('m2vai_login_time');
+            const savedPage = sessionStorage.getItem('m2vai_current_page');
+
+            if(savedUser && savedTime) {
+                // ৩০ মিনিট সেশন লাইফ এক্সপায়ারি চেক
+                if(new Date().getTime() - parseInt(savedTime) < 30 * 60 * 1000) {
+                    const members = JSON.stringify(localStorage.getItem('m2vai_members'));
+                    activeUser = JSON.parse(savedUser);
+                    updateWalletUI();
+                    renderActiveUsersMarquee();
+                    
+                    if(savedPage && savedPage !== 'page1') {
+                        switchPage(savedPage);
+                    } else {
+                        switchPage('page2');
+                    }
+                    return;
+                }
+            }
+            logoutAction();
+        }
+
+        // লগইন ও সাইনআপ বক্স টগল মেকানিজম
+        function toggleAuthBox(mode) {
+            if(mode === 'signup') {
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('signup-box').classList.remove('hidden');
+            } else {
+                document.getElementById('signup-box').classList.add('hidden');
+                document.getElementById('login-box').classList.remove('hidden');
+            }
+        }
+
+        // লাইভ পাসওয়ার্ড ম্যাচ ভ্যালিডেশন
+        function validatePasswords() {
+            const p = document.getElementById('reg-pass').value;
+            const cp = document.getElementById('reg-cpass').value;
+            const msg = document.getElementById('pass-match-msg');
+            const btn = document.getElementById('signup-btn');
+
+            if(!p || !cp) { msg.innerText = ''; return; }
+            if(p === cp) {
+                msg.innerText = "Password Matched! ✓";
+                msg.className = "text-xs font-semibold text-center mt-1 text-green-400";
+                btn.disabled = false;
+            } else {
+                msg.innerText = "Password and Confirm Password do not match! ❌";
+                msg.className = "text-xs font-semibold text-center mt-1 text-red-400";
+                btn.disabled = true;
+            }
+        }
+
+        // ==================== AUTHENTICATION ACTIONS ENGINE ====================
+        // রেজিস্ট্রেশন (Sign Up) সাবমিট একশন
+        document.getElementById('signup-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reg-email').value.trim();
+            const members = JSON.parse(localStorage.getItem('m2vai_members'));
+
+            if(members.find(m => m.email === email)) {
+                alert("এই ইমেইলটি অলরেডি রেজিস্ট্রেড করা আছে!");
+                return;
+            }
+
+            // ৪ ডিজিটের ইউনিক মেম্বার আইডি জেনারেটর (যেমন: 0001, 0002)
+            const nextId = String(members.length + 1).padStart(4, '0');
+            
+            const newMember = {
+                id: nextId,
+                name: document.getElementById('reg-name').value.trim(),
+                gameId: document.getElementById('reg-gameid').value.trim(),
+                dob: document.getElementById('reg-dob').value,
+                phone: document.getElementById('reg-phone').value.trim() || "N/A",
+                fb: document.getElementById('reg-fb').value.trim(),
+                email: email,
+                pass: document.getElementById('reg-pass').value,
+                wallet: 3000, // নতুন রেজিস্ট্রেশন বোনাস ৩০০০ BDT
+                role: (email === "info.m2vai380@gmail.com") ? "admin" : "user", // সুপার অ্যাডমিন ডিটেকশন লক
+                status: "active",
+                avatar: null
+            };
+
+            members.push(newMember);
+            localStorage.setItem('m2vai_members', JSON.stringify(members));
+            alert(`রেজিস্ট্রেশন সফল হয়েছে! আপনার আইডি নম্বর: ${nextId}\nঅ্যাকাউন্টে ৩০০০ BDT বোনাস যোগ হয়েছে।`);
+            document.getElementById('signup-form').reset();
+            toggleAuthBox('login');
+        });
+
+        // লগইন সাবমিট একশন
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            const members = JSON.parse(localStorage.getItem('m2vai_members'));
+
+            const user = members.find(m => m.email === email && m.pass === pass);
+            if(!user) {
+                alert("ভুল ইমেইল অথবা পাসওয়ার্ড দিয়েছেন!");
+                return;
+            }
+            if(user.status === 'banned') {
+                alert("🛑 দুঃখিত, আপনার মেম্বার আইডিটি এডমিন প্যানেল থেকে ব্যান করা হয়েছে!");
+                return;
+            }
+
+            // সেশন এস্টাবলিশড লক
+            activeUser = user;
+            sessionStorage.setItem('m2vai_active_user', JSON.stringify(activeUser));
+            sessionStorage.setItem('m2vai_login_time', new Date().getTime().toString());
+            
+            updateWalletUI();
+            renderActiveUsersMarquee();
+            document.getElementById('login-form').reset();
+            switchPage('page2');
+        });
+
+        // ওয়ালেট ব্যালেন্স ইন্টারফেস আপডেট সিঙ্ক
+        function updateWalletUI() {
+            if(!activeUser) return;
+            const text = `${activeUser.wallet} BDT`;
+            document.getElementById('header-wallet').innerText = text;
+            document.getElementById('p2-wallet').innerText = text;
+            
+            // অ্যাডমিন বাটন প্যানেল অ্যাক্সেস কন্ট্রোল
+            if(['admin', 'moderator', 'counter_master'].includes(activeUser.role)) {
+                document.getElementById('menu-admin-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('menu-admin-btn').classList.add('hidden');
+            }
+        }
+
+        // একটিভ ইউজার ট্র্যাকার স্ক্রলিং মারকিউ রেন্ডারার
+        function renderActiveUsersMarquee() {
+            const members = JSON.parse(localStorage.getItem('m2vai_members'));
+            const actives = members.filter(m => m.status === 'active');
+            if(actives.length === 0) return;
+            
+            let html = "🟢 Active Users Status: ";
+            actives.forEach(m => {
+                html += ` ID: ${m.id} (Active) 🟢 |`;
+            });
+            document.getElementById('active-members-marquee').innerHTML = html;
+        }
+
+        // ==================== BOOKING & FARE LOGIC ENGINE ====================
+        // গ্লোবাল ডায়নামিক জেলা ভিত্তিক ভাড়া হিসাব লজিক
+        function calculateFare() {
+            const from = document.getElementById('from-search').value;
+            const to = document.getElementById('to-search').value;
+            const type = document.querySelector('input[name="bus-type"]:checked').value;
+            
+            if(!from || !to || from === to) {
+                document.getElementById('fare-amount').innerText = "0";
+                document.getElementById('route-display').innerText = "রুট সিলেক্ট করুন";
+                return;
+            }
+
+            // ক্যারেক্টার লেংথ ক্যালকুলেশন বেসড ডায়নামিক ফেয়ার প্রাইজ
+            let basePrice = (from.length + to.length) * 45; 
+            if(basePrice < 400) basePrice = 550; // মিনিমাম বাসের ভাড়া লক
+            
+            const finalFare = (type === 'AC') ? Math.round(basePrice * 1.8) : basePrice;
+            
+            document.getElementById('fare-amount').innerText = finalFare;
+            document.getElementById('route-display').innerText = `${from} থেকে ${to} (${type})`;
+        }
+
+        // রুট সাবমিট ও সিট প্ল্যান পেজ মেকার সিঙ্ক
+        document.getElementById('booking-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const from = document.getElementById('from-search').value;
+            const to = document.getElementById('to-search').value;
+            const date = document.getElementById('journey-date').value;
+            const time = document.getElementById('journey-time').value;
+            const type = document.querySelector('input[name="bus-type"]:checked').value;
+            const fare = parseInt(document.getElementById('fare-amount').innerText);
+
+            if(from === to) { alert("বোর্ডিং পয়েন্ট এবং গন্তব্য এক হতে পারে না!"); return; }
+
+            currentBooking = { from, to, date, time, type, fare };
+            selectedSeats = [];
+            
+            document.getElementById('seat-coach-title').innerText = `Coach: ${from}-${to} | ${type} | ${date} [${time}]`;
+            document.getElementById('selected-seats-list').innerText = "কোনোটি না";
+            document.getElementById('total-fare-display').innerText = "0";
+
+            renderBusCabinGrid();
+            switchPage('page3');
+        });
+
+        // ডায়নামিক ৩-কলাম এবং ৪-কলাম বাস সিট মেকার গ্রিড লেআউট ইঞ্জিন
+        function renderBusCabinGrid() {
+            const grid = document.getElementById('bus-cabin-grid');
+            grid.innerHTML = '';
+            
+            const isAC = currentBooking.type === 'AC';
+            const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+            
+            // রুট+ডেট কি অনুযায়ী অলরেডি বুকড সিট ডাটা ফেচিং
+            const bookedStore = JSON.parse(localStorage.getItem('m2vai_seats_booked'));
+            const routeKey = `${currentBooking.from}-${currentBooking.to}-${currentBooking.date}-${currentBooking.time}-${currentBooking.type}`;
+            const alreadyBookedList = bookedStore[routeKey] || [];
+
+            rows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = "flex items-center justify-between space-x-2";
+
+                // ৩-কলাম বা ৪-কলাম লেআউট ডিফাইন
+                if(isAC) {
+                    // ১+২ প্রিমিয়াম এসি লেআউট গ্রিড
+                    rowDiv.innerHTML = `
+                        <div class="flex space-x-2 w-1/3">
+                            ${createSeatBtn(`${row}1`, alreadyBookedList)}
+                        </div>
+                        <div class="w-1/12"></div> <div class="flex space-x-2 w-2/3">
+                            ${createSeatBtn(`${row}2`, alreadyBookedList)}
+                            ${createSeatBtn(`${row}3`, alreadyBookedList)}
+                        </div>
+                    `;
+                } else {
+                    // ২+২ স্ট্যান্ডার্ড নন-এসি লেআউট গ্রিড
+                    rowDiv.innerHTML = `
+                        <div class="flex space-x-2 w-1/2">
+                            ${createSeatBtn(`${row}1`, alreadyBookedList)}
+                            ${createSeatBtn(`${row}2`, alreadyBookedList)}
+                        </div>
+                        <div class="w-1/12"></div> <div class="flex space-x-2 w-1/2">
+                            ${createSeatBtn(`${row}3`, alreadyBookedList)}
+                            ${createSeatBtn(`${row}4`, alreadyBookedList)}
+                        </div>
+                    `;
+                }
+                grid.appendChild(rowDiv);
+            });
+        }
+
+        // ইন্ডিভিজুয়াল সিট বাটন জেনারেটর কোড
+        function createSeatBtn(seatCode, alreadyBookedList) {
+            // বুকড ডেকোরেশন চেক
+            const isBooked = alreadyBookedList.some(b => b.seat === seatCode);
+            if(isBooked) {
+                return `<button type="button" disabled class="bg-red-600 text-white font-bold text-xs p-2.5 rounded text-center flex-1 cursor-not-allowed shadow-md">${seatCode}</button>`;
+            }
+            return `<button type="button" onclick="selectSeatAction('${seatCode}', this)" class="bg-[#21262d] text-gray-300 border border-gray-600 font-bold text-xs p-2.5 rounded text-center flex-1 hover:border-teal-400 transition shadow-sm">${seatCode}</button>`;
+        }
+
+        // সিট সিলেকশন ক্লিক ইভেন্ট হ্যান্ডলার
+        function selectSeatAction(seatCode, btn) {
+            if(selectedSeats.includes(seatCode)) {
+                selectedSeats = selectedSeats.filter(s => s !== seatCode);
+                btn.className = "bg-[#21262d] text-gray-300 border border-gray-600 font-bold text-xs p-2.5 rounded text-center flex-1 hover:border-teal-400 transition shadow-sm";
+            } else {
+                // মাল্টিপল সিট সিলেকশন বাউন্ডারি লিমিট (সর্বোচ্চ ৪ সিট)
+                if(selectedSeats.length >= 4) { alert("একবারে সর্বোচ্চ ৪টি সিট সিলেক্ট করতে পারবেন!"); return; }
+                selectedSeats.push(seatCode);
+                btn.className = "bg-teal-500 text-black font-bold text-xs p-2.5 rounded text-center flex-1 transition shadow-md font-black";
+            }
+            
+            document.getElementById('selected-seats-list').innerText = selectedSeats.length > 0 ? selectedSeats.join(', ') : "কোনোটি না";
+            const currentTotalCost = selectedSeats.length * currentBooking.fare;
+            document.getElementById('total-fare-display').innerText = currentTotalCost;
+        }
+
+        // সিট কনফার্ম ও ওয়ালেট অ্যাকাউন্ট ডিডাকশন মেকানিজম
+        document.getElementById('book-ticket-btn').addEventListener('click', () => {
+            if(selectedSeats.length === 0) { alert("অনুগ্রহ করে অন্তত ১টি সিট সিলেক্ট করুন!"); return; }
+            
+            const totalCost = selectedSeats.length * currentBooking.fare;
+            if(activeUser.wallet < totalCost) {
+                alert("🛑 আপনার ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই! ডানপাশের ইউটিউব টাস্কগুলো সম্পন্ন করে ফ্রিতে ফান্ড যোগ করুন।");
+                return;
+            }
+
+            // টিকিট কনফার্মেশন ও লোকাল ডাটাবেজ আপডেট সিকোয়েন্স
+            const members = JSON.parse(localStorage.getItem('m2vai_members'));
+            const bookedStore = JSON.parse(localStorage.getItem('m2vai_seats_booked'));
+            const routeKey = `${currentBooking.from}-${currentBooking.to}-${currentBooking.date}-${currentBooking.time}-${currentBooking.type}`;
+            
+            if(!bookedStore[routeKey]) bookedStore[routeKey] = [];
+
+            // রিয়েল টাইম ডাবল বুকিং চেক লক
+            let alreadyTaken = false;
+            selectedSeats.forEach(s => {
+                if(bookedStore[routeKey].some(b => b.seat === s)) alreadyTaken = true;
+            });
+            if(alreadyTaken) {
+                alert("🛑 এই সিটটি এইমাত্র অন্য কেউ বুক করে ফেলেছে! অনুগ্রহ করে অন্য সিট ট্রাই করুন।");
+                renderBusCabinGrid();
+                return;
+            }
+
+            // ওয়ালেট থেকে টাকা কাটা এবং বুকিং ডাটা পুশ
+            const timestamp = new Date().getTime();
+            selectedSeats.forEach(s => {
+                bookedStore[routeKey].push({ seat: s, timestamp: timestamp });
+            });
+
+            // মেম্বার ওয়ালেট আপডেট
+            const mIdx = members.findIndex(m => m.id === activeUser.id);
+            members[mIdx].wallet -= totalCost;
+            activeUser.wallet = members[mIdx].wallet;
+            
+            localStorage.setItem('m2vai_members', JSON.stringify(members));
+            localStorage.setItem('m2vai_seats_booked', JSON.stringify(bookedStore));
+            sessionStorage.setItem('m2vai_active_user', JSON.stringify(activeUser));
+
+            updateWalletUI();
+            launchDigitalTicketView();
+        });
+
+        // ১ ঘণ্টা পার হলে সিট অটো রিসেট হওয়ার লজিক ইঞ্জিন
+        function checkSeatExpiry() {
+            const bookedStore = JSON.parse(localStorage.getItem('m2vai_seats_booked'));
+            const now = new Date().getTime();
+            let altered = false;
+
+            for(let route in bookedStore) {
+                const beforeCount = bookedStore[route].length;
+                // ১ ঘণ্টা = ৬০ মিনিট * ৬০ সেকেন্ড * ১০০০ মিলি-সেকেন্ড
+                bookedStore[route] = bookedStore[route].filter(item => (now - item.timestamp) < 60 * 60 * 1000);
+                if(bookedStore[route].length !== beforeCount) altered = true;
+            }
+
+            if(altered) {
+                localStorage.setItem('m2vai_seats_booked', JSON.stringify(bookedStore));
+                if(document.getElementById('page3').classList.contains('hidden') === false) {
+                    renderBusCabinGrid();
+                }
+            }
+        }
+
+        // ==================== REWARDING SYSTEM TASKS (YOUTUBE) ====================
+        function runYoutubeTask(taskType) {
+            if(taskType === 'sub') {
+                window.open("https://youtube.com/@m2vai?si=ls4xlp9EG8hjwE7B", "_blank");
+                setTimeout(() => {
+                    addBonusMoney(5000, "চ্যানেল সাবস্ক্রাইব করার জন্য ৫০০০ BDT বোনাস দেওয়া হয়েছে!");
+                }, 5000);
+            } else if(taskType === 'video') {
+                window.open("https://youtu.be/aYwYMretqvE?si=mb0PkhaaiU8GmnT7", "_blank");
+                // ১ মিনিট এর টাইমার এলার্ট ওয়াচিং রিওয়ার্ড প্রসেস
+                alert("ভিডিওটি ওপেন হয়েছে। ১ মিনিটের বেশি সময় দেখলে আপনার অ্যাকাউন্টে ২০০০ BDT বোনাস যোগ হবে।");
+                setTimeout(() => {
+                    addBonusMoney(2000, "ভিডিওটি ১ মিনিট সফলভাবে দেখার জন্য ২০০০ BDT বোনাস দেওয়া হয়েছে!");
+                }, 60000); // ঠিক ৬০ সেকেন্ড পর বোনাস ক্রেডিট হবে
+            }
+        }
+
+        function addBonusMoney(amount, successMsg) {
+            const members = JSON.parse(localStorage.getItem('m2vai_members'));
+            const mIdx = members.findIndex(m => m.id === activeUser.id);
+            members[mIdx].wallet += amount;
+            activeUser.wallet = members[mIdx].wallet;
+            
+            localStorage.setItem('m2vai_members', JSON.stringify(members));
+            sessionStorage.setItem('m2vai_active_user', JSON.stringify(activeUser));
+            updateWalletUI();
+            alert(`🎉 ${successMsg}`);
+        }
+
+        // ==================== PAGE 4: DIGITAL TICKET VIEWER & PNG EXPORTER ====================
+        function launchDigitalTicketView() {
+            document.getElementById('t-id').innerText = activeUser.id;
+            document.getElementById('t-name').innerText = activeUser.name;
+            document.getElementById('t-gameid').innerText = activeUser.gameId;
+            document.getElementById('t-phone').innerText = activeUser.phone;
+            
+            document.getElementById('t-from').innerText = currentBooking.from;
+            document.getElementById('t-to').innerText = currentBooking.to;
+            document.getElementById('t-datetime').innerText = `${currentBooking.date} [${currentBooking.time}]`;
+            document.getElementById('t-coachtype').innerText = `${currentBooking.type} Coach`;
+            document.getElementById('t-seats').innerText = selectedSeats.join(', ');
+            
+            const now = new Date();
+            document.getElementById('t-issuetime').innerText = `Issued At: ${now.toLocaleDateString()} | ${now.toLocaleTimeString()} (Secure Server Ticket)`;
+
+            switchPage('page4');
+        }
+
+        // html2canvas দিয়ে টিকিটকে ক্রিস্টাল ক্লিয়ার পিকচার PNG ফাইলে ডাউনলোড করা ও হোম পেজে নিয়ে যাওয়া
+        document.getElementById('download-ticket-btn').addEventListener('click', () => {
+            const element = document.getElementById('digital-ticket-card');
+            
+            html2canvas(element, { scale: 3 }).then((canvas) => {
+                const image = canvas.toDataURL("image/png");
+                const link = document.createElement('a');
+                link.download = `M2Vai-Ticket-${activeUser.id}-${Date.now()}.png`;
+                link.href = image;
+                link.click();
+                
+                // টিকিট ডাউনলোডের পর অটোমেশন স্ক্রিপ্ট অনুযায়ী ড্যাশবোর্ড ক্লিয়ার করে একদম প্রথম লগইন পেজে ব্যাক
+                alert("টিকিট সফলভাবে ছবি আকারে ডাউনলোড হয়েছে! নিরাপত্তা জনিত কারণে সেশন রিলোড করে আপনাকে হোম পেজে রিডাইরেক্ট করা হচ্ছে।");
+                logoutAction();
+            });
+        });
+
+        // ==================== LIVE MEMBER SEARCH BOX ENGINE ====================
+        document.getElementById('global-search').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                const targetId = this.value.trim();
+                if(!targetId) return;
+
+                const members = JSON.parse(localStorage.getItem('m2vai_members'));
+                const found = members.find(m => m.id === targetId);
+
+                if(!found) {
+                    alert("❌ দুঃখিত, এই আইডি নম্বরের কোনো মেম্বার খুঁজে পাওয়া যায়নি!");
+                } else {
+                    alert(`🔍 মেম্বার তথ্য পাওয়া গেছে:\n\nআইডি নম্বর: ${found.id}\nনাম: ${found.name}\nইন-গেম আইডি: ${found.gameId}\nস্ট্যাটাস: ${found.status.toUpperCase()}\nওয়ালেট ফান্ড: ${found.wallet} BDT`);
+                }
+                this.value = '';
+            }
+        });
+
+        // ==================== HAMBURGER MENU BUTTON TRIGGERS ====================
+        document.getElementById('menu-btn').addEventListener('click', () => {
+            document.getElementById('sidebar-menu').classList.remove('-translate-x-full');
+        });
+        document.getElementById('close-menu').addEventListener('click', () => {
+            document.getElementById('sidebar-menu').classList.add('-translate-x-full');
+        });
+
+        // মেনুবার প্রোফাইল ওপেন একশন ও PNG কাস্টম আপলোডার লজিক
+        document.getElementById('menu-profile-btn').addEventListener('click', () => {
+            document.getElementById('sidebar-menu').classList.add('-translate-x-full');
+            
+            document.getElementById('p-id').innerText = activeUser.id;
+            document.getElementById('p-name').innerText = activeUser.name;
+            document.getElementById('p-gameid').innerText = activeUser.gameId;
+            document.getElementById('p-dob').innerText = activeUser.dob;
+            document.getElementById('p-phone').innerText = activeUser.phone;
+            document.getElementById('p-email').innerText = activeUser.email;
+            document.getElementById('p-fb').innerText = activeUser.fb;
+            document.getElementById('p-fb').href = activeUser.fb;
+            document.getElementById('p-wallet').innerText = `${activeUser.wallet} BDT`;
+
+            // আপলোডেড ইমেজ থাকলে রেন্ডার
+            const img = document.getElementById('user-uploaded-img');
+            const icon = document.getElementById('default-avatar-icon');
+            if(activeUser.avatar) {
+                img.src = activeUser.avatar;
+                img.classList.remove('hidden');
+                icon.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                icon.classList.remove('hidden');
+            }
+
+            switchPage('sub-profile');
+        });
+
+        // সর্বোচ্চ 300KB এবং শুধুমাত্র PNG ফাইল রেস্ট্রিকশন ইমেজ রিডার
+        document.getElementById('avatar-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            if(file.type !== 'image/png') {
+                alert("🛑 ত্রুটি: শুধুমাত্র PNG ফরম্যাটের ছবি আপলোড করা যাবে!");
+                this.value = '';
+                return;
+            }
+            if(file.size > 300 * 1024) {
+                alert("🛑 ত্রুটি: ছবির সাইজ সর্বোচ্চ 300KB হতে পারবে!");
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const base64Img = evt.target.result;
+                const members = JSON.parse(localStorage.getItem('m2vai_members'));
+                const mIdx = members.findIndex(m => m.id === activeUser.id);
+                
+                members[mIdx].avatar = base64Img;
+                activeUser.avatar = base64Img;
+
+                localStorage.setItem('m2vai_members', JSON.stringify(members));
+                sessionStorage.setItem('m2vai_active_user', JSON.stringify(activeUser));
+
+                document.getElementById('user-uploaded-img').src = base64Img;
+                document.getElementById('user-uploaded-img').classList.remove('hidden');
+                document.getElementById('default-avatar-icon').classList.add('hidden');
+                alert("প্রোফাইল পিকচার সফলভাবে আপলোড করা হয়েছে!");
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // কন্টাক্ট এবং অ্যাডমিন বাটন ট্রিগার্স
+        document.getElementById('menu-contact-btn').addEventListener('click', () => {
+            document.getElementById('sidebar-menu').classList.add('-translate-x-full');
+            switchPage('sub-contact');
+        });
+
+        document.getElementById('menu-admin-btn').addEventListener('click', () => {
+            document.getElementById('sidebar-menu').classList.add('-translate-x-full');
+            document.getElementById('admin-role-badge').innerText = activeUser.role;
+            document.getElementById('adm-member-card').classList.add('hidden');
+            document.getElementById('adm-search-id').value = '';
+            
+            // রোল ভিত্তিক অপশন কন্ট্রোল গ্র্যান্ড অ্যাক্সেস
+            if(activeUser.role === 'counter_master') {
+                document.getElementById('adm-notice-section').classList.add('hidden');
+            } else {
+                document.getElementById('adm-notice-section').classList.remove('hidden');
+            }
+            switchPage('sub-admin');
+        });
+
+        // ==================== ADVANCED ADMIN PANEL INTERNAL ACTIONS ====================
+        let searchedAdminMember = null;
+
+        function adminFetchMember() {
+            const id = document.getElementById('adm-search-id').value.trim();
+            if(!id) return;
+            const members = JSON.parse(localStorage.getItem('m2vai_members'));
+            const found = members.find(m => m.id === id);
+
+            if(!found) { alert("মেম্বার পাওয়া যায়নি!"); return; }
+            searchedAdminMember = found;
+
+            document.getElementById('adm-m-name').innerText = found.name;
+            document.getElementById('adm-m-id').innerText = `ID: ${found.id}`;
+            document.getElementById('adm-m-role').innerText = found.role;
+            document.getElementById('adm-m-wallet').innerText = found.wallet;
+            
+            const statusNode = document.getElementById('adm-m-status');
+            statusNode.innerText = found.status.toUpperCase();
+            statusNode.className = found.status === 'active' ? "text-green-400 font-bold" : "text-red-500 font-bold";
+
+            // বাটন টেক্সট সিঙ্ক
+            document.getElementById('btn-ban').innerText = found.status === 'active' ? "Ban Member" : "Unban Member";
+            document.getElementById('btn-role').innerText = found.role === 'user' ? "Make Moderator" : "Demote to User";
+
+            // কাউন্টার মাস্টার রেস্ট্রিকশন লকিং মেকানিজম
+            if(activeUser.role === 'counter_master') {
+                document.getElementById('adm-actions-container').classList.add('hidden');
+            } else {
+                document.getElementById('adm-actions-container').classList.remove('hidden');
+            }
+
+            document.getElementById('adm-member-card').classList.remove('hidden');
+        }
+
+        // মেম্বার Ban এবং Unban এক্সিকিউশন প্যানেল
+        function adminToggleBan() {
+            if(searchedAdminMember.email === 'info.m2vai380@gmail.com') { alert("সুপার অ্যাডমিনকে ব্যান করা অসম্ভব!"); return; }
+            
+            const members = JSON.parse(localStorage.getItem('m2vai_members'));
+            const mIdx = members.findIndex(m => m.id === searchedAdminMember.id);
+            
+            const currentStatus = members[mIdx].status;
+            members[mIdx].status = currentStatus === 'active' ? 'banned' : 'active';
+            
+            localStorage.setItem('m2vai_members', JSON.stringify(members));
+            alert(`মেম্বার স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে!`);
+            adminFetchMember();
+            renderActiveUsersMarquee();
+        }
+
+        // মোডারেটর মেকার রোল কনফিগ
+        function adminToggleRole() {
+            if(activeUser.role !== 'admin') { alert("শুধুমাত্র মেইন সুপার অ্যাডমিন রোল পরিবর্তন করতে পারবেন!"); return; }
+            if(searchedAdminMember.email === 'info.m2vai380@gmail.com') { alert("সুপার অ্যাডমিনের রোল পরিবর্তনযোগ্য নয়!"); return; }
+
+            const members = JSON.parse(localStorage.getItem('m2vai_members'));
+            const mIdx = members.findIndex(m => m.id === searchedAdminMember.id);
+            
+            members[mIdx].role = members[mIdx].role === 'user' ? 'moderator' : 'user';
+            localStorage.setItem('m2vai_members', JSON.stringify(members));
+            alert("মেম্বার রোল সফলভাবে আপডেট হয়েছে!");
+            adminFetchMember();
+        }
+
+        // ওয়ালেট ফান্ড গিফটিং সিস্টেম (Wallet Gift)
+        function adminGiftWallet() {
+            if(activeUser.role !== 'admin') { alert("শুধুমাত্র মেইন সুপার অ্যাডমিন ওয়ালেট গিফট ফান্ড প্রদান করতে পারবেন!"); return; }
+            const amt = parseInt(document.getElementById('adm-gift-amt').value);
+            if(!amt || amt <= 0) { alert("সঠিক অ্যামাউন্ট লিখুন!"); return; }
+
+            const members = JSON.parse(localStorage.getItem('m2vai_members'));
+            const mIdx = members.findIndex(m => m.id === searchedAdminMember.id);
+            
+            members[mIdx].wallet += amt;
+            localStorage.setItem('m2vai_members', JSON.stringify(members));
+            document.getElementById('adm-gift-amt').value = '';
+            alert(`সফলভাবে ${amt} BDT গিফট ফান্ড হিসেবে মেম্বারের ওয়ালেটে যোগ করা হয়েছে!`);
+            adminFetchMember();
+        }
+
+        // সমস্ত বাসের বুকিং করা সিট রিসেট মেকানিজম
+        function adminResetSeats() {
+            if(!confirm("আপনি কি নিশ্চিতভাবে সমস্ত বাসের বুকিং হওয়া সিটগুলো রিসেট করতে চান?")) return;
+            localStorage.setItem('m2vai_seats_booked', JSON.stringify({}));
+            alert("সব বাসের বুকিং করা সিট রিসেট করে খালি করে দেওয়া হয়েছে!");
+            if(!document.getElementById('page3').classList.contains('hidden')) {
+                renderBusCabinGrid();
+            }
+        }
+
+        // নোটিশ টেক্সট আপডেট ইঞ্জিন
+        function adminUpdateNotice() {
+            const text = document.getElementById('adm-notice-input').value.trim();
+            if(!text) return;
+            localStorage.setItem('m2vai_live_notice', "📢 " + text);
+            document.getElementById('live-notice-text').innerText = "📢 " + text;
+            document.getElementById('adm-notice-input').value = '';
+            alert("গ্লোবাল লাইভ স্ক্রলিং নোটিশ বোর্ড আপডেট করা হয়েছে!");
+        }
+
+        // ==================== LOGOUT CONTROLLERS ====================
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            document.getElementById('sidebar-menu').classList.add('-translate-x-full');
+            logoutAction();
+        });
+
+        function logoutAction() {
+            activeUser = null;
+            currentBooking = null;
+            selectedSeats = [];
+            historyStack = ['page1'];
+            sessionStorage.clear();
+            switchPage('page1');
+        }
     </script>
 </body>
 </html>
