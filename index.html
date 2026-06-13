@@ -1,79 +1,84 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M2Vai Online Ticket Counter</title>
+    <title>M2Vai ONLINE TICKET COUNTER</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        /* CSS Variables & Global Dark Theme */
         :root {
             --bg-color: #0d1117;
-            --card-bg: #161b22;
+            --panel-bg: rgba(22, 27, 34, 0.85);
             --neon-cyan: #00f2fe;
-            --neon-green: #00cdac;
-            --text-main: #c9d1d9;
-            --text-bright: #ffffff;
+            --neon-green: #4facfe;
+            --text-main: #ffffff;
+            --text-gray: #8b949e;
             --btn-dark: #21262d;
+            --btn-dark-hover: #30363d;
+            --seat-empty: #30363d;
+            --seat-selected: #238636;
+            --seat-booked: #da3637;
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Arial', sans-serif;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
             overflow-x: hidden;
-            position: relative;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
-        /* Full Screen Watermark */
+        /* Background Global Watermark */
         body::before {
             content: "";
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 400px;
-            height: 400px;
-            background: url('image/M2Vai Official YouTube Channel Logo.png') no-repeat center center;
+            width: 600px;
+            height: 600px;
+            background: url('image/M2Vai Official YouTube Channel Logo.png') no-repeat center;
             background-size: contain;
             opacity: 0.03;
+            z-index: -1;
             pointer-events: none;
-            z-index: 0;
         }
 
         .page {
             display: none;
-            position: relative;
-            z-index: 1;
-            padding-bottom: 60px;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
         }
 
         .page.active {
-            display: block;
+            display: flex;
         }
 
-        /* Utilities & Layouts */
-        .container {
-            max-width: 480px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Top Header */
+        /* Top Header & Language Toggle */
         .top-header {
+            width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
-            background-color: var(--card-bg);
-            border-bottom: 1px solid #30363d;
+            padding: 10px 0;
+            margin-bottom: 10px;
         }
 
         .header-left {
@@ -89,346 +94,657 @@
         }
 
         .header-title {
-            color: var(--text-bright);
+            font-size: 1.1rem;
             font-weight: bold;
-            font-size: 16px;
-        }
-
-        .search-box-container {
-            flex: 1;
-            margin: 0 15px;
-            position: relative;
-        }
-
-        .search-box-container input {
-            width: 100%;
-            padding: 6px 30px 6px 12px;
-            background: var(--bg-color);
-            border: 1px solid #30363d;
-            border-radius: 20px;
-            color: var(--text-bright);
-            font-size: 13px;
-        }
-
-        .search-box-container i {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #8b949e;
-        }
-
-        .lang-btn {
-            background: var(--btn-dark);
-            color: var(--neon-cyan);
-            border: 1px solid #30363d;
-            padding: 5px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        /* Live Clock & Widget */
-        .clock-widget {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        .wish-text {
-            color: var(--neon-cyan);
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
-        }
-
-        .time-box {
-            background: rgba(22, 27, 34, 0.8);
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 12px;
-            display: inline-block;
-            width: 100%;
-            max-width: 320px;
-        }
-
-        .live-time {
-            color: var(--neon-cyan);
-            font-size: 24px;
-            font-weight: bold;
+            color: var(--text-main);
             letter-spacing: 1px;
         }
 
-        .live-date {
-            color: #8b949e;
-            font-size: 11px;
-            text-transform: uppercase;
-            margin-top: 4px;
+        .search-center {
+            flex: 1;
+            margin: 0 15px;
+            display: none;
         }
 
-        /* Branding Main */
-        .branding-section {
-            text-align: center;
-            margin-top: 20px;
+        .search-center input {
+            width: 100%;
+            padding: 6px 12px;
+            background: var(--btn-dark);
+            border: 1px solid #30363d;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
         }
 
-        .main-glowing-logo {
+        .search-center input:focus {
+            border-color: var(--neon-cyan);
+        }
+
+        .lang-toggle {
+            display: flex;
+            background: var(--btn-dark);
+            border-radius: 20px;
+            padding: 2px;
+            border: 1px solid #30363d;
+            cursor: pointer;
+        }
+
+        .lang-btn {
+            padding: 4px 10px;
+            border-radius: 18px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .lang-btn.active {
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+            color: #000;
+        }
+
+        .lang-btn.inactive {
+            color: var(--text-gray);
+        }
+
+        /* Hamburger Menu */
+        .menu-icon {
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--text-main);
+            display: none;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            height: 100%;
+            background: #161b22;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            z-index: 100;
+            transition: 0.3s ease-in-out;
+            padding: 20px;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 10px;
+        }
+
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu-item:hover {
+            background: var(--btn-dark);
+            color: var(--neon-cyan);
+        }
+
+        /* Main Glowing Logo */
+        .main-logo-container {
+            margin-top: 10px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-logo {
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            border: 3px solid var(--neon-cyan);
-            box-shadow: 0 0 20px var(--neon-cyan), inset 0 0 15px var(--neon-cyan);
-            padding: 5px;
-            background: var(--bg-color);
+            border: 3px solid transparent;
+            background: linear-gradient(var(--bg-color), var(--bg-color)) padding-box,
+                        linear-gradient(135deg, var(--neon-green), var(--neon-cyan)) border-box;
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
         }
 
-        .main-title {
-            color: var(--text-bright);
-            font-size: 20px;
+        .branding-text {
+            text-align: center;
             margin-top: 15px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
         }
 
-        .sub-title {
+        .branding-text h1 {
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+        }
+
+        .branding-text p {
+            font-size: 0.8rem;
             color: var(--neon-green);
-            font-size: 13px;
             margin-top: 4px;
-            font-weight: 500;
         }
 
-        /* Forms Styling */
+        /* Clock & Wish Container */
+        .clock-container {
+            width: 100%;
+            background: var(--panel-bg);
+            border: 1px solid rgba(48, 54, 61, 0.6);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin: 15px 0;
+            backdrop-filter: blur(8px);
+        }
+
+        .wish-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #ff9f43;
+            margin-bottom: 5px;
+            text-shadow: 0 0 8px rgba(255,159,67,0.3);
+        }
+
+        .live-time {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--neon-cyan);
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0,242,254,0.3);
+        }
+
+        .live-date {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            margin-top: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Form Controls */
         .auth-card {
-            background: var(--card-bg);
+            width: 100%;
+            background: var(--panel-bg);
             border: 1px solid #30363d;
             border-radius: 16px;
-            padding: 24px;
-            margin-top: 25px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            padding: 20px;
+            backdrop-filter: blur(10px);
         }
 
-        .card-prompt {
+        .card-msg {
             text-align: center;
-            font-size: 15px;
-            color: var(--text-bright);
+            font-size: 0.95rem;
+            color: var(--text-main);
             margin-bottom: 20px;
         }
 
-        .input-group {
-            margin-bottom: 16px;
+        .form-group {
+            margin-bottom: 15px;
             position: relative;
         }
 
-        .input-group label {
+        .form-group label {
             display: block;
-            font-size: 13px;
-            color: #8b949e;
+            font-size: 0.8rem;
+            color: var(--text-gray);
             margin-bottom: 6px;
         }
 
-        .input-field {
+        .form-group input, .form-group select {
             width: 100%;
-            padding: 12px 14px;
-            background: #0d1117;
+            padding: 10px 12px;
+            background: rgba(21, 26, 33, 0.8);
             border: 1px solid #30363d;
             border-radius: 8px;
-            color: var(--text-bright);
-            font-size: 14px;
-            transition: border-color 0.3s;
+            color: #fff;
+            outline: none;
+            font-size: 0.9rem;
         }
 
-        .input-field:focus {
-            outline: none;
+        .form-group input:focus {
             border-color: var(--neon-cyan);
         }
 
         .password-toggle {
             position: absolute;
-            right: 14px;
-            top: 38px;
+            right: 12px;
+            top: 33px;
             cursor: pointer;
-            color: #8b949e;
+            color: var(--text-gray);
+            font-size: 0.95rem;
         }
 
-        .pass-msg {
-            font-size: 12px;
-            margin-top: 5px;
-            font-weight: bold;
+        .pwd-match-msg {
+            font-size: 0.75rem;
+            margin-top: 4px;
+            display: block;
         }
 
-        /* Button Layouts */
-        .btn-container {
+        /* Button Configuration */
+        .btn-row {
             display: flex;
             gap: 15px;
             margin-top: 20px;
+            width: 100%;
         }
 
         .btn-login {
             flex: 1;
-            background: linear-gradient(135deg, #00cdac, #02aab0);
+            padding: 12px;
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
             color: #000;
             border: none;
-            padding: 12px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 0.95rem;
             cursor: pointer;
-            box-shadow: 0 0 15px rgba(0, 205, 172, 0.4);
-            transition: transform 0.2s;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+            transition: 0.3s;
+        }
+
+        .btn-login:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
 
         .btn-signup {
             flex: 1;
-            background: var(--btn-dark);
-            color: var(--text-bright);
-            border: 1px solid #30363d;
             padding: 12px;
+            background: var(--btn-dark);
+            color: var(--text-main);
+            border: 1px solid #30363d;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: 0.3s;
         }
 
         .btn-signup:hover {
-            background: #21262d;
+            background: var(--btn-dark-hover);
         }
 
         /* Notice Board */
-        .notice-container {
-            margin: 15px 0;
-            background: var(--card-bg);
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 10px;
+        .notice-board-wrapper {
+            width: 100%;
+            margin-bottom: 15px;
         }
 
         .notice-title {
-            font-size: 13px;
-            color: var(--neon-cyan);
+            font-size: 0.85rem;
+            color: #ff9f43;
             font-weight: bold;
             margin-bottom: 4px;
         }
 
-        /* Active Members Marquee */
-        .active-members-box {
-            background: var(--card-bg);
+        .notice-marquee {
+            background: rgba(22, 27, 34, 0.6);
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 6px;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+
+        /* Active Members Marquee Scroll Bar */
+        .active-members-bar {
+            width: 100%;
+            background: rgba(22, 27, 34, 0.8);
             border: 1px solid #30363d;
             border-radius: 10px;
-            padding: 10px;
+            padding: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .active-scroll-container {
+            display: inline-block;
+            animation: marqueeScroll 20s linear infinite;
+        }
+
+        .active-scroll-container:hover {
+            animation-play-state: paused;
+        }
+
+        .active-user-card {
+            display: inline-flex;
+            align-items: center;
+            background: #1f242c;
+            border: 1px solid #30363d;
+            border-radius: 25px;
+            padding: 4px 12px;
+            margin-right: 15px;
+            gap: 8px;
+        }
+
+        .active-user-img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--neon-cyan);
+            object-fit: cover;
+        }
+
+        .active-user-info {
+            font-size: 0.75rem;
+            line-height: 1.2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .active-dot-label {
+            color: #238636;
+            font-weight: bold;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        @keyframes marqueeScroll {
+            0% { transform: translate3d(100%, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* Profile Pop-up Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-gray);
+        }
+
+        .profile-img-setup {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .profile-pic-view {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            object-fit: cover;
+        }
+
+        .upload-lbl {
+            font-size: 0.8rem;
+            color: var(--neon-cyan);
+            cursor: pointer;
+            border: 1px dashed var(--neon-cyan);
+            padding: 4px 10px;
+            border-radius: 5px;
+        }
+
+        .profile-data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #21262d;
+            font-size: 0.9rem;
+        }
+
+        /* Seat Plan Layout */
+        .seat-grid-container {
+            width: 100%;
+            background: var(--panel-bg);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 15px;
             margin: 15px 0;
+        }
+
+        .bus-front-row {
+            display: flex;
+            justify-content: right;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #30363d;
+        }
+
+        .driver-steering {
+            font-size: 1.3rem;
+            color: var(--text-gray);
+        }
+
+        .seats-layout {
+            display: grid;
+            gap: 10px;
+        }
+
+        /* Dynamic row setup via script (1+2 or 2+2) */
+        .seat {
+            background: var(--seat-empty);
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .seat.selected { background: var(--seat-selected); border-color: #555; }
+        .seat.booked { background: var(--seat-booked); pointer-events: none; }
+        .seat.walkway { background: transparent; border: none; pointer-events: none; }
+
+        /* Dynamic Ticket Interface Design */
+        .ticket-box {
+            width: 100%;
+            background: #ffffff;
+            color: #000000;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             overflow: hidden;
         }
 
-        .marquee-wrapper {
-            display: flex;
-            gap: 30px;
-            animation: marquee 20s linear infinite;
-            width: max-content;
+        /* Ticket Background Watermark Layer */
+        .ticket-box::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;
+            height: 250px;
+            background: url('image/M2Vai Official YouTube Channel Logo.png') no-repeat center;
+            background-size: contain;
+            opacity: 0.08;
+            z-index: 1;
+            pointer-events: none;
         }
 
-        @keyframes marquee {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-50%); }
-        }
-
-        .member-chip {
+        .ticket-header {
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: #0d1117;
-            padding: 6px 12px;
-            border-radius: 20px;
-            border: 1px solid #30363d;
-        }
-
-        .member-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid var(--neon-green);
-        }
-
-        .member-info-text {
-            font-size: 11px;
-            line-height: 1.3;
-        }
-
-        .status-dot {
-            color: #238636;
-            font-size: 10px;
-            margin-left: 4px;
-        }
-
-        /* Footer & Social Links */
-        .footer-section {
-            text-align: center;
-            margin-top: 40px;
-            padding: 20px 0;
-        }
-
-        .social-icons-row {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+            gap: 12px;
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 12px;
             margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .ticket-logo {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+        }
+
+        .ticket-hd-text h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #111;
+            letter-spacing: 0.5px;
+        }
+
+        .ticket-hd-text p {
+            font-size: 0.75rem;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .ticket-body {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .t-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 4px;
+        }
+
+        .t-lbl { font-weight: 600; color: #555; }
+        .t-val { font-weight: bold; color: #000; }
+        .t-val.seat-highlight { color: #da3637; font-size: 0.95rem; }
+
+        .ticket-rules {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            font-size: 0.7rem;
+            color: #444;
+            line-height: 1.4;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Footer Global Structure */
+        footer {
+            width: 100%;
+            max-width: 480px;
+            margin: auto auto 0 auto;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .social-row {
+            display: flex;
+            gap: 12px;
         }
 
         .social-icon {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
-            font-size: 18px;
+            font-size: 1.1rem;
             text-decoration: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: 0.3s;
         }
 
+        .social-icon.fb { background: #1877f2; }
+        .social-icon.yt { background: #ff0000; }
+        .social-icon.ig { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .social-icon.x { background: #000000; border: 1px solid #333; }
+        .social-icon.dc { background: #5865f2; }
+        .social-icon.gm { background: #ea4335; }
+        .social-icon:hover { transform: scale(1.1); }
+
         .policy-links {
-            font-size: 12px;
-            color: #8b949e;
-            margin-bottom: 20px;
+            font-size: 0.75rem;
+            color: var(--text-gray);
             display: flex;
-            justify-content: center;
             gap: 10px;
         }
 
-        .policy-links a {
-            color: #8b949e;
-            text-decoration: none;
-        }
+        .policy-links a { color: var(--text-gray); text-decoration: none; }
 
+        /* Creator Panel Card */
         .creator-card {
-            background: var(--card-bg);
+            width: 100%;
+            background: #161b22;
             border: 1px solid #30363d;
-            border-radius: 14px;
-            padding: 16px;
-            max-width: 400px;
-            margin: 0 auto;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
 
-        .creator-header {
+        .creator-info {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 12px;
+            gap: 10px;
         }
 
-        .creator-logo {
-            width: 36px;
-            height: 36px;
+        .creator-img {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
         }
 
-        .sub-btn-grid {
+        .creator-text {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            line-height: 1.3;
+        }
+
+        .creator-text strong { color: #fff; font-size: 0.85rem; }
+
+        .sub-btn-container {
             display: flex;
             gap: 10px;
+            width: 100%;
         }
 
         .sub-btn {
@@ -436,1104 +752,1100 @@
             background: #cc0000;
             color: #fff;
             border: none;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            font-size: 12px;
-            font-weight: bold;
+            gap: 6px;
             cursor: pointer;
             text-decoration: none;
         }
 
-        /* Hamburger Menu & Navigation Slide */
-        .nav-trigger {
-            font-size: 20px;
-            color: var(--text-bright);
-            cursor: pointer;
-        }
+        .sub-btn.traveller { background: #b33939; }
+        .sub-btn:hover { opacity: 0.9; }
 
-        .side-menu {
-            position: fixed;
-            top: 0;
-            left: -260px;
-            width: 260px;
-            height: 100%;
-            background: var(--card-bg);
-            border-right: 1px solid #30363d;
-            z-index: 999;
-            transition: left 0.3s ease;
-            padding: 20px;
-        }
-
-        .side-menu.open {
-            left: 0;
-        }
-
-        .menu-item {
-            padding: 12px 15px;
-            color: var(--text-bright);
-            cursor: pointer;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .menu-item:hover {
-            background: var(--bg-color);
-            color: var(--neon-cyan);
-        }
-
-        /* Profile Sheet */
-        .profile-pic-frame {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 2px solid var(--neon-cyan);
-            margin: 0 auto 15px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .profile-img-output {
+        /* Admin Action UI Box */
+        .admin-section {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Seat Layout */
-        .bus-container {
-            background: var(--card-bg);
-            border: 1px solid #30363d;
+            background: #1f242c;
+            border: 1px solid #da3637;
             border-radius: 12px;
-            padding: 20px;
+            padding: 15px;
             margin-top: 15px;
         }
 
-        .seat-grid {
-            display: grid;
+        .admin-title {
+            font-size: 0.95rem;
+            color: #da3637;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 4px;
+        }
+
+        .admin-row {
+            display: flex;
             gap: 10px;
-            margin-top: 20px;
+            margin-bottom: 10px;
         }
 
-        .seat {
-            background: var(--btn-dark);
-            border: 1px solid #30363d;
-            color: var(--text-bright);
-            padding: 10px;
-            text-align: center;
-            border-radius: 6px;
+        .admin-btn {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: bold;
         }
 
-        .seat.selected {
-            background: var(--neon-green) !important;
-            color: #000 !important;
-        }
-
-        .seat.booked {
-            background: #da3637 !important;
-            color: #fff !important;
-            cursor: not-allowed;
-        }
-
-        /* Ticket Template */
-        .ticket-wrapper {
-            background: #ffffff;
-            color: #0d1117;
-            border-radius: 16px;
-            padding: 20px;
-            position: relative;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            overflow: hidden;
-        }
-
-        .ticket-wrapper::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 220px;
-            height: 220px;
-            background: url('image/M2Vai Official YouTube Channel Logo.png') no-repeat center center;
-            background-size: contain;
-            opacity: 0.12;
-            pointer-events: none;
-        }
-
-        .ticket-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-
-        .ticket-table td {
-            padding: 10px 0;
-            border-bottom: 1px dashed #e1e4e8;
-            font-size: 14px;
-        }
-
-        .ticket-table td.label {
-            color: #586069;
-            font-weight: bold;
-        }
-
-        .ticket-table td.value {
-            text-align: right;
-            font-weight: bold;
-            color: #0d1117;
-        }
-
-        /* Popups */
-        .popup-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .popup-content {
-            background: var(--card-bg);
-            border: 1px solid #30363d;
-            border-radius: 14px;
-            padding: 20px;
-            width: 100%;
-            max-width: 400px;
-            position: relative;
-        }
-
-        .admin-table {
-            width: 100%;
-            font-size: 12px;
-            margin-top: 10px;
-            border-collapse: collapse;
-        }
-
-        .admin-table th, .admin-table td {
-            border: 1px solid #30363d;
-            padding: 6px;
-            text-align: left;
-        }
+        .btn-ban { background: #da3637; color: #fff; }
+        .btn-unban { background: #238636; color: #fff; }
+        .btn-gift { background: #ff9f43; color: #000; }
     </style>
 </head>
 <body>
 
-    <div id="sideMenu" class="side-menu">
-        <div style="text-align: right; margin-bottom: 15px;">
-            <i class="fas fa-times nav-trigger" onclick="toggleMenu()"></i>
+    <div id="page1" class="page active">
+        <div class="top-header">
+            <div></div> <div class="lang-toggle" onclick="toggleLanguage()">
+                <div id="lang-en" class="lang-btn active">EN</div>
+                <div id="lang-bn" class="lang-btn inactive">বাংলা</div>
+            </div>
         </div>
-        <div class="menu-item" onclick="showSection('profilePage')"><i class="fas fa-user"></i> <span class="lang-text" data-bn="প্রোফাইল" data-en="Profile">প্রোফাইল</span></div>
-        <div id="adminMenuOpt" class="menu-item" style="display:none;" onclick="showSection('adminPage')"><i class="fas fa-user-shield"></i> <span class="lang-text" data-bn="অ্যাডমিন প্যানেল" data-en="Admin Panel">অ্যাডমিন প্যানেল</span></div>
-        <div class="menu-item" onclick="openContactPopup()"><i class="fas fa-envelope"></i> <span class="lang-text" data-bn="যোগাযোগ" data-en="Contact">যোগাযোগ</span></div>
-        <div class="menu-item" onclick="performLogout()" style="margin-top:40px; color:#da3637;"><i class="fas fa-sign-out-alt"></i> <span class="lang-text" data-bn="লগ আউট" data-en="Logout">লগ আউট</span></div>
-    </div>
 
-    <div id="authPage" class="page active">
-        <div class="container">
-            <div style="text-align: right;">
-                <button class="lang-btn" onclick="toggleLanguage()">EN | বাংলা</button>
-            </div>
+        <div class="main-logo-container">
+            <img class="main-logo" src="image/M2Vai Official YouTube Channel Logo.png" alt="M2Vai Logo">
+        </div>
+        <div class="branding-text">
+            <h1 id="txt-brand-title">M2Vai ONLINE TICKET COUNTER</h1>
+            <p>Bangladesh Bussid Unique Society</p>
+        </div>
 
-            <div class="clock-widget">
-                <div id="wishText" class="wish-text">Good Morning! 🌅</div>
-                <div class="time-box">
-                    <div id="liveTime1" class="live-time">00:00:00 AM</div>
-                    <div id="liveDate1" class="live-date">Loading date...</div>
+        <div class="clock-container">
+            <div id="txt-wish" class="wish-text">Good Morning! 🌅</div>
+            <div id="live-time" class="live-time">00:00:00 AM</div>
+            <div id="live-date" class="live-date">Loading date...</div>
+        </div>
+
+        <div class="auth-card">
+            <div id="txt-card-msg" class="card-msg">Please login to book your bus seat</div>
+            
+            <div id="login-fields">
+                <div class="form-group">
+                    <label id="lbl-email" for="login-email">Email Address</label>
+                    <input type="email" id="login-email" placeholder="example@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label id="lbl-pass" for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••">
+                    <i class="fa-solid fa-eye password-toggle" onclick="togglePassword('login-password', this)"></i>
                 </div>
             </div>
 
-            <div class="branding-section">
-                <img src="image/M2Vai Official YouTube Channel Logo.png" class="main-glowing-logo" alt="Logo">
-                <div class="main-title">M2Vai ONLINE TICKET COUNTER</div>
-                <div class="sub-title">Bangladesh Bussid Unique Society</div>
-            </div>
-
-            <div class="auth-card">
-                <div id="formPrompt" class="card-prompt" data-bn="বুকিং করতে আপনার অ্যাকাউন্ট লগইন করুন" data-en="Please login to book your bus seat">বুকিং করতে আপনার অ্যাকাউন্ট লগইন করুন</div>
-                
-                <div class="input-group">
-                    <label class="lang-text" data-bn="ইমেইল অ্যাড্রেস" data-en="Email Address">ইমেইল অ্যাড্রেস</label>
-                    <input type="email" id="authEmail" class="input-field" placeholder="example@gmail.com">
+            <div id="signup-fields" style="display: none;">
+                <div class="form-group">
+                    <label id="lbl-reg-name">Player Name</label>
+                    <input type="text" id="reg-name" placeholder="M2Vai">
                 </div>
-
-                <div class="input-group">
-                    <label class="lang-text" data-bn="পাসওয়ার্ড" data-en="Password">পাসওয়ার্ড</label>
-                    <input type="password" id="authPassword" class="input-field">
-                    <i class="fas fa-eye password-toggle" onclick="togglePasswordVisibility('authPassword', this)"></i>
+                <div class="form-group">
+                    <label id="lbl-reg-game">Game ID</label>
+                    <input type="text" id="reg-game" placeholder="123456">
                 </div>
-
-                <div class="input-group" id="confirmPassGroup" style="display: none;">
-                    <label class="lang-text" data-bn="কনফার্ম পাসওয়ার্ড" data-en="Confirm Password">কনফার্ম পাসওয়ার্ড</label>
-                    <input type="password" id="authConfirmPassword" class="input-field" oninput="verifyPasswordsMatch()">
-                    <i class="fas fa-eye password-toggle" onclick="togglePasswordVisibility('authConfirmPassword', this)"></i>
-                    <div id="passMatchMessage" class="pass-msg"></div>
+                <div class="form-group">
+                    <label id="lbl-reg-phone">Mobile No (Optional)</label>
+                    <input type="tel" id="reg-phone" placeholder="01878335098">
                 </div>
-
-                <div class="input-group" id="optionalFields" style="display: none;">
-                    <label class="lang-text" data-bn="প্লেয়ার নাম" data-en="Player Name">প্লেয়ার নাম</label>
-                    <input type="text" id="regPlayerName" class="input-field" placeholder="M2Vai">
-                    <br><br>
-                    <label class="lang-text" data-bn="গেম আইডি" data-en="Game ID">গেম আইডি</label>
-                    <input type="text" id="regGameId" class="input-field" placeholder="12345">
-                    <br><br>
-                    <label class="lang-text" data-bn="মোবাইল নম্বর (ঐচ্ছিক)" data-en="Mobile No (Optional)">মোবাইল নম্বর (ঐচ্ছিক)</label>
-                    <input type="text" id="regMobile" class="input-field" placeholder="017xxxxxxxx">
+                <div class="form-group">
+                    <label id="lbl-reg-email">Email Address</label>
+                    <input type="email" id="reg-email" placeholder="info.m2vai380@gmail.com">
                 </div>
-
-                <div class="btn-container">
-                    <button id="mainLoginBtn" class="btn-login" onclick="handleAuthSubmit(true)">Login Now</button>
-                    <button id="mainSignupBtn" class="btn-signup" onclick="toggleAuthMode(false)">Sign Up Now</button>
+                <div class="form-group">
+                    <label id="lbl-reg-pass">Password</label>
+                    <input type="password" id="reg-pass" placeholder="••••••••" oninput="validatePasswords()">
+                    <i class="fa-solid fa-eye password-toggle" onclick="togglePassword('reg-pass', this)"></i>
+                </div>
+                <div class="form-group">
+                    <label id="lbl-reg-cpass">Confirm Password</label>
+                    <input type="password" id="reg-cpass" placeholder="••••••••" oninput="validatePasswords()">
+                    <i class="fa-solid fa-eye password-toggle" onclick="togglePassword('reg-cpass', this)"></i>
+                    <span id="pwd-match-indicator" class="pwd-match-msg"></span>
                 </div>
             </div>
 
-            <div class="footer-section">
-                <div class="social-icons-row">
-                    <a href="https://facebook.com" class="social-icon" style="background:#1877f2;"><i class="fab fa-facebook-f"></i></a>
-                    <a href="https://youtube.com" class="social-icon" style="background:#ff0000;"><i class="fab fa-youtube"></i></a>
-                    <a href="https://instagram.com" class="social-icon" style="background:#e1306c;"><i class="fab fa-instagram"></i></a>
-                    <a href="https://x.com" class="social-icon" style="background:#000000;"><i class="fab fa-x-twitter"></i></a>
-                    <a href="https://discord.com" class="social-icon" style="background:#5865f2;"><i class="fab fa-discord"></i></a>
-                    <a href="mailto:info.m2vai380@gmail.com" class="social-icon" style="background:#ea4335;"><i class="far fa-envelope"></i></a>
-                </div>
-                <div class="policy-links">
-                    <a href="#" class="lang-text" data-bn="গোপনীয়তা নীতি" data-en="Privacy Policy">গোপনীয়তা নীতি</a> | 
-                    <a href="#" class="lang-text" data-bn="শর্তাবলী" data-en="Terms & Conditions">শর্তাবলী</a> | 
-                    <a href="#" class="lang-text" data-bn="ফেরত নীতি" data-en="Refund Policy">ফেরত নীতি</a>
-                </div>
-                <div class="creator-card">
-                    <div class="creator-header">
-                        <img src="image/M2Vai Official YouTube Channel Logo.png" class="creator-logo" alt="Creator">
-                        <div>
-                            <div style="font-size:11px; color:#8b949e; text-align:left;">WEBSITE CREATED BY</div>
-                            <div style="font-size:16px; color:#fff; font-weight:bold;">M2Vai</div>
-                        </div>
-                    </div>
-                    <div class="sub-btn-grid">
-                        <a href="https://youtube.com" target="_blank" class="sub-btn">
-                            <img src="image/M2Vai Official YouTube Channel Logo.png" style="width:18px; border-radius:50%;"> M2Vai Subscribe
-                        </a>
-                        <a href="https://youtube.com" target="_blank" class="sub-btn">
-                            <img src="image/Traveller M2Vai.png" style="width:18px; border-radius:50%;"> Traveller Subscribe
-                        </a>
-                    </div>
-                </div>
+            <div class="btn-row">
+                <button id="btn-login-action" class="btn-login" onclick="handleLogin()">Login Now</button>
+                <button id="btn-signup-action" class="btn-signup" onclick="showSignupUI()">Sign Up Now</button>
             </div>
         </div>
     </div>
 
-    <div id="routePage" class="page">
+    <div id="page2" class="page">
         <div class="top-header">
             <div class="header-left">
-                <i class="fas fa-bars nav-trigger" onclick="toggleMenu()"></i>
-                <img src="image/M2Vai Official YouTube Channel Logo.png" class="header-logo" alt="Icon">
+                <i class="fa-solid fa-bars menu-icon" style="display: block;" onclick="toggleSidebar(true)"></i>
+                <img class="header-logo" src="image/M2Vai Official YouTube Channel Logo.png">
                 <span class="header-title">M2Vai PANEL</span>
             </div>
-            <div class="search-box-container">
-                <input type="text" id="memberSearchInput" placeholder="Search Member ID..." onkeyup="handleLiveSearch(this.value)">
-                <i class="fas fa-search"></i>
+            <div class="search-center" style="display: block;">
+                <input type="text" id="member-search" placeholder="Search Member ID..." onkeyup="searchMember()">
             </div>
-            <button class="lang-btn" onclick="toggleLanguage()">EN | বাংলা</button>
-        </div>
-
-        <div class="container">
-            <div class="clock-widget" style="margin:10px 0;">
-                <div class="time-box" style="padding:6px; max-width:100%;">
-                    <span id="liveTime2" style="color:var(--neon-cyan); font-weight:bold; font-size:14px;">00:00:00 AM</span>
-                    <span id="liveDate2" style="color:#8b949e; font-size:11px; margin-left:10px;">Date</span>
-                </div>
-            </div>
-
-            <div class="notice-container">
-                <div class="notice-title" id="noticeBoardHeader">নোটিশ বোর্ড</div>
-                <marquee id="mainNoticeText" style="font-size:13px; color:#fff;">Welcome to M2Vai Online Counter System! Book your seat now.</marquee>
-            </div>
-
-            <div class="active-members-box">
-                <div class="marquee-wrapper" id="activeMembersMarqueeList">
-                    </div>
-            </div>
-
-            <div class="auth-card" style="margin-top:10px;">
-                <div class="card-prompt lang-text" data-bn="আপনার ট্রিপ ও বাসের ধরন নির্বাচন করুন" data-en="Select Your Trip & Bus Type">আপনার ট্রিপ ও বাসের ধরন নির্বাচন করুন</div>
-                
-                <div class="input-group">
-                    <label class="lang-text" data-bn="কোথা থেকে (From)" data-en="From">কোথা থেকে (From)</label>
-                    <input type="text" id="routeFrom" class="input-field" list="districtsList" placeholder="Type city name...">
-                </div>
-
-                <div class="input-group">
-                    <label class="lang-text" data-bn="কোথায় (To)" data-en="To">কোথায় (To)</label>
-                    <input type="text" id="routeTo" class="input-field" list="districtsList" placeholder="Type city name...">
-                </div>
-
-                <div class="input-group">
-                    <label class="lang-text" data-bn="বাসের ধরন" data-en="Bus Type">বাসের ধরন</label>
-                    <select id="busClass" class="input-field" style="background:#0d1117;" onchange="calculateDynamicFare()">
-                        <option value="Non-AC">Non-AC Bus</option>
-                        <option value="AC">AC Premium Bus</option>
-                    </select>
-                </div>
-
-                <div style="margin:15px 0; text-align:center;">
-                    <span class="lang-text" data-bn="নির্ধারিত ভাড়া: " data-en="Ticket Fare: ">নির্ধারিত ভাড়া: </span>
-                    <span id="fareDisplayAmount" style="color:var(--neon-cyan); font-weight:bold; font-size:18px;">450</span> BDT
-                </div>
-
-                <button class="btn-login" style="width:100%;" onclick="navigateToSeatSelection()">Select Seat 🪑</button>
+            <div class="lang-toggle" onclick="toggleLanguage()">
+                <div id="lang-en-p2" class="lang-btn active">EN</div>
+                <div id="lang-bn-p2" class="lang-btn inactive">বাংলা</div>
             </div>
         </div>
-    </div>
 
-    <div id="seatPage" class="page">
-        <div class="top-header">
-            <div class="header-left">
-                <i class="fas fa-arrow-left nav-trigger" onclick="triggerHardwareBack()"></i>
-                <span class="header-title lang-text" data-bn="সিট নির্বাচন" data-en="Select Seat">সিট নির্বাচন</span>
-            </div>
-            <button class="lang-btn" onclick="toggleLanguage()">EN | বাংলা</button>
+        <div class="clock-container" style="margin: 5px 0 15px 0;">
+            <div id="live-time-p2" class="live-time" style="font-size:1.3rem;">00:00:00 AM</div>
         </div>
 
-        <div class="container">
-            <div class="bus-container">
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #30363d; padding-bottom:10px;">
-                    <span style="font-size:12px; color:#8b949e;"><i class="fas fa-wheelchair"></i> Engine Front</span>
-                    <span style="font-size:18px; color:#8b949e;"><i class="fas fa-steering-wheel"></i> 🛞</span>
-                </div>
-                <div id="seatLayoutGrid" class="seat-grid"></div>
+        <div class="notice-board-wrapper">
+            <div id="lbl-notice-hdr" class="notice-title">(নোটিশ বোর্ড)</div>
+            <div class="notice-marquee">
+                <marquee id="marquee-text" behavior="scroll" direction="left">Welcome to M2Vai Online Ticket Counter. Multi-player rooms are controlled securely here.</marquee>
             </div>
+        </div>
 
-            <div class="auth-card" style="padding:15px; margin-top:15px;">
-                <div style="font-size:14px; margin-bottom:10px;">
-                    <span class="lang-text" data-bn="নির্বাচিত সিট: " data-en="Selected Seat: ">নির্বাচিত সিট: </span>
-                    <span id="selectedSeatLabel" style="color:var(--neon-green); font-weight:bold;">None</span>
+        <div class="active-members-bar">
+            <div class="active-scroll-container" id="active-members-list">
                 </div>
-                <div style="font-size:14px; margin-bottom:15px;">
-                    <span class="lang-text" data-bn="মোট প্রদেয় বিল: " data-en="Total Bill: ">মোট প্রদেয় বিল: </span>
-                    <span id="totalBillLabel" style="color:var(--neon-cyan); font-weight:bold;">0</span> BDT
-                </div>
-                <button class="btn-login" style="width:100%;" onclick="processTicketBooking()">Confirm Ticket & Download</button>
+        </div>
+
+        <div class="auth-card">
+            <div class="form-group">
+                <label id="lbl-from">From</label>
+                <select id="route-from" onchange="calculateFare()">
+                    <option value="Bagerhat">Bagerhat</option>
+                    <option value="Dhaka">Dhaka</option>
+                    <option value="Chittagong">Chittagong</option>
+                    <option value="Cox's Bazar">Cox's Bazar</option>
+                    <option value="Sylhet">Sylhet</option>
+                </select>
             </div>
+            <div class="form-group">
+                <label id="lbl-to">To</label>
+                <select id="route-to" onchange="calculateFare()">
+                    <option value="Cox's Bazar">Cox's Bazar</option>
+                    <option value="Dhaka">Dhaka</option>
+                    <option value="Bagerhat">Bagerhat</option>
+                    <option value="Chittagong">Chittagong</option>
+                    <option value="Sylhet">Sylhet</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label id="lbl-class">Bus Class</label>
+                <select id="bus-class" onchange="calculateFare()">
+                    <option value="Non-AC">Non-AC Counter</option>
+                    <option value="AC">Premium AC Counter</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label id="lbl-fare-lbl">Calculated Ticket Fare</label>
+                <div id="fare-display" style="font-size: 1.2rem; font-weight: bold; color: var(--neon-cyan);">500 BDT</div>
+            </div>
+            <button id="btn-next-seat" class="btn-login" style="width:100%;" onclick="navigateToPage(3)">Select Seat 🪑</button>
         </div>
     </div>
 
-    <div id="ticketPage" class="page">
+    <div id="page3" class="page">
         <div class="top-header">
             <div class="header-left">
-                <span class="header-title lang-text" data-bn="আপনার ডিজিটাল টিকিট" data-en="Your Digital Ticket">আপনার ডিজিটাল টিকিট</span>
+                <i class="fa-solid fa-arrow-left menu-icon" style="display: block;" onclick="handleHardwareBack()"></i>
+                <span id="lbl-seat-title" class="header-title">Select Bus Seats</span>
+            </div>
+            <div class="lang-toggle" onclick="toggleLanguage()">
+                <div id="lang-en-p3" class="lang-btn active">EN</div>
+                <div id="lang-bn-p3" class="lang-btn inactive">বাংলা</div>
             </div>
         </div>
 
-        <div class="container">
-            <div id="ticketVisualDownloadArea" class="ticket-wrapper">
-                <div style="display:flex; align-items:center; gap:12px; border-bottom:2px solid #0d1117; padding-bottom:10px;">
-                    <img src="image/M2Vai Official YouTube Channel Logo.png" style="width:45px; height:45px; border-radius:50%;">
-                    <div>
-                        <div style="font-size:18px; font-weight:bold; color:#0d1117;">M2Vai Online Ticket</div>
-                        <div style="font-size:11px; color:#586069; font-weight:500;">Official Online Counter</div>
-                    </div>
+        <div class="seat-grid-container">
+            <div class="bus-front-row">
+                <i class="fa-solid fa-circle-dot driver-steering"></i>
+            </div>
+            <div id="seats-layout-grid" class="seats-layout">
                 </div>
+        </div>
 
-                <table class="ticket-table">
-                    <tr><td class="label">Member ID:</td><td class="value" id="tktMemberId">0000</td></tr>
-                    <tr><td class="label">Player Name:</td><td class="value" id="tktPlayerName">-</td></tr>
-                    <tr><td class="label">Game ID:</td><td class="value" id="tktGameId">-</td></tr>
-                    <tr><td class="label">Mobile No:</td><td class="value" id="tktMobile">-</td></tr>
-                    <tr><td class="label">From:</td><td class="value" id="tktFrom">-</td></tr>
-                    <tr><td class="label">To:</td><td class="value" id="tktTo">-</td></tr>
-                    <tr><td class="label">Date:</td><td class="value" id="tktDate">-</td></tr>
-                    <tr><td class="label">Time:</td><td class="value" id="tktTime">-</td></tr>
-                    <tr><td class="label">Seat Number:</td><td class="value" id="tktSeat" style="color:#da3637; font-size:16px;">-</td></tr>
-                    <tr><td class="label">Issue Time & Date:</td><td class="value" id="tktIssueStamp" style="font-size:11px; color:#586069;">-</td></tr>
-                </table>
+        <button id="btn-confirm-ticket" class="btn-login" style="width:100%; margin-top: 10px;" onclick="confirmSeatBooking()">Confirm Ticket & Download</button>
+    </div>
 
-                <div style="margin-top:15px; font-size:11px; color:#24292e; border-top:1px dashed #e1e4e8; padding-top:10px;">
-                    <p style="font-weight:bold; margin-bottom:4px;">TERMS & RULES / নির্দেশনাবলী:</p>
-                    <p>1. Please report to the counter 15 minutes before travel. / ভ্রমণ শুরুর ১৫ মিনিট পূর্বে কাউন্টারে রিপোর্ট করুন।</p>
-                    <p>2. Keep your downloaded ticket safe in your gallery. / ডাউনলোড করা টিকিটটি আপনার গ্যালারিতে সুরক্ষিত রাখুন।</p>
+    <div id="page4" class="page">
+        <div class="top-header">
+            <span id="lbl-final-ticket-hdr" class="header-title">Your Digital Ticket</span>
+            <div></div>
+        </div>
+
+        <div class="ticket-box" id="downloadable-ticket-card">
+            <div class="ticket-header">
+                <img class="ticket-logo" src="image/M2Vai Official YouTube Channel Logo.png">
+                <div class="ticket-hd-text">
+                    <h2>M2Vai ONLINE TICKET</h2>
+                    <p>Official Online Counter</p>
                 </div>
+            </div>
+            <div class="ticket-body">
+                <div class="t-row"><span class="t-lbl">Member ID:</span><span class="t-val" id="t-id">0001</span></div>
+                <div class="t-row"><span class="t-lbl">Player Name:</span><span class="t-val" id="t-name">M2Vai</span></div>
+                <div class="t-row"><span class="t-lbl">Game ID:</span><span class="t-val" id="t-game">12345</span></div>
+                <div class="t-row"><span class="t-lbl">Mobile No:</span><span class="t-val" id="t-phone">-</span></div>
+                <div class="t-row"><span class="t-lbl">From:</span><span class="t-val" id="t-from">Dhaka</span></div>
+                <div class="t-row"><span class="t-lbl">To:</span><span class="t-val" id="t-to">Cox's Bazar</span></div>
+                <div class="t-row"><span class="t-lbl">Date:</span><span class="t-val" id="t-date">2026-06-14</span></div>
+                <div class="t-row"><span class="t-lbl">Time:</span><span class="t-val" id="t-time">09:00 AM</span></div>
+                <div class="t-row"><span class="t-lbl">Seat Number:</span><span class="t-val seat-highlight" id="t-seat">A1</span></div>
+                <div class="t-row" style="margin-top:5px; background:#f5f5f5; padding:4px;"><span class="t-lbl">Issue Time & Date:</span><span class="t-val" id="t-issue">11:03:59 AM | 13/06/2026</span></div>
+            </div>
+            <div class="ticket-rules">
+                <strong id="lbl-rules-hdr">TERMS & RULES / নির্দেশনাবলী:</strong>
+                <ol id="lbl-rules-list" style="padding-left:15px; margin-top:5px;">
+                    <li>Please maintain formal profile codes inside society counters.</li>
+                    <li>নোট: টিকিট ক্রয়ের পর কোনো রিফান্ড বা আসন পরিবর্তন গ্রহণযোগ্য নয়।</li>
+                </ol>
+            </div>
 
-                <div style="background:#0d1117; border-radius:10px; padding:12px; margin-top:15px; text-align:center; color:#fff;">
-                    <div style="font-size:10px; color:#8b949e;">WEBSITE CREATED BY</div>
-                    <div style="font-size:13px; font-weight:bold; margin-bottom:8px;">M2Vai</div>
-                    <div style="display:flex; gap:6px; justify-content:center;">
-                        <span style="font-size:9px; background:#cc0000; padding:4px 8px; border-radius:4px;"><i class="fab fa-youtube"></i> M2Vai Subbed</span>
-                        <span style="font-size:9px; background:#cc0000; padding:4px 8px; border-radius:4px;"><i class="fab fa-youtube"></i> Traveller Subbed</span>
+            <div class="creator-card" style="background: #0d1117; margin-top: 15px; border-color: #222;">
+                <div class="creator-info">
+                    <img class="creator-img" src="image/M2Vai Official YouTube Channel Logo.png">
+                    <div class="creator-text">
+                        <span style="color:#8b949e">WEBSITE CREATED BY</span><br>
+                        <strong>M2Vai</strong>
                     </div>
                 </div>
-            </div>
-
-            <button class="btn-login" style="width:100%; margin-top:20px; background:linear-gradient(135deg, #00f2fe, #4facfe);" onclick="executeTicketDownloadPNG()">Download Ticket</button>
-        </div>
-    </div>
-
-    <div id="profilePage" class="page">
-        <div class="top-header">
-            <div class="header-left">
-                <i class="fas fa-arrow-left nav-trigger" onclick="showSection('routePage')"></i>
-                <span class="header-title lang-text" data-bn="প্রোফাইল বিবরণ" data-en="Profile Details">প্রোফাইল বিবরণ</span>
-            </div>
-        </div>
-        <div class="container">
-            <div class="auth-card" style="text-align:center;">
-                <div class="profile-pic-frame">
-                    <img id="myAvatarDisplay" src="image/M2Vai Official YouTube Channel Logo.png" class="profile-img-output" alt="Avatar">
-                </div>
-                
-                <input type="file" id="avatarUploadInput" accept=".png" style="display:none;" onchange="processAvatarUpload(event)">
-                <button class="btn-signup" style="padding:5px 10px; font-size:11px; margin-bottom:15px;" onclick="document.getElementById('avatarUploadInput').click()"><i class="fas fa-camera"></i> Upload PNG (Max 300KB)</button>
-
-                <div id="profId" style="font-size:18px; font-weight:bold; color:var(--text-bright);">ID: 0000</div>
-                <div id="profRole" style="font-size:13px; color:var(--neon-cyan); margin-bottom:15px;">Member</div>
-
-                <div style="background:#0d1117; border:1px solid #30363d; border-radius:10px; padding:15px; text-align:left; margin-bottom:15px;">
-                    <div style="font-size:12px; color:#8b949e;" class="lang-text" data-bn="ওয়ালেট ব্যালেন্স" data-en="Wallet Balance">ওয়ালেট ব্যালেন্স</div>
-                    <div style="font-size:24px; font-weight:bold; color:var(--neon-green);"><span id="profBalance">0</span> BDT</div>
-                </div>
-
-                <table class="admin-table" style="text-align:left; color:#fff;">
-                    <tr><td>Player Name:</td><td id="profName">-</td></tr>
-                    <tr><td>Game ID:</td><td id="profGameId">-</td></tr>
-                    <tr><td>Email:</td><td id="profEmail">-</td></tr>
-                    <tr><td>Mobile:</td><td id="profMobile">-</td></tr>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="adminPage" class="page">
-        <div class="top-header">
-            <div class="header-left">
-                <i class="fas fa-arrow-left nav-trigger" onclick="showSection('routePage')"></i>
-                <span class="header-title">Admin Dashboard</span>
-            </div>
-        </div>
-        <div class="container">
-            <div class="auth-card" style="padding:15px; margin-bottom:15px;">
-                <button class="btn-signup" style="width:100%; background:#da3637; border:none; color:#fff;" onclick="adminGlobalResetAllSeats()">Reset All Bus Seats Manual 🔄</button>
-            </div>
-
-            <div class="auth-card" style="padding:15px;">
-                <div style="color:var(--text-bright); font-weight:bold; margin-bottom:10px;">Manage Registered Members</div>
-                <div style="overflow-x:auto;">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminUserTableRows"></tbody>
-                    </table>
+                <div class="sub-btn-container">
+                    <div class="sub-btn"><img src="image/M2Vai Official YouTube Channel Logo.png" style="width:14px; height:14px; border-radius:50%;"> M2Vai Subscribe Now</div>
+                    <div class="sub-btn traveller"><img src="image/Traveller M2Vai.png" style="width:14px; height:14px; border-radius:50%;"> Traveller Subscribe Now</div>
                 </div>
             </div>
         </div>
+
+        <button id="btn-download-trigger" class="btn-login" style="width:100%; margin-top: 15px;" onclick="triggerTicketCapture()">Download Ticket Image 📥</button>
     </div>
 
-    <div id="contactPopup" class="popup-overlay" onclick="closeContactPopup()">
-        <div class="popup-content" onclick="event.stopPropagation()">
-            <div style="text-align:right; margin-bottom:10px; cursor:pointer; color:#fff;" onclick="closeContactPopup()"><i class="fas fa-times"></i></div>
-            <h3 style="color:#fff; text-align:center; margin-bottom:15px;" class="lang-text" data-bn="আমাদের অফিশিয়াল লিংক সমূহ" data-en="Our Official Links">আমাদের অফিশিয়াল লিংক সমূহ</h3>
-            <div class="social-icons-row">
-                <a href="https://facebook.com" class="social-icon" style="background:#1877f2;"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://youtube.com" class="social-icon" style="background:#ff0000;"><i class="fab fa-youtube"></i></a>
-                <a href="https://instagram.com" class="social-icon" style="background:#e1306c;"><i class="fab fa-instagram"></i></a>
-                <a href="https://discord.com" class="social-icon" style="background:#5865f2;"><i class="fab fa-discord"></i></a>
+    <footer id="global-footer">
+        <div class="social-row">
+            <a href="#" class="social-icon fb"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="#" class="social-icon yt"><i class="fa-brands fa-youtube"></i></a>
+            <a href="#" class="social-icon ig"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="social-icon x"><i class="fa-solid fa-xmark"></i></a>
+            <a href="#" class="social-icon dc"><i class="fa-brands fa-discord"></i></a>
+            <a href="#" class="social-icon gm"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+        <div class="policy-links">
+            <a href="#" id="lnk-privacy">Privacy Policy</a> | 
+            <a href="#" id="lnk-terms">Terms & Conditions</a> | 
+            <a href="#" id="lnk-refund">Refund Policy</a>
+        </div>
+        <div class="creator-card">
+            <div class="creator-info">
+                <img class="creator-img" src="image/M2Vai Official YouTube Channel Logo.png">
+                <div class="creator-text">
+                    <span id="lbl-created-by">WEBSITE CREATED BY</span><br>
+                    <strong>M2Vai</strong>
+                </div>
+            </div>
+            <div class="sub-btn-container">
+                <a href="https://youtube.com" target="_blank" class="sub-btn" onclick="claimReward(5000)">
+                    <img src="image/M2Vai Official YouTube Channel Logo.png" style="width:16px; height:16px; border-radius:50%;">
+                    <span>M2Vai Subscribe Now</span>
+                </a>
+                <a href="https://youtube.com" target="_blank" class="sub-btn traveller" onclick="claimReward(5000)">
+                    <img src="image/Traveller M2Vai.png" style="width:16px; height:16px; border-radius:50%;">
+                    <span>Traveller Subscribe Now</span>
+                </a>
             </div>
         </div>
-    </div>
+    </footer>
 
-    <div id="searchPopup" class="popup-overlay" onclick="document.getElementById('searchPopup').style.display='none'">
-        <div class="popup-content" onclick="event.stopPropagation()">
-            <div style="text-align:right; margin-bottom:10px; cursor:pointer; color:#fff;" onclick="document.getElementById('searchPopup').style.display='none'"><i class="fas fa-times"></i></div>
-            <h3 style="color:#fff; margin-bottom:10px;">Search Member Found</h3>
-            <div id="searchResultDataArea" style="color:#fff; font-size:13px; line-height:1.6;"></div>
+    <div id="app-sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3 style="color:#fff;">Menu</h3>
+            <i class="fa-solid fa-xmark" style="color:#fff; cursor:pointer;" onclick="toggleSidebar(false)"></i>
+        </div>
+        <div class="sidebar-menu-item" onclick="openProfileModal()">
+            <i class="fa-solid fa-user"></i> <span id="mnu-profile">Profile</span>
+        </div>
+        <div id="mnu-admin-link" class="sidebar-menu-item" style="display:none;" onclick="openAdminPanel()">
+            <i class="fa-solid fa-user-shield"></i> <span>Admin Panel</span>
+        </div>
+        <div class="sidebar-menu-item" onclick="alert('Contact details locked via system channels.')">
+            <i class="fa-solid fa-address-book"></i> <span id="mnu-contact">Contact</span>
+        </div>
+        <div class="sidebar-menu-item" style="margin-top:30px; color:#da3637;" onclick="handleLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i> <span id="mnu-logout">Logout</span>
         </div>
     </div>
 
-    <div id="rewardPopup" class="popup-overlay">
-        <div class="popup-content" style="text-align:center;">
-            <h3 style="color:var(--neon-cyan); margin-bottom:12px;" class="lang-text" data-bn="পর্যাপ্ত ব্যালেন্স নেই! ❌" data-en="Insufficient Balance! ❌">পর্যাপ্ত ব্যালেন্স নেই! ❌</h3>
-            <p style="font-size:13px; margin-bottom:15px; color:#fff;" class="lang-text" data-bn="টিকিট কাটতে ফ্রি বোনাস ব্যালেন্স টাস্ক কমপ্লিট করুন:" data-en="Complete tasks below to earn instant rewards:">টিকিট কাটতে ফ্রি বোনাস ব্যালেন্স টাস্ক কমপ্লিট করুন:</p>
+    <div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <i class="fa-solid fa-xmark modal-close" onclick="closeProfileModal()"></i>
+            <div class="profile-img-setup">
+                <img id="user-avatar" class="profile-pic-view" src="image/M2Vai Official YouTube Channel Logo.png">
+                <label for="avatar-input" class="upload-lbl" id="lbl-upload-photo">Upload Photo</label>
+                <input type="file" id="avatar-input" accept=".png" style="display:none;" onchange="processAvatarUpload(event)">
+            </div>
+            <div class="profile-data-row"><span class="t-lbl">ID:</span><span id="p-id" class="t-val">-</span></div>
+            <div class="profile-data-row"><span class="t-lbl">Name:</span><span id="p-name" class="t-val">-</span></div>
+            <div class="profile-data-row"><span class="t-lbl">Role:</span><span id="p-role" class="t-val">-</span></div>
+            <div class="profile-data-row" style="background: rgba(0,242,254,0.1); padding: 8px;"><span class="t-lbl" style="color:var(--neon-cyan)">Wallet Balance:</span><span id="p-wallet" class="t-val" style="color:var(--neon-cyan)">0 BDT</span></div>
+        </div>
+    </div>
+
+    <div id="admin-panel-modal" class="modal">
+        <div class="modal-content" style="max-width: 440px;">
+            <i class="fa-solid fa-xmark modal-close" onclick="closeAdminPanel()"></i>
+            <div class="admin-title">M2Vai SYSTEM ADMINISTRATION</div>
             
-            <button class="btn-signup" style="width:100%; margin-bottom:10px; background:#cc0000; color:#fff; border:none;" onclick="triggerMissionTask('sub')">
-                <i class="fab fa-youtube"></i> Subscribe Channel (+5000 BDT)
-            </button>
-            <button class="btn-signup" style="width:100%; margin-bottom:15px; background:#1f883d; color:#fff; border:none;" onclick="triggerMissionTask('watch')">
-                <i class="fas fa-play-circle"></i> Watch Video 1 Min (+2000 BDT)
-            </button>
-            
-            <button class="btn-dark" style="padding:6px 15px; border-radius:6px; color:#fff; cursor:pointer;" onclick="document.getElementById('rewardPopup').style.display='none'">Close</button>
+            <div class="form-group">
+                <label>Target Member ID (4 digits)</label>
+                <input type="text" id="admin-target-id" placeholder="0002">
+            </div>
+
+            <div class="form-group" id="adm-role-group">
+                <label>Modify System Designation</label>
+                <select id="admin-role-select">
+                    <option value="Member">Member</option>
+                    <option value="Counter Master">Counter Master</option>
+                    <option value="Moderator">Moderator</option>
+                    <option value="Admin">Admin (Super)</option>
+                </select>
+                <button class="btn-login" style="margin-top:5px; padding:4px 8px; font-size:0.75rem;" onclick="updateMemberRole()">Apply Designation</button>
+            </div>
+
+            <div class="admin-section">
+                <div style="font-size:0.8rem; font-weight:bold; margin-bottom:8px;">Control Directives:</div>
+                <div class="admin-row">
+                    <button id="adm-btn-ban" class="admin-btn btn-ban" onclick="setBanStatus(true)">Ban Account</button>
+                    <button id="adm-btn-unban" class="admin-btn btn-unban" onclick="setBanStatus(false)">Unban Account</button>
+                </div>
+                <div class="form-group" style="margin-top:10px;" id="adm-gift-group">
+                    <label>Gift Balance Amount (BDT)</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="number" id="gift-amount" placeholder="1000">
+                        <button class="admin-btn btn-gift" onclick="executeGiftWallet()">Gift</button>
+                    </div>
+                </div>
+                <button class="btn-signup" style="width:100%; font-size:0.8rem; margin-top:5px; border-color:#da3637;" onclick="resetAllSeatsManual()">Force Global Seat Reset</button>
+            </div>
         </div>
     </div>
-
-    <datalist id="districtsList">
-        <option value="Dhaka"></option><option value="Chattogram"></option><option value="Sylhet"></option>
-        <option value="Rajshahi"></option><option value="Khulna"></option><option value="Barishal"></option>
-        <option value="Rangpur"></option><option value="Mymensingh"></option><option value="Bagerhat"></option>
-        <option value="Bogura"></option><option value="Cumilla"></option><option value="Cox's Bazar"></option>
-        <option value="Gazipur"></option><option value="Jessore"></option><option value="Kushtia"></option>
-        <option value="Narayanganj"></option><option value="Pabna"></option><option value="Tangail"></option>
-    </datalist>
 
     <script>
-        /* ------------------ CENTRAL DATA STATE STORE ------------------ */
-        let users = JSON.parse(localStorage.getItem('ticket_users')) || [];
-        let bookedSeatsStore = JSON.parse(localStorage.getItem('booked_seats_map')) || {};
-        let currentUser = JSON.parse(sessionStorage.getItem('active_session_user')) || null;
-        let appLanguage = localStorage.getItem('app_language') || 'bn';
-        let isLoginMode = true;
+        // Memory Architecture In-Browser Datastore Emulator
+        let db = JSON.parse(localStorage.getItem('m2vai_database')) || {
+            users: {
+                "super_admin": {
+                    id: "0000",
+                    name: "Super Admin Engine",
+                    gameId: "000000",
+                    phone: "01878335098",
+                    email: "info.m2vai380@gmail.com",
+                    pass: "admin123",
+                    role: "Admin",
+                    wallet: 100000,
+                    avatar: "image/M2Vai Official YouTube Channel Logo.png",
+                    banned: false
+                }
+            },
+            bookedSeats: {}, // seatId: {memberId, timestamp}
+            config: { globalLanguage: 'en' }
+        };
 
-        const SUPER_ADMIN_EMAIL = "info.m2vai380@gmail.com";
-
-        // Real-time Clock Implementation
-        function updateLiveClockTimers() {
-            const now = new Date();
-            let hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const ampm = hours >= 12 ? 'AM' : 'PM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; 
-            const timeStr = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
-            
-            // Auto Wish
-            let wish = "Good Evening! 🌆";
-            if(now.getHours() < 12) wish = "Good Morning! 🌅";
-            else if(now.getHours() < 17) wish = "Good Afternoon! ☀️";
-
-            const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-            const dateStr = `LIVE DATE: ${now.toLocaleDateString('en-US', options)}`;
-
-            document.getElementById('wishText').innerText = wish;
-            document.getElementById('liveTime1').innerText = timeStr;
-            document.getElementById('liveDate1').innerText = dateStr;
-            
-            if(document.getElementById('liveTime2')) {
-                document.getElementById('liveTime2').innerText = timeStr;
-                document.getElementById('liveDate2').innerText = now.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-            }
+        function saveDB() {
+            localStorage.setItem('m2vai_database', JSON.stringify(db));
         }
-        setInterval(updateLiveClockTimers, 1000);
 
-        // Core Bootstrap Run
+        // Session Control State Architecture
+        let currentSessionUser = JSON.parse(sessionStorage.getItem('active_session_user')) || null;
+        let activePage = parseInt(sessionStorage.getItem('active_page_id')) || 1;
+        let selectedSeat = null;
+
+        // Translation Dictionary Asset Matrices
+        const langPack = {
+            en: {
+                brandTitle: "M2Vai ONLINE TICKET COUNTER",
+                cardMsg: "Please login to book your bus seat",
+                lblEmail: "Email Address",
+                lblPass: "Password",
+                btnLogin: "Login Now",
+                btnSignup: "Sign Up Now",
+                lblRegName: "Player Name",
+                lblRegGame: "Game ID",
+                lblRegPhone: "Mobile No (Optional)",
+                lblRegPass: "Password",
+                lblRegCpass: "Confirm Password",
+                noticeHdr: "(Notice Board)",
+                from: "From",
+                to: "To",
+                class: "Bus Class",
+                fareLbl: "Calculated Ticket Fare",
+                btnNextSeat: "Select Seat 🪑",
+                seatTitle: "Select Bus Seats",
+                btnConfirm: "Confirm Ticket & Download",
+                finalHdr: "Your Digital Ticket",
+                downloadBtn: "Download Ticket Image 📥",
+                created: "WEBSITE CREATED BY",
+                rulesHdr: "TERMS & RULES / নির্দেশনাবলী:",
+                rules: ["Please maintain formal profile codes inside society counters.", "Security protocols lock sessions reliably for thirty minutes."]
+            },
+            bn: {
+                brandTitle: "M2Vai অনলাইন টিকিট কাউন্টার",
+                cardMsg: "বাসের আসন বুকিং করতে লগইন করুন",
+                lblEmail: "ইমেইল ঠিকানা",
+                lblPass: "পাসওয়ার্ড",
+                btnLogin: "লগইন করুন",
+                btnSignup: "নিবন্ধন করুন",
+                lblRegName: "প্লেয়ারের নাম",
+                lblRegGame: "গেম আইডি",
+                lblRegPhone: "মোবাইল নম্বর (ঐচ্ছিক)",
+                lblRegPass: "পাসওয়ার্ড",
+                lblRegCpass: "পাসওয়ার্ড নিশ্চিত করুন",
+                noticeHdr: "(নোটিশ বোর্ড)",
+                from: "প্রস্থান স্থান",
+                to: "গন্তব্য স্থান",
+                class: "বাসের শ্রেনী",
+                fareLbl: "নির্ধারিত টিকিট ভাড়া",
+                btnNextSeat: "আসন নির্বাচন করুন 🪑",
+                seatTitle: "বাসের আসন সিলেক্ট করুন",
+                btnConfirm: "টিকিট নিশ্চিত এবং ডাউনলোড করুন",
+                finalHdr: "আপনার ডিজিটাল টিকিট",
+                downloadBtn: "টিকিট ছবি ডাউনলোড করুন 📥",
+                created: "ওয়েবসাইট তৈরি করেছেন",
+                rulesHdr: "নির্দেশনাবলী / TERMS & RULES:",
+                rules: ["দয়া করে সোসাইটি কাউন্টারের ভেতরে নিয়ম শৃঙ্খলা বজায় রাখুন।", "নিরাপত্তা প্রোটোকল ৩০ মিনিটের জন্য সেশন লক করে রাখে।"]
+            }
+        };
+
+        // Anti-Refresh Dynamic Restoration Bootloader Loop
         window.addEventListener('DOMContentLoaded', () => {
-            applyLanguagePack(appLanguage);
-            checkAutomaticSeatExpirations();
-            setInterval(checkAutomaticSeatExpirations, 30000); // Check auto-expire every 30s
+            initializeClock();
+            applyLanguageDOM(db.config.globalLanguage);
+            
+            // Check session time limitations (30 Minutes Window Execution)
+            if (currentSessionUser) {
+                let loginTime = parseInt(sessionStorage.getItem('session_start_time')) || 0;
+                if (Date.now() - loginTime > 30 * 60 * 1000) {
+                    handleLogout();
+                    return;
+                } else {
+                    // Update state variables reference pointer
+                    currentSessionUser = db.users[Object.keys(db.users).find(k => db.users[k].id === currentSessionUser.id)];
+                    if(currentSessionUser.banned) {
+                        handleLogout();
+                        return;
+                    }
+                }
+            }
 
-            if (currentUser) {
-                // Persistent Session Lock
-                showSection('routePage');
-                updateActiveMembersMarquee();
+            if (currentSessionUser && activePage > 1) {
+                renderActiveMembersMarquee();
+                if (activePage === 3) {
+                    renderSeatGridStructure();
+                }
+                navigateToPage(activePage);
             } else {
-                showSection('authPage');
+                navigateToPage(1);
             }
         });
 
-        /* ------------------ ANTI-REFRESH PAGE STATE TRACKING ------------------ */
-        function showSection(targetPageId) {
+        // Dynamic State Navigation Protocol
+        function navigateToPage(id) {
+            activePage = id;
+            sessionStorage.setItem('active_page_id', id);
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(targetPageId).classList.add('active');
+            document.getElementById(`page${id}`).classList.add('active');
             
-            // Set current state to prevent dropping page position on reload
-            sessionStorage.setItem('current_page_view_lock', targetPageId);
-
-            if(targetPageId === 'profilePage') fillProfileDashboardData();
-            if(targetPageId === 'adminPage') fillAdminUserTableData();
-            if(targetPageId === 'routePage') updateActiveMembersMarquee();
-        }
-
-        // Recover lock on refresh
-        const lockedView = sessionStorage.getItem('current_page_view_lock');
-        if(lockedView && sessionStorage.getItem('active_session_user')) {
-            setTimeout(() => showSection(lockedView), 50);
-        }
-
-        function triggerHardwareBack() {
-            // Safe granular navigation instead of complete exit
-            const currentView = sessionStorage.getItem('current_page_view_lock');
-            if(currentView === 'seatPage') showSection('routePage');
-            else if(currentView === 'profilePage' || currentView === 'adminPage') showSection('routePage');
-        }
-
-        /* ------------------ INTERNALS: AUTH & ROLES ------------------ */
-        function toggleAuthMode(forceLogin) {
-            isLoginMode = forceLogin;
-            if(isLoginMode) {
-                document.getElementById('formPrompt').innerText = appLanguage === 'bn' ? "বুকিং করতে আপনার অ্যাকাউন্ট লগইন করুন" : "Please login to book your bus seat";
-                document.getElementById('confirmPassGroup').style.display = 'none';
-                document.getElementById('optionalFields').style.display = 'none';
-                document.getElementById('mainLoginBtn').innerText = "Login Now";
-                document.getElementById('mainSignupBtn').style.display = 'inline-block';
+            // Show global components matching context design constraints
+            if(id === 1) {
+                document.getElementById('global-footer').style.display = 'flex';
+            } else if (id === 4) {
+                document.getElementById('global-footer').style.display = 'none'; // Uses embedded custom card interface layout
             } else {
-                document.getElementById('formPrompt').innerText = appLanguage === 'bn' ? "নতুন মেম্বার রেজিস্ট্রেশন ফর্ম" : "New Member Registration Form";
-                document.getElementById('confirmPassGroup').style.display = 'block';
-                document.getElementById('optionalFields').style.display = 'block';
-                document.getElementById('mainLoginBtn').innerText = "Submit Register";
-                document.getElementById('mainSignupBtn').style.display = 'none';
+                document.getElementById('global-footer').style.display = 'flex';
             }
         }
 
-        function togglePasswordVisibility(fieldId, iconElement) {
-            const input = document.getElementById(fieldId);
-            if(input.type === 'password') {
-                input.type = 'text';
-                iconElement.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                input.type = 'password';
-                iconElement.classList.replace('fa-eye-slash', 'fa-eye');
+        // Custom Structural Backward Logic Architecture
+        function handleHardwareBack() {
+            if (activePage === 3) {
+                navigateToPage(2);
+            } else if (activePage === 2) {
+                handleLogout();
             }
         }
 
-        function verifyPasswordsMatch() {
-            const p1 = document.getElementById('authPassword').value;
-            const p2 = document.getElementById('authConfirmPassword').value;
-            const msg = document.getElementById('passMatchMessage');
-            if(!p2) { msg.innerText = ""; return; }
-            if(p1 === p2) {
-                msg.style.color = "var(--neon-green)";
-                msg.innerText = appLanguage === 'bn' ? "পাসওয়ার্ড মিলেছে! ✓" : "Password Matched! ✓";
-            } else {
-                msg.style.color = "#da3637";
-                msg.innerText = appLanguage === 'bn' ? "পাসওয়ার্ড মিলেনি! ❌" : "Password and Confirm Password do not match! ❌";
-            }
+        // Language Multi-Color Switching Matrix Engine
+        function toggleLanguage() {
+            let activeLang = db.config.globalLanguage === 'en' ? 'bn' : 'en';
+            db.config.globalLanguage = activeLang;
+            saveDB();
+            applyLanguageDOM(activeLang);
         }
 
-        function handleAuthSubmit() {
-            const email = document.getElementById('authEmail').value.trim();
-            const pass = document.getElementById('authPassword').value;
+        function applyLanguageDOM(lang) {
+            const data = langPack[lang];
+            db.config.globalLanguage = lang;
 
-            if(!email || !pass) { alert("Fill all standard inputs!"); return; }
+            // Page 1 UI text adjustments
+            document.getElementById('txt-brand-title').innerText = data.brandTitle;
+            document.getElementById('txt-card-msg').innerText = data.cardMsg;
+            document.getElementById('lbl-email').innerText = data.lblEmail;
+            document.getElementById('lbl-pass').innerText = data.lblPass;
+            document.getElementById('btn-login-action').innerText = data.btnLogin;
+            document.getElementById('btn-signup-action').innerText = data.btnSignup;
+            document.getElementById('lbl-reg-name').innerText = data.lblRegName;
+            document.getElementById('lbl-reg-game').innerText = data.lblRegGame;
+            document.getElementById('lbl-reg-phone').innerText = data.lblRegPhone;
+            document.getElementById('lbl-reg-pass').innerText = data.lblRegPass;
+            document.getElementById('lbl-reg-cpass').innerText = data.lblRegCpass;
 
-            if(isLoginMode) {
-                // Executing Login
-                const userFound = users.find(u => u.email === email && u.password === pass);
-                if(!userFound) { alert("Invalid credentials or user record missing!"); return; }
-                if(userFound.isBanned) { alert("Your Account is Banned by Admin Panel! Access Denied."); return; }
-                
-                currentUser = userFound;
-                sessionStorage.setItem('active_session_user', JSON.stringify(currentUser));
-                toggleMenuOptByRole();
-                showSection('routePage');
-            } else {
-                // Executing Registration
-                const p2 = document.getElementById('authConfirmPassword').value;
-                if(pass !== p2) { alert("Passwords do not match!"); return; }
-                if(users.some(u => u.email === email)) { alert("Email already registered!"); return; }
+            // Page 2 & 3 UI components text translations
+            document.getElementById('lbl-notice-hdr').innerText = data.noticeHdr;
+            document.getElementById('lbl-from').innerText = data.from;
+            document.getElementById('lbl-to').innerText = data.to;
+            document.getElementById('lbl-class').innerText = data.class;
+            document.getElementById('lbl-fare-lbl').innerText = data.fareLbl;
+            document.getElementById('btn-next-seat').innerText = data.btnNextSeat;
+            document.getElementById('lbl-seat-title').innerText = data.seatTitle;
+            document.getElementById('btn-confirm-ticket').innerText = data.btnConfirm;
+            document.getElementById('lbl-final-ticket-hdr').innerText = data.finalHdr;
+            document.getElementById('btn-download-trigger').innerText = data.downloadBtn;
+            document.getElementById('lbl-created-by').innerText = data.created;
+            document.getElementById('lbl-rules-hdr').innerText = data.rulesHdr;
 
-                // Generate pure numeric dynamic sequence
-                const nextIdNum = String(users.length + 1).padStart(4, '0');
-                
-                let assignedRole = "Member";
-                if(email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) assignedRole = "Admin";
+            // Dynamic rule block compilation
+            let ruleList = document.getElementById('lbl-rules-list');
+            ruleList.innerHTML = "";
+            data.rules.forEach(r => {
+                let li = document.createElement('li');
+                li.innerText = r;
+                ruleList.appendChild(li);
+            });
 
-                const newAccount = {
-                    id: nextIdNum,
-                    email: email,
-                    password: pass,
-                    playerName: document.getElementById('regPlayerName').value || "Player",
-                    gameId: document.getElementById('regGameId').value || "N/A",
-                    mobile: document.getElementById('regMobile').value || "N/A",
-                    role: assignedRole,
-                    balance: 3000, // Direct Registration Welcome Reward 3000 BDT
-                    avatar: 'image/M2Vai Official YouTube Channel Logo.png',
-                    isBanned: false
-                };
-
-                users.push(newAccount);
-                localStorage.setItem('ticket_users', JSON.stringify(users));
-                alert(`Registration Success! Your Numeric Member ID is: ${nextIdNum}`);
-                toggleAuthMode(true);
-            }
-        }
-
-        function toggleMenuOptByRole() {
-            if(!currentUser) return;
-            if(currentUser.role === 'Admin' || currentUser.role === 'Moderator' || currentUser.role === 'Counter Master') {
-                document.getElementById('adminMenuOpt').style.display = 'flex';
-            } else {
-                document.getElementById('adminMenuOpt').style.display = 'none';
-            }
-        }
-
-        function performLogout() {
-            sessionStorage.clear();
-            currentUser = null;
-            toggleMenu(false);
-            showSection('authPage');
-            toggleAuthMode(true);
-        }
-
-        /* ------------------ RUNTIME: ROUTING & FARES ------------------ */
-        function calculateDynamicFare() {
-            const isAc = document.getElementById('busClass').value === 'AC';
-            document.getElementById('fareDisplayAmount').innerText = isAc ? "850" : "450";
-        }
-
-        function navigateToSeatSelection() {
-            const frm = document.getElementById('routeFrom').value;
-            const to = document.getElementById('routeTo').value;
-            if(!frm || !to) { alert("Please select origin and destination!"); return; }
-            
-            buildDynamicSeatMapLayout();
-            showSection('seatPage');
-        }
-
-        /* ------------------ DIAGRAM: SEAT PLAN ------------------ */
-        let activeSelectedSeat = null;
-
-        function buildDynamicSeatMapLayout() {
-            const grid = document.getElementById('seatLayoutGrid');
-            grid.innerHTML = "";
-            const isAc = document.getElementById('busClass').value === 'AC';
-            
-            // Dynamic Layout configuration: AC is 1+2 structure, Non-AC is 2+2 rows
-            grid.style.gridTemplateColumns = isAc ? "repeat(3, 1fr)" : "repeat(4, 1fr)";
-            
-            const rows = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
-            const colsCount = isAc ? 3 : 4;
-            const currentRouteKey = `${document.getElementById('routeFrom').value}-${document.getElementById('routeTo').value}-${document.getElementById('busClass').value}`;
-
-            activeSelectedSeat = null;
-            document.getElementById('selectedSeatLabel').innerText = "None";
-            document.getElementById('totalBillLabel').innerText = "0";
-
-            rows.forEach(r => {
-                for(let c = 1; c <= colsCount; c++) {
-                    const seatId = `${r}${c}`;
-                    const seatEl = document.createElement('div');
-                    seatEl.classList.add('seat');
-                    seatEl.innerText = seatId;
-
-                    // Inline margin simulator for row passway
-                    if(isAc && c === 1) seatEl.style.marginRight = "20px";
-                    if(!isAc && c === 2) seatEl.style.marginRight = "20px";
-
-                    // Check live block state
-                    if(bookedSeatsStore[currentRouteKey] && bookedSeatsStore[currentRouteKey].includes(seatId)) {
-                        seatEl.classList.add('booked');
-                    } else {
-                        seatEl.onclick = () => selectSeatHandler(seatEl, seatId);
-                    }
-                    grid.appendChild(seatEl);
+            // Toggle highlights across elements
+            ['lang-en', 'lang-en-p2', 'lang-en-p3'].forEach(id => {
+                let el = document.getElementById(id);
+                if(el) {
+                    el.className = `lang-btn ${lang === 'en' ? 'active' : 'inactive'}`;
                 }
             });
+            ['lang-bn', 'lang-bn-p2', 'lang-bn-p3'].forEach(id => {
+                let el = document.getElementById(id);
+                if(el) {
+                    el.className = `lang-btn ${lang === 'bn' ? 'active' : 'inactive'}`;
+                }
+            });
+
+            calculateFare();
         }
 
-        function selectSeatHandler(element, seatId) {
-            if(element.classList.contains('booked')) return;
-            
-            document.querySelectorAll('.seat').forEach(s => s.classList.remove('selected'));
-            
-            if(activeSelectedSeat === seatId) {
-                activeSelectedSeat = null;
-                document.getElementById('selectedSeatLabel').innerText = "None";
-                document.getElementById('totalBillLabel').innerText = "0";
-            } else {
-                activeSelectedSeat = seatId;
-                element.classList.add('selected');
-                document.getElementById('selectedSeatLabel').innerText = seatId;
+        // Live Clock Component & Greeting Logic Module
+        function initializeClock() {
+            setInterval(() => {
+                const now = new Date();
+                let hours = now.getHours();
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'AM' : 'AM'; // Adjusted matching requested asset timeline format display template execution
+                let displayHours = hours % 12;
+                displayHours = displayHours ? displayHours : 12;
+                const timeString = `${String(displayHours).padStart(2,'0')}:${minutes}:${seconds} ${hours >= 12 ? 'AM' : 'AM'}`; // Fixed layout context override constraint loop
                 
-                const singleFare = parseInt(document.getElementById('fareDisplayAmount').innerText);
-                document.getElementById('totalBillLabel').innerText = singleFare;
+                // Greeting message computation module
+                let greeting = "Good Morning! 🌅";
+                if(hours >= 12 && hours < 16) greeting = "Good Afternoon! ☀️";
+                else if(hours >= 16 && hours < 20) greeting = "Good Evening! 🌆";
+                else if(hours >= 20 || hours < 5) greeting = "Good Night! 🌌";
+
+                document.getElementById('txt-wish').innerText = greeting;
+                document.getElementById('live-time').innerText = timeString;
+                if(document.getElementById('live-time-p2')) {
+                    document.getElementById('live-time-p2').innerText = timeString;
+                }
+
+                const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+                const dateString = "LIVE DATE: " + now.toLocaleDateString('en-US', options);
+                document.getElementById('live-date').innerText = dateString;
+            }, 1000);
+        }
+
+        // Visual Password Reveal Controller Module
+        function togglePassword(fieldId, iconEl) {
+            const el = document.getElementById(fieldId);
+            if(el.type === 'password') {
+                el.type = 'text';
+                iconEl.className = 'fa-solid fa-eye-slash password-toggle';
+            } else {
+                el.type = 'password';
+                iconEl.className = 'fa-solid fa-eye password-toggle';
             }
         }
 
-        /* ------------------ WALLET REWARDS SYSTEM ------------------ */
-        function processTicketBooking() {
-            if(!activeSelectedSeat) { alert("Select a seat first!"); return; }
-            const totalBill = parseInt(document.getElementById('totalBillLabel').innerText);
+        // Real-Time Inline Registration Validation
+        function validatePasswords() {
+            const p1 = document.getElementById('reg-pass').value;
+            const p2 = document.getElementById('reg-cpass').value;
+            const ind = document.getElementById('pwd-match-indicator');
+            if(!p1 || !p2) { ind.innerText = ""; return; }
+            if(p1 === p2) {
+                ind.innerText = "Password Matched! ✅";
+                ind.style.color = "#238636";
+            } else {
+                ind.innerText = "Password and Confirm Password do not match! ❌";
+                ind.style.color = "#da3637";
+            }
+        }
 
-            // Re-sync local instance memory balance
-            const runtimeUserObj = users.find(u => u.id === currentUser.id);
+        // Registration State Manager
+        function showSignupUI() {
+            document.getElementById('login-fields').style.display = 'none';
+            document.getElementById('signup-fields').style.display = 'block';
+            document.getElementById('txt-card-msg').innerText = "Create your system member identity account";
             
-            if(runtimeUserObj.balance < totalBill) {
-                // Pop reward monetization trigger
-                document.getElementById('rewardPopup').style.display = 'flex';
+            let loginBtn = document.getElementById('btn-login-action');
+            let signupBtn = document.getElementById('btn-signup-action');
+            
+            loginBtn.innerText = "Process Sign Up";
+            loginBtn.setAttribute('onclick', 'executeRegistration()');
+            signupBtn.innerText = "Back to Login";
+            signupBtn.setAttribute('onclick', 'revertToLoginUI()');
+        }
+
+        function revertToLoginUI() {
+            document.getElementById('login-fields').style.display = 'block';
+            document.getElementById('signup-fields').style.display = 'none';
+            applyLanguageDOM(db.config.globalLanguage);
+            
+            let loginBtn = document.getElementById('btn-login-action');
+            let signupBtn = document.getElementById('btn-signup-action');
+            loginBtn.setAttribute('onclick', 'handleLogin()');
+            signupBtn.setAttribute('onclick', 'showSignupUI()');
+        }
+
+        function executeRegistration() {
+            const name = document.getElementById('reg-name').value.trim();
+            const game = document.getElementById('reg-game').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const email = document.getElementById('reg-email').value.trim().toLowerCase();
+            const pass = document.getElementById('reg-pass').value;
+            const cpass = document.getElementById('reg-cpass').value;
+
+            if(!name || !game || !email || !pass) {
+                alert("Please fill up all required fields completely.");
+                return;
+            }
+            if(pass !== cpass) {
+                alert("Passwords validation mismatch.");
+                return;
+            }
+            if(Object.values(db.users).some(u => u.email === email)) {
+                alert("Email profile addresses already registered.");
                 return;
             }
 
-            // Deduct system wallet balance
-            runtimeUserObj.balance -= totalBill;
-            currentUser.balance = runtimeUserObj.balance;
-            sessionStorage.setItem('active_session_user', JSON.stringify(currentUser));
-            localStorage.setItem('ticket_users', JSON.stringify(users));
-
-            // Commit seat lock mapping
-            const currentRouteKey = `${document.getElementById('routeFrom').value}-${document.getElementById('routeTo').value}-${document.getElementById('busClass').value}`;
-            if(!bookedSeatsStore[currentRouteKey]) bookedSeatsStore[currentRouteKey] = [];
-            bookedSeatsStore[currentRouteKey].push(activeSelectedSeat);
+            // Automate Numerical Only Membership ID Serialization
+            let numericId = String(Object.keys(db.users).length + 1).padStart(4, '0');
             
-            // Record timestamp for 1-hour auto-eviction background tracking
-            if(!bookedSeatsStore["_timestamps"]) bookedSeatsStore["_timestamps"] = {};
-            bookedSeatsStore["_timestamps"][`${currentRouteKey}||${activeSelectedSeat}`] = Date.now();
+            // Core Admin Access Trapping Filter Loop
+            let role = (email === "info.m2vai380@gmail.com") ? "Admin" : "Member";
 
-            localStorage.setItem('booked_seats_map', JSON.stringify(bookedSeatsStore));
-
-            generateDigitalTicketSheet();
+            db.users[email] = {
+                id: numericId,
+                name: name,
+                gameId: game,
+                phone: phone ? phone : "-",
+                email: email,
+                pass: pass,
+                role: role,
+                wallet: 3000, // Account creation activation credit allocation
+                avatar: "image/M2Vai Official YouTube Channel Logo.png",
+                banned: false
+            };
+            saveDB();
+            alert(`Registration Complete! Your numerical Member ID is: ${numericId}`);
+            revertToLoginUI();
         }
 
-        function triggerMissionTask(type) {
-            const runtimeUserObj = users.find(u => u.id === currentUser.id);
-            if(type === 'sub') {
-                alert("Opening YouTube... Channel Subscribed Successfully!");
-                runtimeUserObj.balance += 5000; // 5000 BDT Subscribe reward
-            } else {
-                alert("Simulating 1 Min Watch Time counter loop. Done!");
-                runtimeUserObj.balance += 2000; // 2000 BDT Watch loop reward
-            }
-            currentUser.balance = runtimeUserObj.balance;
-            sessionStorage.setItem('active_session_user', JSON.stringify(currentUser));
-            localStorage.setItem('ticket_users', JSON.stringify(users));
+        // Login Business Logic Verification Matrix
+        function handleLogin() {
+            const email = document.getElementById('login-email').value.trim().toLowerCase();
+            const pass = document.getElementById('login-password').value;
+
+            if(!email || !pass) { alert("Please supply login parameters."); return; }
             
-            document.getElementById('rewardPopup').style.display = 'none';
-            document.getElementById('totalBillLabel').innerText = document.getElementById('fareDisplayAmount').innerText;
-            alert("Reward BDT added to your private profile wallet!");
-        }
-
-        function checkAutomaticSeatExpirations() {
-            // Evaluates and removes seat locks older than 1 hour (3600000ms)
-            if(!bookedSeatsStore["_timestamps"]) return;
-            const now = Date.now();
-            let changed = false;
-
-            for(let key in bookedSeatsStore["_timestamps"]) {
-                const ts = bookedSeatsStore["_timestamps"][key];
-                if(now - ts > 3600000) { // 1 hour threshold
-                    const [routeKey, seatId] = key.split("||");
-                    if(bookedSeatsStore[routeKey]) {
-                        bookedSeatsStore[routeKey] = bookedSeatsStore[routeKey].filter(s => s !== seatId);
-                        changed = true;
-                    }
-                    delete bookedSeatsStore["_timestamps"][key];
-                }
+            let user = db.users[email];
+            if(!user || user.pass !== pass) {
+                alert("Invalid configuration credentials matching profile databases.");
+                return;
             }
-            if(changed) localStorage.setItem('booked_seats_map', JSON.stringify(bookedSeatsStore));
+            if(user.banned) {
+                alert("Your membership has been terminated via system administration rules (BANNED).");
+                return;
+            }
+
+            // Set Session State Metrics safely
+            currentSessionUser = user;
+            sessionStorage.setItem('active_session_user', JSON.stringify(user));
+            sessionStorage.setItem('session_start_time', Date.now().toString());
+            
+            renderActiveMembersMarquee();
+            navigateToPage(2);
         }
 
-        /* ------------------ RENDERING: FINAL PNG TICKET ------------------ */
-        function generateDigitalTicketSheet() {
-            const now = new Date();
-            document.getElementById('tktMemberId').innerText = currentUser.id;
-            document.getElementById('tktPlayerName').innerText = currentUser.playerName;
-            document.getElementById('tktGameId').innerText = currentUser.gameId;
-            document.getElementById('tktMobile').innerText = currentUser.mobile || 'N/A';
-            document.getElementById('tktFrom').innerText = document.getElementById('routeFrom').value;
-            document.getElementById('tktTo').innerText = document.getElementById('routeTo').value;
-            document.getElementById('tktDate').innerText = now.toLocaleDateString();
-            document.getElementById('tktTime').innerText = "09:00 AM";
-            document.getElementById('tktSeat').innerText = activeSelectedSeat;
-            document.getElementById('tktIssueStamp').innerText = `${now.toLocaleTimeString()} | ${now.toLocaleDateString()}`;
-
-            showSection('ticketPage');
+        function handleLogout() {
+            currentSessionUser = null;
+            sessionStorage.clear();
+            activePage = 1;
+            revertToLoginUI();
+            navigateToPage(1);
         }
 
-        function executeTicketDownloadPNG() {
-            const target = document.getElementById('ticketVisualDownloadArea');
-            html2canvas(target, { useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `M2Vai_Ticket_${currentUser.id}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                alert("Ticket successfully downloaded as image to your gallery! Returning to Home Panel.");
-                
-                // Auto Refresh state reset directly back to Dashboard initialization
-                showSection('routePage');
+        // Active Member Simulation Component Loader
+        function renderActiveMembersMarquee() {
+            const container = document.getElementById('active-members-list');
+            container.innerHTML = "";
+            
+            Object.values(db.users).forEach(u => {
+                if(u.banned) return;
+                let item = document.createElement('div');
+                item.className = "active-user-card";
+                item.innerHTML = `
+                    <img class="active-user-img" src="${u.avatar}">
+                    <div class="active-user-info">
+                        <span class="active-dot-label">🟢 Active</span>
+                        <span style="color:#fff; font-weight:bold;">ID: ${u.id}</span>
+                        <span style="color:var(--text-gray)">Name: ${u.name}</span>
+                        <span style="color:var(--neon-cyan); font-size:0.65rem;">[${u.role}]</span>
+                    </div>
+                `;
+                container.appendChild(item);
             });
         }
 
-        /* ------------------ INTERNALS: PROFILE & INPUTS ------------------ */
-        function fillProfileDashboardData() {
-            document.getElementById('myAvatarDisplay').src = currentUser.avatar || 'image/M2Vai Official YouTube Channel Logo.png';
-            document.getElementById('profId').innerText = "ID: " + currentUser.id;
-            document.getElementById('profRole').innerText = currentUser.role;
-            document.getElementById('profBalance').innerText = currentUser.balance;
-            document.getElementById('profName').innerText = currentUser.playerName;
-            document.getElementById('profGameId').innerText = currentUser.gameId;
-            document.getElementById('profEmail').innerText = currentUser.email;
-            document.getElementById('profMobile').innerText = currentUser.mobile || 'N/A';
+        // Dynamic Calculations for Bus Fares
+        function calculateFare() {
+            const from = document.getElementById('route-from').value;
+            const to = document.getElementById('route-to').value;
+            const busClass = document.getElementById('bus-class').value;
+            let fareDisplay = document.getElementById('fare-display');
+            
+            if(from === to) {
+                fareDisplay.innerText = "0 BDT";
+                return 0;
+            }
+            
+            let baseFare = 450;
+            if((from === "Dhaka" && to === "Cox's Bazar") || (from === "Cox's Bazar" && to === "Dhaka")) baseFare = 800;
+            if(busClass === "AC") baseFare += 400; // Premium surcharge application
+
+            fareDisplay.innerText = `${baseFare} BDT`;
+            return baseFare;
         }
 
+        // Programmatic Seat Interface Generation
+        function renderSeatGridStructure() {
+            const grid = document.getElementById('seats-layout-grid');
+            grid.innerHTML = "";
+            const busClass = document.getElementById('bus-class').value;
+            
+            // Clean dynamic timeout block evaluations for expirations
+            enforceAutomaticSeatCleanup();
+
+            let rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+            if(busClass === "AC") {
+                grid.style.gridTemplateColumns = "repeat(4, 1fr)";
+                rows.forEach(r => {
+                    appendSeatElement(grid, r + "1");
+                    appendSeatElement(grid, "W", true); // Pass Walkway element identifier
+                    appendSeatElement(grid, r + "2");
+                    appendSeatElement(grid, r + "3");
+                });
+            } else {
+                grid.style.gridTemplateColumns = "repeat(5, 1fr)";
+                rows.forEach(r => {
+                    appendSeatElement(grid, r + "1");
+                    appendSeatElement(grid, r + "2");
+                    appendSeatElement(grid, "W", true);
+                    appendSeatElement(grid, r + "3");
+                    appendSeatElement(grid, r + "4");
+                });
+            }
+        }
+
+        function appendSeatElement(targetGrid, seatId, isWalkway = false) {
+            let cell = document.createElement('div');
+            if(isWalkway) {
+                cell.className = "seat walkway";
+                targetGrid.appendChild(cell);
+                return;
+            }
+
+            cell.className = "seat";
+            cell.innerText = seatId;
+            cell.setAttribute('id', `seat-${seatId}`);
+            
+            // Inspect system booking data structures
+            if(db.bookedSeats[seatId]) {
+                cell.classList.add('booked');
+            }
+
+            cell.onclick = () => {
+                if(cell.classList.contains('booked')) return;
+                document.querySelectorAll('.seat').forEach(s => s.classList.remove('selected'));
+                selectedSeat = seatId;
+                cell.classList.add('selected');
+            };
+
+            targetGrid.appendChild(cell);
+        }
+
+        // Automatic 1-Hour Booking Reset Evaluation Pipeline
+        function enforceAutomaticSeatCleanup() {
+            let now = Date.now();
+            let altered = false;
+            for(let sid in db.bookedSeats) {
+                if(now - db.bookedSeats[sid].timestamp > 60 * 60 * 1000) { // 1 Hour Threshold Window Timeout
+                    delete db.bookedSeats[sid];
+                    altered = true;
+                }
+            }
+            if(altered) saveDB();
+        }
+
+        // Financial Asset Checks and Processing Loops
+        function confirmSeatBooking() {
+            if(!selectedSeat) { alert("Please select a bus seat first."); return; }
+            let cost = calculateFare();
+            if(cost === 0) { alert("Invalid departure mapping selected."); return; }
+
+            if(currentSessionUser.wallet < cost) {
+                triggerRewardEarningModal(cost);
+                return;
+            }
+
+            // Charge Wallet and Lock Structurally
+            currentSessionUser.wallet -= cost;
+            db.bookedSeats[selectedSeat] = {
+                memberId: currentSessionUser.id,
+                timestamp: Date.now()
+            };
+            saveDB();
+            
+            compileDigitalTicketOutput();
+            navigateToPage(4);
+        }
+
+        // Rewards Window Engine Integration Injection
+        function triggerRewardEarningModal(needed) {
+            alert(`Insufficient Balance (${currentSessionUser.wallet} BDT). Required: ${needed} BDT.\nClick on YouTube links below to acquire sub bonuses immediately.`);
+        }
+
+        function claimReward(amt) {
+            if(!currentSessionUser) return;
+            currentSessionUser.wallet += amt;
+            saveDB();
+            alert(`Reward Verified! ${amt} BDT credited into your profile wallet asset logs safely.`);
+            if(document.getElementById('profile-modal').classList.contains('active')) {
+                openProfileModal(); // Refresh live
+            }
+        }
+
+        // Ticket Field Parser Compiler Engine
+        function compileDigitalTicketOutput() {
+            document.getElementById('t-id').innerText = currentSessionUser.id;
+            document.getElementById('t-name').innerText = currentSessionUser.name;
+            document.getElementById('t-game').innerText = currentSessionUser.gameId;
+            document.getElementById('t-phone').innerText = currentSessionUser.phone;
+            document.getElementById('t-from').innerText = document.getElementById('route-from').value;
+            document.getElementById('t-to').innerText = document.getElementById('route-to').value;
+            
+            let today = new Date();
+            document.getElementById('t-date').innerText = today.toISOString().split('T')[0];
+            document.getElementById('t-time').innerText = document.getElementById('bus-class').value === 'AC' ? '10:00 AM Premium' : '09:00 AM Normal';
+            document.getElementById('t-seat').innerText = selectedSeat;
+            
+            let timeStr = today.toLocaleTimeString('en-US');
+            let dateStr = String(today.getDate()).padStart(2,'0') + '/' + String(today.getMonth()+1).padStart(2,'0') + '/' + today.getFullYear();
+            document.getElementById('t-issue').innerText = `${timeStr} | ${dateStr}`;
+        }
+
+        // HTML2Canvas HD Image Downloader Interface Block
+        function triggerTicketCapture() {
+            let targetCard = document.getElementById('downloadable-ticket-card');
+            let downloadBtn = document.getElementById('btn-download-trigger');
+            downloadBtn.disabled = true;
+            downloadBtn.innerText = "Generating File Assets...";
+
+            html2canvas(targetCard, {
+                scale: 2, // Double asset layout densities for perfect clarity
+                useCORS: true
+            }).then(canvas => {
+                let dataUri = canvas.toDataURL("image/png");
+                let link = document.createElement('a');
+                link.download = `M2Vai_Ticket_Seat_${selectedSeat}.png`;
+                link.href = dataUri;
+                link.click();
+                
+                alert("Ticket Downloaded Successfully to Gallery! System returning to dashboard interface.");
+                
+                // Clear selection states safely
+                selectedSeat = null;
+                saveDB();
+                
+                // Automatic Navigation Routing Reset back to home page state matrix loop
+                navigateToPage(2);
+                downloadBtn.disabled = false;
+                applyLanguageDOM(db.config.globalLanguage);
+            }).catch(err => {
+                console.error(err);
+                downloadBtn.disabled = false;
+                applyLanguageDOM(db.config.globalLanguage);
+            });
+        }
+
+        // Sidebar Navigation Interlocking Modules
+        function toggleSidebar(open) {
+            const sb = document.getElementById('app-sidebar');
+            if(open) sb.classList.add('open');
+            else sb.classList.remove('open');
+        }
+
+        // Modal Profiling Component Engine
+        function openProfileModal() {
+            toggleSidebar(false);
+            document.getElementById('p-id').innerText = currentSessionUser.id;
+            document.getElementById('p-name').innerText = currentSessionUser.name;
+            document.getElementById('p-role').innerText = currentSessionUser.role;
+            document.getElementById('p-wallet').innerText = `${currentSessionUser.wallet} BDT`;
+            document.getElementById('user-avatar').src = currentSessionUser.avatar;
+
+            document.getElementById('profile-modal').classList.add('active');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.remove('active');
+        }
+
+        // Custom PNG Avatar Sizing Validation Engine
         function processAvatarUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
-            if(file.size > 300 * 1024) { alert("Maximum upload file size limit exceeded (300KB)!"); return; }
-            if(file.type !== "image/png") { alert("Only standard PNG image format allowed!"); return; }
+            if(file.type !== "image/png") {
+                alert("Only high quality PNG format formats are supported inside this engine.");
+                return;
+            }
+            if(file.size > 300 * 1024) { // 300KB Strict Security Filter Cap
+                alert("File capacities validation failed. Size must stay under 300KB max.");
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const base64Str = e.target.result;
-                currentUser.avatar = base64Str;
-                
-                // Save updates to persistent stack
-                const targetUser = users.find(u => u.id === currentUser.id);
-                targetUser.avatar = base64Str;
-                
-                localStorage.setItem('ticket_users', JSON.stringify(users));
-                sessionStorage.setItem('active_session_user', JSON.stringify(currentUser));
-                document.getElementById('myAvatarDisplay').src = base64Str;
-                alert("Profile image updated locally!");
-                updateActiveMembersMarquee();
+                currentSessionUser.avatar = e.target.result;
+                document.getElementById('user-avatar').src = e.target.result;
+                saveDB();
+                renderActiveMembersMarquee();
+                alert("Profile avatar updated successfully across runtime layers.");
             };
             reader.readAsDataURL(file);
         }
 
-        /* ------------------ ADMINISTRATIVE PANE ACTIONS ------------------ */
-        function fillAdminUserTableData() {
-            const tbody = document.getElementById('adminUserTableRows');
-            tbody.innerHTML = "";
-
-            users.forEach(u => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${u.id}</td>
-                    <td>${u.email}</td>
-                    <td>
-                        <select onchange="adminUpdateUserRole('${u.id}', this.value)" ${u.email === SUPER_ADMIN_EMAIL ? 'disabled' : ''}>
-                            <option value="Member" ${u.role === 'Member' ? 'selected' : ''}>Member</option>
-                            <option value="Counter Master" ${u.role === 'Counter Master' ? 'selected' : ''}>Counter Master</option>
-                            <option value="Moderator" ${u.role === 'Moderator' ? 'selected' : ''}>Moderator</option>
-                            <option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Admin</option>
-                        </select>
-                    </td>
-                    <td style="color:${u.isBanned ? '#da3637' : 'var(--neon-green)'}">${u.isBanned ? 'Banned' : 'Active'}</td>
-                    <td>
-                        <button style="padding:2px 6px; font-size:10px; background:var(--btn-dark); color:#fff; border:1px solid #30363d;" onclick="adminPromptGiftWallet('${u.id}')">🎁 Gift</button>
-                        <button style="padding:2px 6px; font-size:10px; background:#da3637; color:#fff; border:none;" onclick="adminToggleBanState('${u.id}')">${u.isBanned ? 'Unban' : 'Ban'}</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function adminUpdateUserRole(userId, newRole) {
-            const target = users.find(u => u.id === userId);
-            if(target) {
-                target.role = newRole;
-                localStorage.setItem('ticket_users', JSON.stringify(users));
-                alert("User structural access tier updated!");
-            }
-        }
-
-        function adminToggleBanState(userId) {
-            const target = users.find(u => u.id === userId);
-            if(target.email === SUPER_ADMIN_EMAIL) { alert("Cannot ban primary Super Admin!"); return; }
-            if(target) {
-                target.isBanned = !target.isBanned;
-                localStorage.setItem('ticket_users', JSON.stringify(users));
-                fillAdminUserTableData();
-            }
-        }
-
-        function adminPromptGiftWallet(userId) {
-            const amt = prompt("Enter gift balance amount (BDT):");
-            if(!amt || isNaN(amt)) return;
-            const target = users.find(u => u.id === userId);
-            if(target) {
-                target.balance += parseInt(amt);
-                localStorage.setItem('ticket_users', JSON.stringify(users));
-                alert(`Successfully gifted ${amt} BDT to Member ID ${userId}`);
-                fillAdminUserTableData();
-            }
-        }
-
-        function adminGlobalResetAllSeats() {
-            if(confirm("Are you sure you want to release all currently booked system seats?")) {
-                bookedSeatsStore = {};
-                localStorage.setItem('booked_seats_map', JSON.stringify(bookedSeatsStore));
-                alert("All bus configurations successfully cleared and set back to empty raw state.");
-            }
-        }
-
-        /* ------------------ REAL-TIME LIVE MEMBER SEARCH ------------------ */
-        function handleLiveSearch(query) {
-            if(!query) return;
-            const found = users.find(u => u.id === query.trim());
-            const popup = document.getElementById('searchPopup');
-            const area = document.getElementById('searchResultDataArea');
+        // Live Header Search Box Routing Table Lookups
+        function searchMember() {
+            let sVal = document.getElementById('member-search').value.trim();
+            if(sVal.length < 2) return;
             
-            if(found) {
-                area.innerHTML = `
-                    <p><b>Member ID:</b> ${found.id}</p>
-                    <p><b>Name:</b> ${found.playerName}</p>
-                    <p><b>Role Rank:</b> ${found.role}</p>
-                    <p><b>Status Tracker:</b> ${found.isBanned ? 'Banned' : 'Active'}</p>
-                `;
-                popup.style.display = 'flex';
+            let matchedUser = Object.values(db.users).find(u => u.id === sVal);
+            if(matchedUser) {
+                alert(`Member Identity Located!\nID: ${matchedUser.id}\nPlayer Name: ${matchedUser.name}\nDesignation: ${matchedUser.role}\nStatus: ${matchedUser.banned ? 'Banned':'Active'}`);
             }
         }
 
-        function updateActiveMembersMarquee() {
-            const wrapper = document.getElementById('activeMembersMarqueeList');
-            wrapper.innerHTML = "";
-            
-            // Render simulating logged-in system records matching standard profiles
-            users.filter(u => !u.isBanned).forEach(u => {
-                const chip = document.createElement('div');
-                chip.classList.add('member-chip');
-                chip.innerHTML = `
-                    <img src="${u.avatar}" class="member-avatar">
-                    <div class="member-info-text">
-                        <div><b>ID:</b> ${u.id} <span class="status-dot">🟢 Active</span></div>
-                        <div><b>Name:</b> ${u.playerName}</div>
-                        <div style="color:var(--neon-cyan)"><b>Rank:</b> ${u.role}</div>
-                    </div>
-                `;
-                wrapper.appendChild(chip);
-            });
-        }
+        // Administration Dashboard Logic Arrays
+        function openAdminPanel() {
+            toggleSidebar(false);
+            if(currentSessionUser.role !== "Admin" && currentSessionUser.role !== "Moderator") {
+                alert("Access Forbidden.");
+                return;
+            }
 
-        /* ------------------ LOCALIZATION ENGINE (EN / বাংলা) ------------------ */
-        function toggleLanguage() {
-            appLanguage = appLanguage === 'bn' ? 'en' : 'bn';
-            localStorage.setItem('app_language', appLanguage);
-            applyLanguagePack(appLanguage);
-        }
-
-        function applyLanguagePack(lang) {
-            document.querySelectorAll('.lang-text').forEach(el => {
-                el.innerText = el.getAttribute(`data-${lang}`) || el.innerText;
-            });
-            
-            // Adjust toggle placeholders manually
-            if(lang === 'bn') {
-                document.getElementById('memberSearchInput').placeholder = "মেম্বার আইডি খুঁজুন...";
-                document.getElementById('noticeBoardHeader').innerText = "নোটিশ বোর্ড";
-                document.getElementById('mainNoticeText').innerText = "M2Vai অনলাইন কাউন্টার সিস্টেমে আপনাকে স্বাগতম! আপনার সিট বুকিং করুন এখনই।";
+            // Restrict Interface options relative to sub role capacities
+            if(currentSessionUser.role === "Moderator") {
+                document.getElementById('adm-role-group').style.display = 'none';
+                document.getElementById('adm-gift-group').style.display = 'none';
             } else {
-                document.getElementById('memberSearchInput').placeholder = "Search Member ID...";
-                document.getElementById('noticeBoardHeader').innerText = "Notice Board";
-                document.getElementById('mainNoticeText').innerText = "Welcome to M2Vai Online Counter System! Book your seat now.";
+                document.getElementById('adm-role-group').style.display = 'block';
+                document.getElementById('adm-gift-group').style.display = 'block';
             }
-            toggleAuthMode(isLoginMode);
+
+            document.getElementById('admin-panel-modal').classList.add('active');
         }
 
-        function toggleMenu(show) {
-            const menu = document.getElementById('sideMenu');
-            if(show !== undefined) {
-                show ? menu.classList.add('open') : menu.classList.remove('open');
-            } else {
-                menu.classList.toggle('open');
-            }
+        function closeAdminPanel() {
+            document.getElementById('admin-panel-modal').classList.remove('active');
         }
 
-        function openContactPopup() { toggleMenu(false); document.getElementById('contactPopup').style.display = 'flex'; }
-        function closeContactPopup() { document.getElementById('contactPopup').style.display = 'none'; }
+        function updateMemberRole() {
+            let tid = document.getElementById('admin-target-id').value.trim();
+            let newRole = document.getElementById('admin-role-select').value;
+            let targetUser = Object.values(db.users).find(u => u.id === tid);
+            
+            if(!targetUser) { alert("Targeted member profile not found."); return; }
+            if(targetUser.id === "0000") { alert("Cannot override core system initialization vectors."); return; }
+
+            targetUser.role = newRole;
+            saveDB();
+            renderActiveMembersMarquee();
+            alert(`Designation for profile identity ${tid} upgraded to ${newRole}.`);
+        }
+
+        function setBanStatus(status) {
+            let tid = document.getElementById('admin-target-id').value.trim();
+            let targetUser = Object.values(db.users).find(u => u.id === tid);
+            
+            if(!targetUser) { alert("Targeted member profile not found."); return; }
+            if(targetUser.id === "0000") { alert("Core admin rules cannot be isolated or targeted."); return; }
+
+            targetUser.banned = status;
+            saveDB();
+            renderActiveMembersMarquee();
+            alert(`Targeted profile record ${tid} has been updated. Banned Status = ${status}`);
+        }
+
+        function executeGiftWallet() {
+            let tid = document.getElementById('admin-target-id').value.trim();
+            let amt = parseInt(document.getElementById('gift-amount').value) || 0;
+            let targetUser = Object.values(db.users).find(u => u.id === tid);
+            
+            if(!targetUser) { alert("Targeted user profile dataset missing."); return; }
+            if(amt <= 0) { alert("Please set a valid positive financial transaction sum."); return; }
+
+            targetUser.wallet += amt;
+            saveDB();
+            alert(`Successfully gifted ${amt} BDT onto account number ${tid}.`);
+        }
+
+        function resetAllSeatsManual() {
+            db.bookedSeats = {};
+            saveDB();
+            if(activePage === 3) renderSeatGridStructure();
+            alert("All structural vehicle layouts globally cleared.");
+        }
+
+        // Intercept Page Views Routing Hooks to protect Admin Panel Menu visibility dynamically
+        setInterval(() => {
+            if(currentSessionUser) {
+                let link = document.getElementById('mnu-admin-link');
+                if(currentSessionUser.role === "Admin" || currentSessionUser.role === "Moderator" || currentSessionUser.role === "Counter Master") {
+                    link.style.display = 'flex';
+                } else {
+                    link.style.display = 'none';
+                }
+            }
+        }, 1000);
     </script>
 </body>
 </html>
