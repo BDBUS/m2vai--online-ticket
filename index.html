@@ -1,484 +1,614 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M2Vai Online Ticket Counter</title>
+    <title>M2Vai ONLINE TICKET COUNTER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Galada&family=Inter:wght@300;400;500;600;700&display=swap');
         body {
-            background-color: #0d1117; /* Rich Standard Dark Background */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f17;
         }
-        /* Neon Glowing Text & Borders */
-        .glow-text-green { text-shadow: 0 0 10px #22c55e, 0 0 20px #22c55e; }
-        .glow-text-blue { text-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6; }
-        .glow-border-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.6); }
-        .glow-border-red { box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0d1117; }
-        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
-        
-        /* Watermark Background Setup */
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+        }
+        .neon-text {
+            text-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+        }
         .watermark-bg {
             background-image: url('image/M2Vai Official YouTube Channel Logo.png');
+            background-position: center;
             background-repeat: no-repeat;
-            background-position: center center;
-            background-size: 40%;
-            background-attachment: fixed;
+            background-size: 60%;
+            opacity: 0.05;
         }
+        .ticket-watermark {
+            background-image: url('image/M2Vai Official YouTube Channel Logo.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 40%;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f17; }
+        ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
     </style>
 </head>
-<body class="watermark-bg text-gray-200 min-h-screen flex flex-col justify-between relative">
+<body class="text-gray-200 min-h-screen flex flex-col relative overflow-x-hidden">
 
-    <header id="mainHeader" class="hidden bg-gray-900 bg-opacity-80 border-b border-gray-800 p-4 sticky top-0 z-40 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <div class="text-2xl font-bold tracking-wider text-blue-400 glow-text-blue cursor-pointer" onclick="navigateTo('page2')">
-                M2Vai
-            </div>
-            
-            <div class="flex-1 max-w-md mx-4 relative">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <i class="fas fa-search"></i>
-                </span>
-                <input type="text" id="globalSearchInput" onkeyup="handleGlobalSearch(event)" placeholder="Search Member ID (e.g. 0001)..." class="w-full bg-gray-800 border border-gray-700 rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:border-blue-500 text-gray-200">
-                <div id="searchDropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto z-50 p-2 text-sm"></div>
-            </div>
+    <div class="absolute inset-0 watermark-bg pointer-events-none z-0"></div>
 
-            <div class="flex items-center space-x-4">
-                <button onclick="toggleLanguage()" id="langBtn" class="text-sm bg-gray-800 border border-gray-700 px-3 py-1 rounded-md hover:bg-gray-700 transition">EN | বাংলা</button>
-                <button onclick="toggleMenu()" class="text-2xl text-gray-300 hover:text-blue-400 focus:outline-none transition">
-                    <i class="fas fa-bars"></i>
-                </button>
+    <header class="border-b border-gray-800 bg-[#0d131f] bg-opacity-90 sticky top-0 z-50 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <button id="menuBtn" class="text-emerald-500 text-xl focus:outline-none hidden hover:text-emerald-400 transition">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <span class="text-xl font-bold tracking-wider text-white neon-text flex items-center gap-2">
+                <img src="image/M2Vai Official YouTube Channel Logo.png" class="w-6 h-6 rounded-full" onerror="this.style.display='none'">
+                M2Vai PANEL
+            </span>
+        </div>
+
+        <div id="headerSearchContainer" class="hidden flex-1 max-w-xs mx-4 relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-500 text-sm"></i>
+            <input type="text" id="memberSearchInput" placeholder="মেম্বার আইডি দিয়ে খুঁজুন..." class="w-full bg-[#161d2b] border border-gray-700 rounded-full py-1.5 pl-9 pr-4 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition">
+        </div>
+
+        <div class="flex items-center gap-3">
+            <span id="navLinks" class="hidden md:flex gap-4 text-sm text-gray-400">
+                <button onclick="navigateTo('page2')" class="hover:text-white transition">Home</button>
+                <button onclick="alert('কোনো নতুন নোটিশ নেই।')" class="hover:text-white transition">Notice</button>
+            </span>
+            <div class="bg-[#161d2b] rounded-full p-0.5 flex text-xs font-semibold border border-gray-700">
+                <button id="langEN" class="bg-emerald-500 text-slate-900 px-3 py-1 rounded-full transition font-bold">EN</button>
+                <button id="langBN" class="text-gray-400 px-3 py-1 rounded-full transition">বাংলা</button>
             </div>
         </div>
     </header>
 
-    <div id="sideMenu" class="fixed top-0 right-0 h-full w-64 bg-gray-900 border-l border-gray-800 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 p-6 flex flex-col justify-between">
+    <div id="sideMenu" class="fixed inset-y-0 left-0 w-64 bg-[#0d131f] border-r border-gray-800 transform -translate-x-full transition-transform duration-300 ease-in-out z-50 p-5 shadow-2xl flex flex-col justify-between">
         <div>
-            <div class="flex justify-between items-center mb-8">
-                <h3 class="text-lg font-bold text-blue-400">Menu Options</h3>
-                <button onclick="toggleMenu()" class="text-xl text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-800">
+                <span class="font-bold text-emerald-400"><i class="fa-solid fa-layer-group mr-2"></i>মেনু অপশন</span>
+                <button id="closeMenuBtn" class="text-gray-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <nav class="space-y-4">
-                <button onclick="openProfileModal()" class="w-full flex items-center space-x-3 text-left p-2.5 rounded-lg hover:bg-gray-800 transition"><i class="fas fa-user text-blue-400"></i> <span>Profile</span></button>
-                <button id="menuAdminBtn" onclick="openAdminPanel()" class="w-full flex items-center space-x-3 text-left p-2.5 rounded-lg hover:bg-gray-800 transition hidden"><i class="fas fa-user-shield text-red-400"></i> <span>Admin Panel</span></button>
-                <button onclick="openContactModal()" class="w-full flex items-center space-x-3 text-left p-2.5 rounded-lg hover:bg-gray-800 transition"><i class="fas fa-address-book text-green-400"></i> <span>Contact</span></button>
-                <button onclick="handleLogout()" class="w-full flex items-center space-x-3 text-left p-2.5 rounded-lg hover:bg-red-900/30 text-red-400 transition"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
+            <nav class="space-y-2">
+                <button onclick="openProfileModal()" class="w-full text-left py-2.5 px-4 rounded-lg bg-[#161d2b] hover:bg-emerald-500 hover:text-slate-900 transition flex items-center gap-3">
+                    <i class="fa-solid fa-user w-5 text-center"></i> Profile
+                </button>
+                <button id="adminPanelMenuBtn" onclick="openAdminPanel()" class="w-full text-left py-2.5 px-4 rounded-lg bg-[#161d2b] hover:bg-amber-500 hover:text-slate-900 transition flex items-center gap-3 hidden">
+                    <i class="fa-solid fa-user-shield w-5 text-center"></i> Admin Panel
+                </button>
+                <button onclick="openContactModal()" class="w-full text-left py-2.5 px-4 rounded-lg bg-[#161d2b] hover:bg-emerald-500 hover:text-slate-900 transition flex items-center gap-3">
+                    <i class="fa-solid fa-address-book w-5 text-center"></i> Contact
+                </button>
+                <button onclick="handleLogout()" class="w-full text-left py-2.5 px-4 rounded-lg bg-red-950 text-red-400 hover:bg-red-500 hover:text-white transition flex items-center gap-3 mt-8">
+                    <i class="fa-solid fa-right-from-bracket w-5 text-center"></i> Logout
+                </button>
             </nav>
         </div>
-        <div class="text-xs text-gray-500 text-center border-t border-gray-800 pt-4">
-            Session active for <span id="sessionTimer">30:00</span>
+        <div class="text-xs text-gray-600 text-center border-t border-gray-800 pt-4">
+            M2Vai System &copy; 2026
         </div>
     </div>
 
-    <div id="noticeBar" class="hidden bg-blue-950/40 border-b border-blue-900/50 py-1.5 text-sm text-blue-300">
-        <marquee id="scrollingNotice" behavior="scroll" direction="left" scrollamount="5">Welcome to M2Vai Online Ticket Platform! Drive safely and follow society conveyor norms.</marquee>
+    <div id="noticeBoard" class="bg-amber-500 bg-opacity-10 border-b border-amber-500 border-opacity-20 py-1.5 text-xs text-amber-400 z-10 hidden">
+        <marquee behavior="scroll" direction="left" scrollamount="5" id="marqueeText">
+            📢 স্বাগতম M2Vai অনলাইন টিকিট কাউন্টারে! নতুন রেজিস্ট্রেশনে পাচ্ছেন ৩০০০ BDT ফ্রি বোনাস! কনভয় বা যাত্রার সময় ট্রাফিক নিয়ম মেনে চলুন।
+        </marquee>
     </div>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 flex flex-col justify-center">
-        
-        <section id="page1" class="w-full max-w-md mx-auto bg-gray-900 bg-opacity-70 p-6 rounded-2xl border border-gray-800 shadow-xl backdrop-blur-sm">
-            <div class="text-center mb-6">
-                <div id="greetingText" class="text-md text-blue-400 font-medium">Good Evening! 🌅</div>
-                <div id="liveClock" class="text-2xl font-bold text-gray-100 mt-1 tracking-widest">18:18:21 PM</div>
-                <div id="liveDate" class="text-xs text-gray-400">Sat, Jun 13, 2026</div>
-            </div>
+    <main class="flex-1 z-10 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-center">
 
-            <div id="loginFormContainer">
-                <h2 class="text-xl font-bold text-center text-gray-100 mb-6 tracking-wide">M2Vai ACCOUNT LOGIN</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Email Address</label>
-                        <input type="email" id="loginEmail" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs uppercase tracking-wider text-gray-400 mb-1">Password</label>
-                        <input type="password" id="loginPass" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div class="text-right text-xs"><a href="#" class="text-blue-400 hover:underline">Forgot password?</a></div>
-                    
-                    <div class="flex space-x-4 pt-2">
-                        <button onclick="processLogin()" class="flex-1 bg-green-600 hover:bg-green-500 font-semibold py-2 rounded-lg glow-border-green transition text-sm">Login Now</button>
-                        <button onclick="toggleLoginRegister(true)" class="flex-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 font-semibold py-2 rounded-lg transition text-sm">Sign Up Now</button>
-                    </div>
-                </div>
+        <section id="page1" class="w-full flex flex-col items-center">
+            <div class="w-28 h-28 rounded-full border-2 border-emerald-500 flex items-center justify-center p-2 bg-[#0d131f] neon-glow mb-4">
+                <img src="image/M2Vai Official YouTube Channel Logo.png" alt="M2Vai Logo" class="w-full h-full object-contain rounded-full" id="mainLogo">
             </div>
-
-            <div id="registerFormContainer" class="hidden">
-                <h2 class="text-xl font-bold text-center text-gray-100 mb-4 tracking-wide">CREATE NEW ACCOUNT</h2>
-                <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Full Name *</label>
-                        <input type="text" id="regName" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">In-Game Name / ID *</label>
-                        <input type="text" id="regGameId" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Date of Birth *</label>
-                        <input type="date" id="regDob" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 text-gray-400">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Mobile Number (Optional)</label>
-                        <input type="text" id="regMobile" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500" placeholder="017XXXXXXXX">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Facebook Profile Link *</label>
-                        <input type="url" id="regFb" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Email Address *</label>
-                        <input type="email" id="regEmail" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Set Password *</label>
-                        <input type="password" id="regPass" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500">
-                    </div>
-                </div>
-                <div class="flex space-x-4 pt-4 border-t border-gray-800 mt-3">
-                    <button onclick="toggleLoginRegister(false)" class="flex-1 bg-gray-800 border border-gray-700 text-sm py-2 rounded-lg transition">Back to Login</button>
-                    <button onclick="processRegister()" class="flex-1 bg-green-600 hover:bg-green-500 text-sm font-semibold py-2 rounded-lg glow-border-green transition">Register & Claim</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="page2" class="hidden w-full max-w-xl mx-auto bg-gray-900 bg-opacity-75 p-6 rounded-2xl border border-gray-800 shadow-xl backdrop-blur-sm">
-            <h2 class="text-xl font-bold text-center text-gray-100 mb-6 tracking-wide uppercase"><i class="fas fa-bus text-blue-500 mr-2"></i> Book Your Trip</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="relative">
-                    <label class="block text-xs text-gray-400 mb-1">From (Boarding District)</label>
-                    <input type="text" id="routeFrom" oninput="filterDistricts(this, 'fromDropdown')" placeholder="Search District..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                    <div id="fromDropdown" class="hidden absolute left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg max-h-40 overflow-y-auto z-50 text-sm"></div>
+            <h1 class="text-2xl font-bold tracking-wide text-white text-center">M2Vai ONLINE TICKET COUNTER</h1>
+            <p class="text-xs text-emerald-400 tracking-wider text-center mt-1 font-semibold">Bangladesh Bussid Unique Society</p>
+
+            <div class="w-full bg-[#0d131f] bg-opacity-80 border border-gray-800 rounded-xl p-4 mt-5 text-center shadow-lg">
+                <p id="wishMessage" class="text-xs font-medium text-amber-400 mb-1">Good Morning! 🌅</p>
+                <div id="liveClock" class="text-2xl font-mono text-emerald-400 font-bold tracking-widest">10:38:21 AM</div>
+                <div id="liveDate" class="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">LIVE DATE: SAT, JUN 13, 2026</div>
+            </div>
+
+            <div class="w-full bg-[#0d131f] border border-gray-800 rounded-2xl p-6 mt-6 shadow-xl relative overflow-hidden">
+                
+                <div id="loginFormContainer">
+                    <p class="text-sm font-medium text-center text-gray-300 mb-5">Please login to book your bus seat</p>
+                    <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Email Address</label>
+                            <input type="email" id="loginEmail" required placeholder="info.m2vai380@gmail.com" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Password</label>
+                                <a href="#" onclick="alert('পাসওয়ার্ড মনে না থাকলে অ্যাডমিনের সাথে যোগাযোগ করুন।')" class="text-xs text-gray-500 hover:text-emerald-400">Forgot?</a>
+                            </div>
+                            <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 pt-2">
+                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-900 text-sm font-bold py-3 rounded-xl transition neon-glow">Login Now</button>
+                            <button type="button" onclick="toggleAuthForms(true)" class="w-full bg-[#161d2b] border border-gray-700 hover:bg-gray-800 text-white text-sm font-bold py-3 rounded-xl transition">Sign Up Now</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="relative">
-                    <label class="block text-xs text-gray-400 mb-1">To (Destination District)</label>
-                    <input type="text" id="routeTo" oninput="filterDistricts(this, 'toDropdown')" placeholder="Search District..." class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                    <div id="toDropdown" class="hidden absolute left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg max-h-40 overflow-y-auto z-50 text-sm"></div>
+
+                <div id="signUpFormContainer" class="hidden">
+                    <p class="text-sm font-medium text-center text-gray-300 mb-5">Create a new account to join us</p>
+                    <form id="signUpForm" onsubmit="handleSignUp(event)" class="space-y-3.5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Full Name</label>
+                            <input type="text" id="regName" required placeholder="M2Vai" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">In-Game Name / ID</label>
+                            <input type="text" id="regGameId" required placeholder="M2Vai_Bussid" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Date of Birth</label>
+                            <input type="date" id="regDOB" required class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Mobile Number (Optional)</label>
+                            <input type="text" id="regMobile" placeholder="018XXXXXXXX" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Facebook Profile Link</label>
+                            <input type="url" id="regFB" required placeholder="https://facebook.com/..." class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Email Address</label>
+                            <input type="email" id="regEmail" required placeholder="example@email.com" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Password</label>
+                                <input type="password" id="regPass" required placeholder="••••••••" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Confirm Password</label>
+                                <input type="password" id="regConfirmPass" required placeholder="••••••••" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 pt-3">
+                            <button type="button" onclick="toggleAuthForms(false)" class="w-full bg-[#161d2b] border border-gray-700 hover:bg-gray-800 text-white text-sm font-bold py-2.5 rounded-xl transition">Back to Login</button>
+                            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-900 text-sm font-bold py-2.5 rounded-xl transition neon-glow">Submit Form</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+
+
+        <section id="page2" class="w-full hidden">
+            <div class="bg-[#0d131f] border border-gray-800 rounded-xl px-4 py-2 mb-5 flex justify-between items-center text-xs">
+                <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></div>
+                    <span class="text-gray-400 font-medium">মেম্বার আইডি: <strong id="userBadgeId" class="text-white">0001</strong></span>
+                </div>
+                <div class="text-emerald-400 font-bold bg-[#161d2b] px-2.5 py-1 rounded-md border border-gray-800">
+                    <i class="fa-solid fa-wallet mr-1"></i> <span id="userBadgeWallet">3000</span> BDT
                 </div>
             </div>
 
-            <div class="space-y-4 mb-6">
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Journey Date</label>
-                    <input type="date" id="routeDate" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-gray-300">
+            <div class="bg-[#0d131f] border border-gray-800 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2 pb-2 border-b border-gray-800">
+                    <i class="fa-solid fa-bus text-emerald-500"></i> আপনার রুট ও বাস নির্বাচন করুন
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="relative">
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">From (কোথা থেকে)</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-location-dot absolute left-3 top-3 text-gray-500"></i>
+                            <input type="text" id="fromSearchInput" onfocus="showDistrictList('from')" oninput="filterDistricts('from')" placeholder="যাত্রার জেলা সার্চ করুন..." class="w-full bg-[#161d2b] border border-gray-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div id="fromDistrictList" class="absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-[#161d2b] border border-gray-700 rounded-xl z-30 hidden shadow-2xl"></div>
+                    </div>
+
+                    <div class="relative">
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">To (কোথায় যাবেন)</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-location-crosshairs absolute left-3 top-3 text-gray-500"></i>
+                            <input type="text" id="toSearchInput" onfocus="showDistrictList('to')" oninput="filterDistricts('to')" placeholder="গন্তব্যের জেলা সার্চ করুন..." class="w-full bg-[#161d2b] border border-gray-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div id="toDistrictList" class="absolute left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-[#161d2b] border border-gray-700 rounded-xl z-30 hidden shadow-2xl"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Journey Date</label>
+                        <input type="date" id="journeyDate" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Bus Type</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" id="btnNonAC" onclick="selectBusType('Non-AC')" class="py-2.5 rounded-xl border border-gray-700 bg-[#161d2b] text-sm text-gray-300 font-semibold hover:border-emerald-500 transition">Non-AC Bus</button>
+                            <button type="button" id="btnAC" onclick="selectBusType('AC')" class="py-2.5 rounded-xl border border-gray-700 bg-[#161d2b] text-sm text-gray-300 font-semibold hover:border-emerald-500 transition">AC Bus</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Journey Time</label>
+                        <select id="journeyTime" class="w-full bg-[#161d2b] border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                            <option value="09:00 AM">09:00 AM (Morning Tripper)</option>
+                            <option value="03:00 PM">03:00 PM (Afternoon Fleet)</option>
+                            <option value="09:30 PM">09:30 PM (Night Express)</option>
+                        </select>
+                    </div>
+
+                    <div id="fareCalculatorDisplay" class="bg-emerald-950 bg-opacity-30 border border-emerald-800 border-opacity-40 rounded-xl p-3.5 text-center hidden">
+                        <span class="text-xs text-gray-400 block mb-0.5">নির্ধারিত ট্রিপ ভাড়া (Per Seat Fare)</span>
+                        <span class="text-2xl font-bold text-emerald-400 font-mono" id="calculatedFareText">0 BDT</span>
+                    </div>
+
+                    <button type="button" onclick="proceedToSeatSelection()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-900 text-sm font-bold py-3.5 rounded-xl transition neon-glow mt-2 flex items-center justify-center gap-2">
+                        Select Seat 🪑
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Bus Configuration</label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="setBusType('AC')" id="btnBusAC" class="bg-gray-800 border border-gray-700 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-700 transition">Premium AC</button>
-                        <button onclick="setBusType('Non-AC')" id="btnBusNonAC" class="bg-gray-800 border border-gray-700 py-2.5 rounded-lg font-medium text-sm hover:bg-gray-700 transition">Regular Non-AC</button>
+            </div>
+        </section>
+
+
+        <section id="page3" class="w-full hidden">
+            <div class="bg-[#0d131f] border border-gray-800 rounded-2xl p-5 shadow-xl text-center">
+                <h2 class="text-md font-bold text-white tracking-wide mb-4">Choose Your Desired Seat</h2>
+                
+                <div class="flex justify-center items-center gap-5 text-xs text-gray-400 mb-5">
+                    <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-[#1e293b] border border-gray-700"></span> Available</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-emerald-500"></span> Selected</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-red-600"></span> Booked</span>
+                </div>
+
+                <div class="bg-[#070a10] border border-gray-800 rounded-2xl p-4 max-w-[280px] mx-auto shadow-inner relative">
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-gray-800 text-xs text-gray-500 font-bold px-1">
+                        <span class="border border-red-500 border-opacity-40 px-2 py-0.5 rounded text-red-400 tracking-wider">DOOR</span>
+                        <span class="w-6 h-6 border border-gray-700 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-circle-dot"></i></span>
+                    </div>
+
+                    <div id="seatsGridEngine" class="space-y-3"></div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p class="text-sm text-emerald-400 font-semibold">Selected Seat: <span id="selectedSeatNumberLabel" class="text-white font-mono bg-[#161d2b] px-2 py-0.5 rounded border border-gray-800">None</span></p>
+                </div>
+
+                <div id="lockTimerAlertBanner" class="mt-3 text-xs text-amber-400 font-medium hidden animate-pulse">
+                    ⚠️ সিটটি আপনার বুকিং এর জন্য <span id="lockCountdownSecs">0</span> সেকেন্ড ব্লক করা আছে!
+                </div>
+
+                <div class="mt-5 bg-red-950 bg-opacity-20 border border-red-900 border-opacity-40 rounded-xl p-3 text-[11px] text-left leading-relaxed text-red-300">
+                    <p class="font-bold text-red-400 mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Important Notice / গুরুত্বপূর্ণ সতর্কতা</p>
+                    <p class="mb-1"><strong>EN:</strong> Please do not attempt to book or confirm your ticket if your internet connection is unstable.</p>
+                    <p><strong>বাংলা:</strong> আপনার ইন্টারনেট সংযোগে কোনো সমস্যা বা স্লো থাকলে দয়া করে টিকিট কাটবেন না।</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 mt-5">
+                    <button type="button" onclick="navigateTo('page2')" class="bg-[#161d2b] hover:bg-gray-800 text-gray-300 font-bold py-3 rounded-xl border border-gray-700 text-sm transition">Back</button>
+                    <button type="button" onclick="handleConfirmTicket()" class="col-span-2 bg-emerald-500 hover:bg-emerald-600 text-slate-900 text-sm font-bold py-3 rounded-xl transition neon-glow">Confirm Ticket & Download</button>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="page4" class="w-full hidden flex flex-col items-center">
+            
+            <div id="digitalTicketCaptureWrapper" class="w-full bg-white text-slate-900 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 ticket-watermark opacity-5 pointer-events-none z-0"></div>
+
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-4">
+                        <div class="flex items-center gap-2">
+                            <img src="image/M2Vai Official YouTube Channel Logo.png" class="w-10 h-10 rounded-full bg-slate-900 p-0.5" onerror="this.src='https://via.placeholder.com/40'">
+                            <div>
+                                <h3 class="text-md font-extrabold tracking-tight text-slate-900 leading-tight">M2Vai ONLINE TICKET</h3>
+                                <p class="text-[10px] uppercase font-bold tracking-widest text-emerald-600">Official Online Counter</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-mono font-bold bg-slate-100 px-2 py-1 rounded text-slate-700 border border-slate-200">PASS</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between py-1 border-b border-gray-100">
+                            <span class="text-gray-500 font-medium">Member ID:</span>
+                            <span class="font-mono font-bold text-emerald-700" id="ticketMemberId">0001</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-100">
+                            <span class="text-gray-500 font-medium">Player Name:</span>
+                            <span class="font-bold text-slate-800" id="ticketPlayerName">M2Vai User</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-100">
+                            <span class="text-gray-500 font-medium">Game ID:</span>
+                            <span class="font-bold text-slate-800" id="ticketGameId">N/A</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-100">
+                            <span class="text-gray-500 font-medium">Mobile No:</span>
+                            <span class="font-mono font-semibold text-slate-800" id="ticketMobile">Not Provided</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 py-1.5 border-b border-gray-100 bg-slate-50 px-2 rounded">
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-gray-400 block">From</span>
+                                <span class="font-bold text-slate-800 text-sm" id="ticketFrom">District A</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] uppercase font-bold text-gray-400 block">To</span>
+                                <span class="font-bold text-slate-800 text-sm" id="ticketTo">District B</span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 py-1 border-b border-gray-100 text-center">
+                            <div>
+                                <span class="text-[9px] uppercase font-bold text-gray-400 block">Date</span>
+                                <span class="font-semibold text-slate-800 text-[11px]" id="ticketDate">2026-06-13</span>
+                            </div>
+                            <div>
+                                <span class="text-[9px] uppercase font-bold text-gray-400 block">Time</span>
+                                <span class="font-semibold text-slate-800 text-[11px]" id="ticketTime">09:00 AM</span>
+                            </div>
+                            <div>
+                                <span class="text-[9px] uppercase font-bold text-gray-400 block">Bus Type</span>
+                                <span class="font-bold text-emerald-600 text-[11px]" id="ticketBusType">AC</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-100 bg-emerald-50 px-3 rounded-lg mt-2">
+                            <span class="text-emerald-800 font-bold text-xs uppercase tracking-wider">Seat Number:</span>
+                            <span class="font-mono text-xl font-black text-red-600 bg-white border-2 border-red-500 rounded px-3 py-0.5 shadow-sm" id="ticketSeatNumber">A2</span>
+                        </div>
+                        <div class="flex justify-between py-1 text-[10px] text-gray-400 font-mono pt-2">
+                            <span>Issue Time & Date:</span>
+                            <span id="ticketIssueClock">11:03:59 AM | 13/06/2026</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t-2 border-dashed border-gray-300 text-[10px] text-gray-600 space-y-1">
+                        <p class="font-extrabold text-slate-900 text-xs mb-1 uppercase tracking-wide">TERMS & RULES / নির্দেশনাবলী:</p>
+                        <p>১. অনুগ্রহ করে ট্রিপ শুরু হওয়ার অন্তত ১০ মিনিট পূর্বে অনলাইন কাউন্টারে বা নির্দিষ্ট রুমে যুক্ত হোন।</p>
+                        <p>২. সোসাইটির কনভয় বা যাত্রার সময় ট্রাফিক নিয়ম এবং ভদ্রতা বজায় রেখে বাস ড্রাইভ করুন।</p>
+                        <p>৩. ইচ্ছাকৃতভাবে অন্য বাসে ধাক্কা দেওয়া (Ramming) বা যেকোনো ধরনের অশোভন আচরণ করলে তাকে চিরতরে ব্যান করা হবে।</p>
+                    </div>
+
+                    <div class="mt-4 bg-[#0d131f] text-white rounded-xl p-3 text-center flex flex-col items-center justify-center relative overflow-hidden">
+                        <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold">Website Created By</span>
+                        <span class="text-sm font-bold text-emerald-400 tracking-wider neon-text">M2Vai</span>
+                        <div class="flex gap-2 mt-2 w-full">
+                            <div class="flex-1 bg-red-600 rounded-lg py-1 px-2 text-[9px] font-bold flex items-center justify-center gap-1"><i class="fa-brands fa-youtube"></i> M2Vai</div>
+                            <div class="flex-1 bg-red-700 rounded-lg py-1 px-2 text-[9px] font-bold flex items-center justify-center gap-1"><i class="fa-brands fa-youtube"></i> Traveller</div>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs text-gray-400 mb-1">Departure Time Slot</label>
-                    <select id="routeTime" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 text-gray-300">
-                        <option value="08:30 AM">08:30 AM (Morning Fleet)</option>
-                        <option value="01:15 PM">01:15 PM (Noon Convoy)</option>
-                        <option value="09:45 PM">09:45 PM (Night Cruise)</option>
-                    </select>
-                </div>
             </div>
 
-            <div id="fareDisplayCard" class="hidden bg-blue-950/30 border border-blue-900/60 rounded-xl p-4 text-center mb-6">
-                <span class="text-xs tracking-wider uppercase text-gray-400 block">Calculated Trip Fare</span>
-                <span id="calculatedFareText" class="text-2xl font-bold text-green-400 glow-text-green">0 BDT</span>
+            <div class="w-full mt-5">
+                <button type="button" onclick="downloadTicketAsImage()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-900 text-md font-bold py-3.5 rounded-xl transition neon-glow flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> Download Ticket
+                </button>
             </div>
-
-            <button onclick="proceedToSeats()" class="w-full bg-green-600 hover:bg-green-500 font-bold py-2.5 rounded-lg glow-border-green text-center text-sm tracking-wider transition">
-                SELECT SEAT <i class="fas fa-chair ml-1"></i>
-            </button>
-        </section>
-
-        <section id="page3" class="hidden w-full max-w-lg mx-auto bg-gray-900 bg-opacity-75 p-6 rounded-2xl border border-gray-800 shadow-xl backdrop-blur-sm">
-            <h2 class="text-lg font-bold text-center text-gray-100 mb-2 tracking-wide uppercase">Select Seats</h2>
-            <p id="seatBusConfigTitle" class="text-xs text-center text-gray-400 mb-6">Configured Layout</p>
-
-            <div id="holdTimerNotification" class="hidden text-center bg-yellow-950/40 border border-yellow-900/50 text-yellow-400 text-xs py-1.5 rounded-lg mb-4">
-                Selected seat is reserved temporarily. Complete confirmation within <span id="holdCountdown" class="font-bold">03:00</span>
-            </div>
-
-            <div class="flex justify-center space-x-6 text-xs mb-6 border-b border-gray-800 pb-4">
-                <div class="flex items-center space-x-1.5"><span class="w-3.5 h-3.5 bg-gray-700 rounded"></span><span class="text-gray-400">Available</span></div>
-                <div class="flex items-center space-x-1.5"><span class="w-3.5 h-3.5 bg-green-500 rounded"></span><span class="text-green-400">Selected</span></div>
-                <div class="flex items-center space-x-1.5"><span class="w-3.5 h-3.5 bg-red-500 rounded"></span><span class="text-red-400">Booked</span></div>
-            </div>
-
-            <div class="bg-gray-950 border border-gray-800 rounded-xl p-4 max-w-[320px] mx-auto mb-4">
-                <div class="flex justify-between items-center mb-6 text-gray-600 text-lg border-b border-gray-900 pb-2 px-1">
-                    <div><i class="fas fa-door-open" title="Cabin Main Entry"></i> <span class="text-[10px] uppercase font-bold tracking-widest ml-1">Door</span></div>
-                    <div><span class="text-[10px] uppercase font-bold tracking-widest mr-1">Steering</span> <i class="fas fa-id-card-clip" title="Driver Cockpit Deck"></i></div>
-                </div>
-                <div id="busSeatsMatrix" class="space-y-3"></div>
-            </div>
-
-            <div class="text-center text-sm font-medium mb-4 text-gray-300">
-                Selected Seat: <span id="activeSeatLabel" class="text-blue-400 font-bold">None</span>
-            </div>
-
-            <div class="border border-red-900/50 bg-red-950/20 text-xs text-red-400 p-3 rounded-lg space-y-1 mb-6">
-                <p class="font-bold">⚠️ Important Notice / গুরুত্বপূর্ণ সতর্কতা:</p>
-                <p>Ensure a stable internet collection while initiating terminal protocols. Disconnections during checkout holds might release selected seats.</p>
-            </div>
-
-            <div class="flex space-x-4">
-                <button onclick="navigateTo('page2')" class="flex-1 bg-gray-800 hover:bg-gray-700 border border-gray-700 font-semibold py-2 rounded-lg text-sm transition">Back</button>
-                <button onclick="processTicketConfirmation()" class="flex-1 bg-green-600 hover:bg-green-500 font-bold py-2 rounded-lg glow-border-green text-sm tracking-wide transition">Confirm Ticket & Download</button>
-            </div>
-        </section>
-
-        <section id="page4" class="hidden w-full max-w-md mx-auto">
-            <div id="printableTicketCard" class="bg-white text-gray-900 p-6 rounded-2xl shadow-2xl border border-gray-200 relative overflow-hidden">
-                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.06]">
-                    <img src="image/M2Vai Official YouTube Channel Logo.png" class="w-2/3" alt="Watermark logo asset">
-                </div>
-
-                <div class="text-center border-b-2 border-dashed border-gray-300 pb-4 relative z-10">
-                    <h2 class="text-xl font-black tracking-tighter text-blue-900">M2Vai ONLINE TICKET</h2>
-                    <p class="text-[10px] tracking-widest uppercase font-bold text-gray-500">Official Online Counter</p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-y-3 gap-x-4 text-xs my-5 py-2 relative z-10 border-b border-gray-100">
-                    <div><span class="text-gray-400 block font-medium">Member ID:</span><span id="tixMemberId" class="font-bold text-gray-800">0000</span></div>
-                    <div><span class="text-gray-400 block font-medium">Player Name:</span><span id="tixPlayerName" class="font-bold text-gray-800">-</span></div>
-                    <div><span class="text-gray-400 block font-medium">Game ID:</span><span id="tixGameId" class="font-bold text-gray-800">-</span></div>
-                    <div><span class="text-gray-400 block font-medium">Mobile No:</span><span id="tixMobile" class="font-bold text-gray-800">Optional</span></div>
-                    <div><span class="text-gray-400 block font-medium">From:</span><span id="tixFrom" class="font-bold text-gray-800">-</span></div>
-                    <div><span class="text-gray-400 block font-medium">To:</span><span id="tixTo" class="font-bold text-gray-800">-</span></div>
-                    <div><span class="text-gray-400 block font-medium">Date:</span><span id="tixDate" class="font-bold text-gray-800">-</span></div>
-                    <div><span class="text-gray-400 block font-medium">Time:</span><span id="tixTime" class="font-bold text-gray-800">-</span></div>
-                    <div><span class="text-gray-400 block font-medium">Bus Type:</span><span id="tixBusType" class="font-bold text-gray-800">-</span></div>
-                    <div><span class="text-gray-400 block font-medium">Seat Number:</span><span id="tixSeat" class="font-bold text-red-600 text-sm">A1</span></div>
-                </div>
-
-                <div class="text-[10px] text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 relative z-10 space-y-1">
-                    <p class="font-bold text-gray-800 text-center mb-1">নির্দেশনা ও শর্তাবলী (TERMS & RULES)</p>
-                    <p>১. অনুগ্রহ করে ট্রিপ শুরু হওয়ার অন্তত ১০ মিনিট পূর্বে অনলাইন কাউন্টারে বা নির্দিষ্ট রুমে যুক্ত হোন।</p>
-                    <p>২. সোসাইটির কনভয় বা যাত্রার সময় ট্রাফিক নিয়ম এবং ভদ্রতা বজায় রেখে বাস ড্রাইভ করুন।</p>
-                    <p>৩. ইচ্ছাকৃতভাবে অন্য বাসে ধাক্কা দেওয়া (Ramming) বা যেকোনো ধরনের অশোভন আচরণ করলে তাকে চিরতরে ব্যান করা হবে।</p>
-                </div>
-
-                <div class="mt-4 text-center text-[9px] text-gray-400 tracking-wider">
-                    ISSUE: <span id="tixTimestamp" class="font-mono text-gray-500">11:03:59 AM | 13/06/2026</span>
-                </div>
-            </div>
-
-            <button onclick="triggerTicketSnapshotDownload()" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 font-bold py-2.5 rounded-xl text-center text-sm text-white tracking-wide shadow-lg transition">
-                <i class="fas fa-download mr-1"></i> Download Ticket (PNG Image)
-            </button>
         </section>
 
     </main>
 
-    <div id="rewardSystemModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div class="bg-gray-900 border border-gray-800 max-w-md w-full rounded-2xl p-6 text-center shadow-2xl">
-            <div class="text-yellow-500 text-4xl mb-3"><i class="fas fa-wallet"></i></div>
-            <h3 class="text-lg font-bold mb-2">Insufficient Wallet Funds</h3>
-            <p class="text-xs text-gray-400 mb-6">Your current balance is insufficient to process this selection booking. Complete the reward actions listed below to claim quick funds instantly.</p>
+    <div id="rewardSystemModal" class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-[#0d131f] border border-gray-800 rounded-2xl p-6 max-w-sm w-full text-center relative shadow-2xl">
+            <h3 class="text-lg font-bold text-white mb-2"><i class="fa-solid fa-coins text-amber-400 mr-1"></i> ওয়ালেটে ব্যালেন্স শেষ!</h3>
+            <p class="text-xs text-gray-400 mb-5">আপনার টিকিট ক্রয়ের পর্যাপ্ত ফান্ড নেই। নিচের সহজ টাস্কগুলো কমপ্লিট করে ফ্রি ব্যালেন্স ইনস্ট্যান্ট আর্ন করুন!</p>
             
-            <div class="space-y-3 text-left">
-                <div class="bg-gray-950 border border-gray-800 p-3.5 rounded-xl flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-bold block text-gray-200">Subscribe M2Vai Channel</span>
-                        <span class="text-[10px] text-gray-500">Join official community hubs</span>
+            <div class="space-y-3">
+                <div class="bg-[#161d2b] border border-gray-700 rounded-xl p-3 flex items-center justify-between">
+                    <div class="text-left">
+                        <span class="text-xs font-bold block text-white">ইউটিউব চ্যানেল সাবস্ক্রাইব</span>
+                        <span class="text-[10px] text-amber-400 font-bold">+৫০০০ BDT বোনাস</span>
                     </div>
-                    <button onclick="claimSubscribeReward()" class="bg-blue-600 hover:bg-blue-500 text-[11px] font-bold px-3 py-1.5 rounded-lg text-white transition">+5000 BDT</button>
+                    <button onclick="triggerYoutubeSubscribeReward()" id="btnRewardSub" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-1.5 px-3 rounded-lg transition flex items-center gap-1">
+                        <i class="fa-brands fa-youtube"></i> Subscribe
+                    </button>
                 </div>
-                <div class="bg-gray-950 border border-gray-800 p-3.5 rounded-xl flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-bold block text-gray-200">Watch Premium Content Video</span>
-                        <span class="text-[10px] text-gray-500">Requires monitoring run (1 min+)</span>
+
+                <div class="bg-[#161d2b] border border-gray-700 rounded-xl p-3 flex items-center justify-between">
+                    <div class="text-left">
+                        <span class="text-xs font-bold block text-white">১ মিনিট প্লাস ভিডিও দেখুন</span>
+                        <span class="text-[10px] text-amber-400 font-bold">+২০০০ BDT বোনাস</span>
                     </div>
-                    <button onclick="initiateVideoRewardWatch()" class="bg-green-600 hover:bg-green-500 text-[11px] font-bold px-3 py-1.5 rounded-lg text-white transition">+2000 BDT</button>
+                    <button onclick="triggerVideoWatchReward()" id="btnRewardWatch" class="bg-emerald-500 hover:bg-emerald-600 text-slate-900 font-bold text-xs py-1.5 px-3 rounded-lg transition flex items-center gap-1">
+                        <i class="fa-solid fa-play"></i> Watch Video
+                    </button>
                 </div>
             </div>
-            <button onclick="closeRewardModal()" class="mt-6 text-xs text-gray-500 hover:text-gray-300 underline">Close Dismiss Window</button>
-        </div>
-    </div>
-
-    <div id="videoStreamOverlay" class="hidden fixed inset-0 bg-black/95 flex flex-col items-center justify-center p-4 z-50">
-        <div class="text-center mb-4">
-            <h4 class="text-md font-bold text-gray-200">Streaming Active Content Campaign</h4>
-            <p class="text-xs text-yellow-500 mt-0.5">Retain connection loop tracking window. Processing verification in <span id="videoWatchCountdown" class="font-mono font-bold">60</span>s</p>
-        </div>
-        <div class="w-full max-w-2xl aspect-video bg-black rounded-xl border border-gray-800 overflow-hidden shadow-2xl">
-            <iframe id="rewardVideoPlayerFrame" class="w-full h-full" src="" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-        </div>
-        <p class="text-[10px] text-gray-600 mt-4 italic">Closing target pane prematurely voids transaction payout cycles.</p>
-    </div>
-
-    <div id="profileDetailsModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div class="bg-gray-900 border border-gray-800 max-w-sm w-full rounded-2xl p-6 relative shadow-2xl">
-            <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-            <h3 class="text-md font-bold mb-6 text-center text-blue-400 border-b border-gray-800 pb-2">Profile Matrix Identity</h3>
             
-            <div class="flex flex-col items-center mb-6">
-                <div class="w-24 h-24 rounded-full border-2 border-blue-500/50 bg-gray-950 overflow-hidden flex items-center justify-center mb-2 relative group">
-                    <img id="profileDisplayAvatar" src="" class="w-full h-full object-cover hidden">
-                    <i id="profilePlaceholderAvatar" class="fas fa-user-astronaut text-3xl text-gray-700"></i>
+            <div id="videoRewardPlayerWrapper" class="mt-4 rounded-xl overflow-hidden hidden border border-gray-800 shadow-inner">
+                <div class="p-2 bg-slate-900 text-left text-[10px] text-amber-400 flex justify-between font-mono">
+                    <span>⏱️ ওয়াচ টাইম ট্র্যাকার:</span>
+                    <span id="videoCountdownLabel">৬০ সেকেন্ড বাকি</span>
                 </div>
-                <label class="cursor-pointer bg-gray-800 border border-gray-700 text-[10px] font-bold px-2.5 py-1 rounded hover:bg-gray-700 transition">
-                    Upload Avatar (PNG Max 300KB)
-                    <input type="file" id="avatarFileInput" accept="image/png" onchange="processAvatarImageUpload(this)" class="hidden">
+                <div class="aspect-video w-full bg-black relative" id="iframeVideoInjectTarget"></div>
+            </div>
+
+            <button onclick="closeRewardModal()" class="mt-5 text-xs text-gray-500 hover:text-white transition underline block mx-auto">বন্ধ করুন</button>
+        </div>
+    </div>
+
+    <div id="profileViewModalPortal" class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-[#0d131f] border border-gray-800 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl relative">
+            <button onclick="closeProfileModal()" class="absolute right-4 top-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-md font-bold text-white mb-4 uppercase tracking-wider border-b border-gray-800 pb-2"><i class="fa-solid fa-id-card mr-1 text-emerald-400"></i> সদস্য প্রোফাইল</h3>
+            
+            <div class="w-24 h-24 rounded-full border-2 border-emerald-500 mx-auto relative group overflow-hidden bg-slate-900 mb-3 flex items-center justify-center shadow-md">
+                <img id="profileAvatarDisplayFrame" class="w-full h-full object-cover hidden">
+                <div id="avatarFallbackIcon" class="text-gray-600 text-3xl"><i class="fa-solid fa-user-astronaut"></i></div>
+                <label class="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition cursor-pointer text-[9px] text-gray-300 font-bold">
+                    <i class="fa-solid fa-camera text-xs mb-0.5"></i> PNG ONLY
+                    <input type="file" id="avatarFileInputSource" accept=".png" onchange="handleProfileImageUpload(event)" class="hidden">
                 </label>
-                <p id="avatarUploadError" class="text-[10px] text-red-400 mt-1 hidden">Invalid signature format rules matrix.</p>
             </div>
+            <p class="text-[10px] text-gray-500 mb-4">সর্বোচ্চ ৩০০ KB সাইজের PNG ছবি আপলোড করুন</p>
 
-            <div class="space-y-2.5 text-xs">
-                <div class="flex justify-between border-b border-gray-950 pb-1.5"><span class="text-gray-500">Member ID Code:</span><span id="profId" class="font-bold text-gray-200">0000</span></div>
-                <div class="flex justify-between border-b border-gray-950 pb-1.5"><span class="text-gray-500">Account Name:</span><span id="profName" class="font-bold text-gray-200">-</span></div>
-                <div class="flex justify-between border-b border-gray-950 pb-1.5"><span class="text-gray-500">In-Game Target:</span><span id="profGame" class="font-bold text-gray-200">-</span></div>
-                <div class="flex justify-between border-b border-gray-950 pb-1.5"><span class="text-gray-500">Registered Email:</span><span id="profEmail" class="font-bold text-blue-400">-</span></div>
-                <div class="flex justify-between border-b border-gray-950 pb-1.5"><span class="text-gray-500">Role Privilege:</span><span id="profRole" class="font-bold uppercase text-yellow-500">-</span></div>
-                <div class="flex justify-between pt-1"><span class="text-gray-400 font-bold">Current Wallet:</span><span id="profWallet" class="font-bold text-green-400 tracking-wide">0 BDT</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="adminControlDashboardModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div class="bg-gray-900 border border-gray-800 max-w-4xl w-full h-[85vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl">
-            <div class="bg-gray-950 p-4 border-b border-gray-800 flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-user-shield text-red-500"></i>
-                    <h3 class="text-sm font-bold uppercase tracking-wider">M2Vai Console Deck Panel (<span id="adminPanelRoleLabel" class="text-yellow-500">Admin</span>)</h3>
-                </div>
-                <button onclick="closeAdminPanel()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-            </div>
-
-            <div class="flex-grow p-6 overflow-y-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="space-y-4">
-                    <div class="bg-gray-950 border border-gray-800 p-4 rounded-xl">
-                        <h4 class="text-xs font-bold uppercase text-gray-400 mb-3 border-b border-gray-900 pb-1">Cabin Seating Flush Controllers</h4>
-                        <button onclick="flushCabinReservationState()" class="w-full bg-red-900/30 border border-red-800 text-red-400 hover:bg-red-900/50 py-1.5 text-xs rounded-lg font-bold transition">Manual Terminal Seats Reset</button>
-                        <p class="text-[10px] text-gray-500 mt-2 italic">Flushes terminal grids cache. Notice: Automated cyclic cleanup activates every 60m bounds window.</p>
-                    </div>
-
-                    <div id="adminOnlyWalletControls" class="bg-gray-950 border border-gray-800 p-4 rounded-xl hidden">
-                        <h4 class="text-xs font-bold uppercase text-gray-400 mb-3 border-b border-gray-900 pb-1">Wallet Gift Matrix System</h4>
-                        <div class="space-y-2 text-xs">
-                            <input type="text" id="giftTargetUid" placeholder="Target Member ID (e.g. 0001)" class="w-full bg-gray-800 border border-gray-700 rounded p-1.5">
-                            <input type="number" id="giftAmountVal" placeholder="Grant Amount BDT" class="w-full bg-gray-800 border border-gray-700 rounded p-1.5">
-                            <button onclick="executeWalletGiftGrant()" class="w-full bg-blue-600 hover:bg-blue-500 py-1.5 rounded font-bold transition text-white">Execute Fund Gift Drop</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="lg:col-span-2 flex flex-col bg-gray-950 border border-gray-800 rounded-xl p-4 overflow-hidden">
-                    <h4 class="text-xs font-bold uppercase text-gray-400 mb-3 border-b border-gray-900 pb-1">Platform Account Database Audits (<span id="dbCountLabel">0</span> users)</h4>
-                    <div class="flex-grow overflow-y-auto text-xs space-y-2 pr-1" id="adminUsersListGrid">
-                        </div>
-                </div>
+            <div class="space-y-2 text-xs text-left bg-[#161d2b] p-4 rounded-xl border border-gray-800 font-mono">
+                <div class="flex justify-between"><span class="text-gray-500">ID:</span> <span id="profId" class="text-emerald-400 font-bold">0000</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Name:</span> <span id="profName" class="text-white">N/A</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Game ID:</span> <span id="profGameId" class="text-white">N/A</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Role Status:</span> <span id="profRole" class="text-amber-400 font-bold">User</span></div>
+                <div class="flex justify-between border-t border-gray-800 pt-2 mt-2 font-sans"><span class="text-gray-400 font-bold">Wallet:</span> <span class="text-emerald-400 font-bold"><span id="profWallet">0</span> BDT</span></div>
             </div>
         </div>
     </div>
 
-    <div id="contactInformationModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div class="bg-gray-900 border border-gray-800 max-w-sm w-full rounded-2xl p-6 text-center shadow-2xl relative">
-            <button onclick="closeContactModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-            <h3 class="text-md font-bold mb-6 text-blue-400 border-b border-gray-800 pb-2">Connect Channels</h3>
+    <div id="contactViewModalPortal" class="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-[#0d131f] border border-gray-800 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl relative">
+            <button onclick="document.getElementById('contactViewModalPortal').classList.add('hidden')" class="absolute right-4 top-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-md font-bold text-white mb-4 uppercase tracking-wider border-b border-gray-800 pb-2"><i class="fa-solid fa-headset mr-1 text-emerald-400"></i> Contact Channels</h3>
             
-            <div class="grid grid-cols-2 gap-4" id="contactSocialModalGrid">
-                </div>
+            <div class="grid grid-cols-2 gap-3" id="contactLinksGridContainer"></div>
         </div>
     </div>
 
-    <footer class="bg-gray-950 border-t border-gray-900 py-6 px-4 mt-8 relative z-10">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-            <div class="flex flex-wrap items-center justify-center gap-4">
-                <a href="https://youtube.com/@m2vai?si=ls4xlp9EG8hjwE7B" target="_blank" class="bg-red-600 hover:bg-red-500 text-xs font-bold px-4 py-2 rounded-lg text-white shadow-lg shadow-red-900/30 transition uppercase">M2Vai Subscribe Now</a>
-                <a href="https://youtube.com/@travellerm2vai?si=PDkl_nDGIb5il-bj" target="_blank" class="bg-red-700 hover:bg-red-600 text-xs font-bold px-4 py-2 rounded-lg text-white shadow-lg shadow-red-900/40 transition uppercase">Traveller Subscribe Now</a>
+    <div id="adminPanelPortalLayer" class="fixed inset-0 bg-black bg-opacity-90 z-50 p-4 overflow-y-auto hidden">
+        <div class="max-w-xl w-full mx-auto bg-[#0d131f] border border-gray-800 rounded-2xl p-5 shadow-2xl mt-10">
+            <div class="flex justify-between items-center pb-3 border-b border-gray-800 mb-5">
+                <h3 class="text-md font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider">
+                    <i class="fa-solid fa-shield-halved"></i> M2Vai Management Control Panel Center
+                </h3>
+                <button onclick="closeAdminPanel()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-circle-xmark text-xl"></i></button>
             </div>
 
-            <div class="flex items-center space-x-5 text-lg" id="footerSocialIconsMatrix">
+            <div class="grid grid-cols-3 gap-3 mb-6 font-mono text-center">
+                <div class="bg-[#161d2b] rounded-xl p-2.5 border border-gray-800">
+                    <span class="text-[10px] text-gray-500 block">ADMIN ROLE</span>
+                    <span id="adminRoleDisplayBadge" class="text-xs font-bold text-amber-400">Loading...</span>
+                </div>
+                <div class="bg-[#161d2b] rounded-xl p-2.5 border border-gray-800">
+                    <span class="text-[10px] text-gray-500 block">TOTAL MEMBERS</span>
+                    <span id="adminTotalUsersBadge" class="text-xs font-bold text-white">0</span>
+                </div>
+                <div class="bg-[#161d2b] rounded-xl p-2.5 border border-gray-800">
+                    <span class="text-[10px] text-gray-500 block">AUTO RESET</span>
+                    <span id="adminAutoResetTimerBadge" class="text-xs font-bold text-emerald-400">60:00</span>
+                </div>
+            </div>
+
+            <div class="space-y-5">
+                <div class="bg-[#161d2b] border border-gray-800 rounded-xl p-4 flex justify-between items-center">
+                    <div>
+                        <h4 class="text-sm font-bold text-white">রিয়েল-টাইম বাস সিট রিসেট করুন</h4>
+                        <p class="text-[11px] text-gray-500">চলতি ট্রিপের বুক করা সিট খালি করে নতুন ট্রিপের জন্য রেডি করুন।</p>
+                    </div>
+                    <button onclick="adminResetAllSeats()" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2 px-4 rounded-xl transition shadow shadow-red-900">
+                        Reset All Seats
+                    </button>
                 </div>
 
-            <div class="text-center md:text-right text-[11px] text-gray-600 tracking-wide">
-                &copy; 2026 M2Vai Network Ecosystem. All Rights Reserved Matrix.
+                <div class="bg-[#161d2b] border border-gray-800 rounded-xl p-4">
+                    <h4 class="text-sm font-bold text-white mb-3">সদস্য ডিরেক্টরি ও ম্যানেজমেন্ট প্যানেল লজিক</h4>
+                    
+                    <div class="relative mb-3">
+                        <i class="fa-solid fa-users-gear absolute left-3 top-2.5 text-gray-500 text-xs"></i>
+                        <input type="text" id="adminUserSearchQuery" oninput="renderAdminUserDirectory()" placeholder="আইডি বা নাম টাইপ করে ডিরেক্টরি ফিল্টার করুন..." class="w-full bg-[#0d131f] border border-gray-700 rounded-xl py-2 pl-9 pr-4 text-xs text-gray-200">
+                    </div>
+
+                    <div id="adminUserDirectoryTargetContainer" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="mt-auto border-t border-gray-900 bg-[#070a10] bg-opacity-95 px-4 pt-6 pb-4 text-center z-10">
+        <div class="flex justify-center items-center gap-4 mb-4" id="footerSocialChannelsStrip"></div>
+
+        <div class="flex justify-center gap-4 text-[10px] text-gray-500 font-semibold tracking-wide mb-5">
+            <a href="#" onclick="alert('Privacy Policy Document')" class="hover:text-emerald-400 transition">Privacy Policy</a>
+            <span>|</span>
+            <a href="#" onclick="alert('Terms & Conditions Legal Document')" class="hover:text-emerald-400 transition">Terms & Conditions</a>
+            <span>|</span>
+            <a href="#" onclick="alert('Refund Policy Agreement Form')" class="hover:text-emerald-400 transition">Refund Policy</a>
+        </div>
+
+        <div class="max-w-xs mx-auto border border-gray-800 bg-[#0d131f] bg-opacity-80 rounded-2xl p-3 shadow-lg">
+            <span class="text-[9px] text-gray-500 uppercase tracking-widest font-bold block mb-1">Website Created By</span>
+            <span class="text-md font-extrabold tracking-wider text-white neon-text block mb-3">M2Vai</span>
+            <div class="grid grid-cols-2 gap-2">
+                <a id="footerSubLinkBtnM2" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold text-[10px] py-2 px-2.5 rounded-xl transition flex flex-col items-center justify-center shadow shadow-red-950 leading-tight">
+                    <span>M2Vai</span>
+                    <span class="text-[8px] opacity-75 font-normal">Subscribe Now</span>
+                </a>
+                <a id="footerSubLinkBtnTraveller" target="_blank" class="bg-red-700 hover:bg-red-800 text-white font-bold text-[10px] py-2 px-2.5 rounded-xl transition flex flex-col items-center justify-center shadow shadow-red-950 leading-tight">
+                    <span>Traveller</span>
+                    <span class="text-[8px] opacity-75 font-normal">Subscribe Now</span>
+                </a>
             </div>
         </div>
     </footer>
 
+
     <script>
-        /******************************************************************************
-         * INITIAL APPLICATION DATABASES STATE MACHINE CONFIGURATIONS (LOCAL STORAGE)
-         ******************************************************************************/
-        
-        // Comprehensive Bangladesh Inter-District Standard Matrix Baseline Pricing Index Mapping
-        const DIST_FARE_INDEX = {
-            "Dhaka": 400, "Chittagong": 650, "Cox's Bazar": 800, "Sylhet": 550, "Khulna": 500,
-            "Barisal": 450, "Rajshahi": 500, "Rangpur": 600, "Mymensingh": 350, "Bagerhat": 550,
-            "Jessore": 480, "Comilla": 300, "Brahmanbaria": 320, "Feni": 350, "Noakhali": 400
+        // GLOBAL DATA DEFINITIONS LINK DATA ASSETS
+        const SOCIAL_RESOURCES = {
+            facebook: "https://facebook.com/groups/771005197556072/",
+            youtubeM2: "https://youtube.com/@m2vai?si=ls4xlp9EG8hjwE7B",
+            youtubeTraveller: "https://youtube.com/@travellerm2vai?si=PDkl_nDGIb5il-bj",
+            instagram: "https://www.instagram.com/m2vai380?igsh=MzBrZmx0aTU4MW1u",
+            twitter: "https://www.threads.com/@m2vai380",
+            discord: "https://discord.gg/GJ2F36gE8D",
+            gmail: "info.m2vai380@gmail.com",
+            rewardVideo: "https://youtu.be/aYwYMretqvE?si=mb0PkhaaiU8GmnT7",
+            rewardVideoEmbedId: "aYwYMretqvE"
         };
 
-        const BANGLADESH_DISTRICTS = Object.keys(DIST_FARE_INDEX).sort();
+        const BANGLADESH_DISTRICTS = [
+            "Dhaka", "Bagerhat", "Cox's Bazar", "Chittagong", "Sylhet", "Khulna", "Rajshahi", "Barisal", "Rangpur", "Mymensingh",
+            "Gazipur", "Narayanganj", "Cumilla", "Bogura", "Dinajpur", "Jessore", "Feni", "Tangail", "Pabna", "Kushtia",
+            "Narsingdi", "Brahmanbaria", "Noakhali", "Chandpur", "Laxmipur", "Sunamganj", "Habiganj", "Moulvibazar", "Gopalganj", "Faridpur"
+        ].sort();
 
-        // System Social Communications Linking Indexes Configuration Mapping Engine
-        const SOCIAL_REGISTRY = [
-            { id: "fb", icon: "fab fa-facebook", link: "https://facebook.com/groups/771005197556072/", color: "text-blue-500", name: "Facebook Group" },
-            { id: "yt1", icon: "fab fa-youtube", link: "https://youtube.com/@m2vai?si=ls4xlp9EG8hjwE7B", color: "text-red-500", name: "M2Vai Main YT" },
-            { id: "yt2", icon: "fab fa-youtube", link: "https://youtube.com/@travellerm2vai?si=PDkl_nDGIb5il-bj", color: "text-red-600", name: "Traveller M2Vai" },
-            { id: "insta", icon: "fab fa-instagram", link: "https://www.instagram.com/m2vai380?igsh=MzBrZmx0aTU4MW1u", color: "text-pink-500", name: "Instagram" },
-            { id: "threads", icon: "fas fa-at", link: "https://www.threads.com/@m2vai380", color: "text-gray-400", name: "Threads Network" },
-            { id: "discord", icon: "fab fa-discord", link: "https://discord.gg/GJ2F36gE8D", color: "text-indigo-500", name: "Discord Server" },
-            { id: "email", icon: "fas fa-envelope", link: "mailto:info.m2vai380@gmail.com", color: "text-yellow-500", name: "Official Email" }
-        ];
+        // ROUTE BASE FARE CONSTANTS ENGINE CONFIG
+        const FARE_MATRIX = { AC: 1500, "Non-AC": 800 };
 
-        // Hydrate Core Global Arrays Engine Data Storage structures bounds checks
-        if(!localStorage.getItem('m2vai_users')) {
-            localStorage.setItem('m2vai_users', JSON.stringify([]));
-        }
-        if(!localStorage.getItem('m2vai_seats_cache')) {
-            localStorage.setItem('m2vai_seats_cache', JSON.stringify({}));
-        }
+        // INITIAL DATABASE REPLICAS PIPELINE STATE LOCAL STORAGE HYDRATION ARCHITECTURE
+        let usersDb = JSON.parse(localStorage.getItem('m2vai_users_db')) || [];
+        let bookedSeatsDb = JSON.parse(localStorage.getItem('m2vai_booked_seats')) || {};
+        let activeSession = JSON.parse(sessionStorage.getItem('m2vai_session')) || null;
+        
+        let currentlySelectedSeat = null;
+        let seatLockTimer = null;
+        let globalRefreshLockCheck = false;
 
-        // Operational Global Runtime Variables Memory Stack
-        let currentUserSession = null;
-        let selectedRouteConfig = { from: '', to: '', date: '', busType: '', time: '', fare: 0 };
-        let activeSeatSelected = null;
-        let languageMode = 'EN';
-        let sessionTimerInterval = null;
-        let seatHoldCountdownInterval = null;
-
-        /******************************************************************************
-         * LIFECYCLE AND EVENT LOOP LISTENERS INTERFACES
-         ******************************************************************************/
+        // APPLICATION INITIALIZATION ROUTINE ENTRY POINT PIPELINE HOOK
         window.addEventListener('DOMContentLoaded', () => {
-            initializeClockRuntime();
-            renderSocialIconsLayouts();
-            executeSeatingAutoPurgeCycleCheck();
+            initLiveClockEngine();
+            hydrateSocialLinksUI();
+            setupSearchEngineFilters();
             
-            // Check state verification profile storage layers to bypass raw re-routing on refresh calls
-            const savedSession = sessionStorage.getItem('active_m2vai_session');
-            const savedPageTrack = sessionStorage.getItem('active_m2vai_page_track');
-            
-            if(savedSession) {
-                currentUserSession = JSON.parse(savedSession);
-                document.getElementById('mainHeader').classList.remove('hidden');
-                document.getElementById('noticeBar').classList.remove('hidden');
-                initiateUserSessionTimeout(true); // Restore session timer loop 
-                
-                if(savedPageTrack && savedPageTrack !== 'page1') {
-                    // Restore custom parameters tracks back to targeted elements context nodes
-                    const restoredConfig = sessionStorage.getItem('active_m2vai_route_config');
-                    if(restoredConfig) selectedRouteConfig = JSON.parse(restoredConfig);
-                    navigateTo(savedPageTrack);
-                } else {
-                    navigateTo('page2');
-                }
+            // Core Session Persistence Hydration check logic pipeline hook handler routing layer
+            if (activeSession && isSessionValid()) {
+                syncUserInterfaceContextState();
+                navigateTo(sessionStorage.getItem('m2vai_current_page') || 'page2');
             } else {
-                navigateTo('page1');
+                handleLogout();
             }
+
+            // Global Window State Unload Hold Alerts Trigger warning pipeline integration layer
+            window.addEventListener('beforeunload', (e) => {
+                if (currentlySelectedSeat) {
+                    releaseSeatHold(currentlySelectedSeat);
+                }
+            });
         });
 
-        // Interface System clock runtime loops
-        function initializeClockRuntime() {
+        // LIVE ENGINE CLOCK SYSTEM REFRESH ROUTINE TIMER INTEGRATION DATA HOOK
+        function initLiveClockEngine() {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
             setInterval(() => {
                 const now = new Date();
                 let hours = now.getHours();
@@ -486,937 +616,1004 @@
                 const seconds = String(now.getSeconds()).padStart(2, '0');
                 const ampm = hours >= 12 ? 'PM' : 'AM';
                 hours = hours % 12;
-                hours = hours ? hours : 12; // conversion logic
+                hours = hours ? hours : 12; // conversion element layout logic block
                 
-                document.getElementById('liveClock').innerText = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+                const clockStr = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+                document.getElementById('liveClock').innerText = clockStr;
                 
-                // Greeting dynamically matched to timeline indices
-                const currentHr = now.getHours();
-                const greetNode = document.getElementById('greetingText');
-                if(currentHr < 12) greetNode.innerText = "Good Morning! 🌅";
-                else if(currentHr < 16) greetNode.innerText = "Good Afternoon! ☀️";
-                else if(currentHr < 19) greetNode.innerText = "Good Evening! 🌅";
-                else greetNode.innerText = "Welcome / Good Night! 🌌";
+                // Greeting logic dynamically injection system update
+                let wish = "Good Evening! 🌙";
+                if(now.getHours() < 12) wish = "Good Morning! 🌅";
+                else if(now.getHours() < 16) wish = "Good Afternoon! ☀️";
+                document.getElementById('wishMessage').innerText = wish;
+
+                const dateStr = `LIVE DATE: ${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+                document.getElementById('liveDate').innerText = dateStr;
             }, 1000);
+
+            // Back-end administrative cron simulation task module wrapper pipeline hook layer engine run link
+            initAutoResetCronEngine();
         }
 
-        // Page Navigation Controller Logic (With sessionStorage persistence)
-        function navigateTo(pageId) {
-            // Hide all sections first
-            ['page1', 'page2', 'page3', 'page4'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
+        // SOCIAL UI HYDRATION MATRIX LOOPS SYSTEM DATA BINDINGS LINK CORE
+        function hydrateSocialLinksUI() {
+            // Footer links bindings
+            document.getElementById('footerSubLinkBtnM2').href = SOCIAL_RESOURCES.youtubeM2;
+            document.getElementById('footerSubLinkBtnTraveller').href = SOCIAL_RESOURCES.youtubeTraveller;
+
+            // Render crisp transparent social rows buttons strip elements layouts tags inline links viewports
+            const iconsConfig = [
+                { icon: "fa-brands fa-facebook-f", url: SOCIAL_RESOURCES.facebook, bg: "bg-[#1877f2]" },
+                { icon: "fa-brands fa-youtube", url: SOCIAL_RESOURCES.youtubeM2, bg: "bg-[#ff0000]" },
+                { icon: "fa-brands fa-instagram", url: SOCIAL_RESOURCES.instagram, bg: "bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]" },
+                { icon: "fa-brands fa-threads", url: SOCIAL_RESOURCES.twitter, bg: "bg-slate-900 border border-gray-800" },
+                { icon: "fa-brands fa-discord", url: SOCIAL_RESOURCES.discord, bg: "bg-[#5865f2]" },
+                { icon: "fa-solid fa-envelope", url: `mailto:${SOCIAL_RESOURCES.gmail}`, bg: "bg-[#ea4335]" }
+            ];
+
+            const footerStrip = document.getElementById('footerSocialChannelsStrip');
+            const contactGrid = document.getElementById('contactLinksGridContainer');
+            
+            footerStrip.innerHTML = '';
+            contactGrid.innerHTML = '';
+
+            iconsConfig.forEach(cfg => {
+                // Footer Circle Node layout creation pipelines block
+                const aFooter = document.createElement('a');
+                aFooter.href = cfg.url;
+                aFooter.target = "_blank";
+                aFooter.className = `w-9 h-9 rounded-full ${cfg.bg} text-white flex items-center justify-center text-sm shadow hover:scale-110 transition duration-200`;
+                aFooter.innerHTML = `<i class="${cfg.icon}"></i>`;
+                footerStrip.appendChild(aFooter);
+
+                // Contact Profile dialog cards elements template configurations blocks injections
+                const btnContact = document.createElement('a');
+                btnContact.href = cfg.url;
+                btnContact.target = "_blank";
+                btnContact.className = `flex items-center gap-2 p-2.5 rounded-xl bg-[#161d2b] border border-gray-800 hover:border-emerald-500 text-xs font-semibold text-gray-300 transition text-left`;
+                btnContact.innerHTML = `<span class="w-6 h-6 rounded-lg ${cfg.bg} flex items-center justify-center text-white text-[11px]"><i class="${cfg.icon}"></i></span> <span class="capitalize">${cfg.icon.split('-')[2] || 'Gmail'}</span>`;
+                contactGrid.appendChild(btnContact);
             });
-            // Show targeted page
-            document.getElementById(pageId).classList.remove('hidden');
-            
-            // Persist page track state on refresh bounds safety rules
-            sessionStorage.setItem('active_m2vai_page_track', pageId);
-            
-            if(pageId === 'page3') {
-                renderCabinGridConfiguration();
-            }
         }
 
-        /******************************************************************************
-         * ACCOUNT & AUTHENTICATION SYSTEMS (LOGIN / SIGN UP)
-         ******************************************************************************/
-        function toggleLoginRegister(showRegister) {
-            if(showRegister) {
-                document.getElementById('loginFormContainer').classList.add('hidden');
-                document.getElementById('registerFormContainer').classList.remove('hidden');
-            } else {
-                document.getElementById('registerFormContainer').classList.add('hidden');
-                document.getElementById('loginFormContainer').classList.remove('hidden');
-            }
+        // CONTROL AUTH FORMS VISIBILITY LAYER PANEL SWITCH PIPELINE MODULE
+        function toggleAuthForms(showSignUp) {
+            document.getElementById('loginFormContainer').classList.toggle('hidden', showSignUp);
+            document.getElementById('signUpFormContainer').classList.toggle('hidden', !showSignUp);
         }
 
-        function processRegister() {
-            const name = document.getElementById('regName').value.trim();
-            const gameId = document.getElementById('regGameId').value.trim();
-            const dob = document.getElementById('regDob').value;
-            const mobile = document.getElementById('regMobile').value.trim();
-            const fb = document.getElementById('regFb').value.trim();
+        // SIGN UP REGISTRATION CONTROLLER PROCESSING LOGIC METHOD VALIDATION HANDLER ENGINE
+        function handleSignUp(e) {
+            e.preventDefault();
             const email = document.getElementById('regEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('regPass').value;
+            const password = document.getElementById('regPass').value;
+            const confirmPassword = document.getElementById('regConfirmPass').value;
 
-            if(!name || !gameId || !dob || !fb || !email || !pass) {
-                alert("Please fill up all required parameters marked with asterisks (*)");
+            if (password !== confirmPassword) {
+                alert("পাসওয়ার্ড দুটি মেলেনি! দয়া করে আবার চেক করুন।");
                 return;
             }
 
-            let users = JSON.parse(localStorage.getItem('m2vai_users'));
-            if(users.some(u => u.email === email)) {
-                alert("This email matrix is already registered. Use another profile email.");
+            // Duplication enforcement checks layer loop pipeline execution hook blocks logic array check
+            if (usersDb.some(u => u.email === email)) {
+                alert("এই ইমেইলটি দিয়ে ইতিমধ্যেই একটি অ্যাকাউন্ট তৈরি করা হয়েছে!");
                 return;
             }
 
-            // Generate clean sequential numerical format identifier (e.g., 0001)
-            const idNumber = String(users.length + 1).padStart(4, '0');
-            
-            // Hardcoded Super Admin Escalation Loop Checks
-            const userRole = (email === 'info.m2vai380@gmail.com') ? 'super_admin' : 'member';
+            // Automate numeric string padding sequential key generators loops module
+            const nextIdNum = usersDb.length + 1;
+            const paddedId = String(nextIdNum).padStart(4, '0');
 
-            const newAccountObj = {
-                uid: idNumber,
-                name: name,
-                gameId: gameId,
-                dob: dob,
-                mobile: mobile || 'Optional',
-                fb: fb,
+            // Construct new dynamic registration target user data entity model object profile parameters structure
+            const newUserEntity = {
+                id: paddedId,
+                name: document.getElementById('regName').value.trim(),
+                gameId: document.getElementById('regGameId').value.trim(),
+                dob: document.getElementById('regDOB').value,
+                mobile: document.getElementById('regMobile').value.trim() || "Not Provided",
+                facebook: document.getElementById('regFB').value.trim(),
                 email: email,
-                password: pass,
-                role: userRole,
-                wallet: 3000, // 3000 BDT initial registration bonus as specified
+                password: password,
+                wallet: 3000, // 3000 BDT Signup Reward standard value fixed metric assignment
+                role: email === SOCIAL_RESOURCES.gmail ? "Admin" : "User", // Default Super Admin designation logic hook
                 avatar: null,
                 isBanned: false
             };
 
-            users.push(newAccountObj);
-            localStorage.setItem('m2vai_users', JSON.stringify(users));
-            alert(`Account registered successfully!\nYour Assigned Numerical ID is: ${idNumber}\n3000 BDT Signup Bonus has been credited!`);
+            usersDb.push(newUserEntity);
+            localStorage.setItem('m2vai_users_db', JSON.stringify(usersDb));
             
-            toggleLoginRegister(false);
+            alert(`নিবন্ধন সফল হয়েছে!\nআপনার ডিজিটাল ইউনিক মেম্বার আইডি হলো: ${paddedId}\nস্বাগতম বোনাস ৩০০০ BDT ওয়ালেটে যোগ করা হয়েছে।`);
+            document.getElementById('signUpForm').reset();
+            toggleAuthForms(false);
+            
+            // Set login email preview pipeline element text box fill
             document.getElementById('loginEmail').value = email;
         }
 
-        function processLogin() {
+        // LOGIN PROCESSING FRAMEWORK CONTEXT TIMEOUT LAYER METHOD INJECTION PIPELINE
+        function handleLogin(e) {
+            if(e) e.preventDefault();
+            
             const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const pass = document.getElementById('loginPass').value;
+            const password = document.getElementById('loginPassword').value;
 
-            if(!email || !pass) {
-                alert("Provide valid input matrix fields.");
+            const targetUser = usersDb.find(u => u.email === email && u.password === password);
+
+            if (!targetUser) {
+                if(e) alert("ভুল ইমেইল অথবা পাসওয়ার্ড! দয়া করে সঠিক তথ্য দিন।");
                 return;
             }
 
-            const users = JSON.parse(localStorage.getItem('m2vai_users'));
-            const matchedUser = users.find(u => u.email === email && u.password === pass);
-
-            if(!matchedUser) {
-                alert("Invalid configuration matrix access parameters matching records.");
+            if (targetUser.isBanned) {
+                alert("আপনার অ্যাকাউন্টটি অ্যাডমিন প্যানেল থেকে ব্যান করা হয়েছে! আপনি লগইন করতে পারবেন না।");
                 return;
             }
 
-            if(matchedUser.isBanned) {
-                alert("🚨 Access Revoked. This account identity has been banned from terminal activities.");
-                return;
-            }
+            // Construct secure 30 minutes validation expiration dynamic state session timestamps elements objects
+            const sessionExpirationTimestamp = Date.now() + (30 * 60 * 1000); 
+            activeSession = {
+                userId: targetUser.id,
+                expiresAt: sessionExpirationTimestamp
+            };
 
-            currentUserSession = matchedUser;
-            sessionStorage.setItem('active_m2vai_session', JSON.stringify(currentUserSession));
+            sessionStorage.setItem('m2vai_session', JSON.stringify(activeSession));
+            syncUserInterfaceContextState();
             
-            // Interface setups initialization elements UI components
-            document.getElementById('mainHeader').classList.remove('hidden');
-            document.getElementById('noticeBar').classList.remove('hidden');
-            
-            // Reveal admin functionalities modules if privilege keys checked verified
-            if(['super_admin', 'moderator', 'counter_master'].includes(currentUserSession.role)) {
-                document.getElementById('menuAdminBtn').classList.remove('hidden');
-            } else {
-                document.getElementById('menuAdminBtn').classList.add('hidden');
-            }
-
-            initiateUserSessionTimeout(false);
+            // Navigate onwards to Core Landing selection route view layout workspace pane data board
             navigateTo('page2');
+            document.getElementById('loginForm').reset();
         }
 
-        function initiateUserSessionTimeout(isRestoring = false) {
-            if(sessionTimerInterval) clearInterval(sessionTimerInterval);
-            
-            let totalSeconds = 30 * 60; // 30 minutes session duration rule lock
-            
-            if(isRestoring) {
-                const sessionStartTime = sessionStorage.getItem('m2vai_session_start_time');
-                if(sessionStartTime) {
-                    const elapsed = Math.floor((Date.now() - parseInt(sessionStartTime)) / 1000);
-                    totalSeconds = (30 * 60) - elapsed;
-                    if(totalSeconds <= 0) {
-                        handleLogout();
-                        return;
-                    }
-                }
-            } else {
-                sessionStorage.setItem('m2vai_session_start_time', Date.now().toString());
-            }
-
-            sessionTimerInterval = setInterval(() => {
-                totalSeconds--;
-                if(totalSeconds <= 0) {
-                    clearInterval(sessionTimerInterval);
-                    alert("Session boundary limit expired (30m). Please re-authenticate system nodes.");
-                    handleLogout();
-                    return;
-                }
-                const m = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-                const s = String(totalSeconds % 60).padStart(2, '0');
-                document.getElementById('sessionTimer').innerText = `${m}:${s}`;
-            }, 1000);
+        // TIMEOUT SESSIONS VERIFICATION CONTROL HOOK CHECK RUNNER METHODS MATRIX
+        function isSessionValid() {
+            if (!activeSession) return false;
+            return Date.now() < activeSession.expiresAt;
         }
 
+        // SESSION DISCONNECT STATE DELETION CONTEXT PIPELINE OUT CONTROL FUNCTION HANDLER
         function handleLogout() {
-            clearInterval(sessionTimerInterval);
-            if(seatHoldCountdownInterval) clearInterval(seatHoldCountdownInterval);
-            currentUserSession = null;
-            sessionStorage.clear();
-            document.getElementById('mainHeader').classList.add('hidden');
-            document.getElementById('noticeBar').classList.add('hidden');
-            toggleMenu(true); // Close side menu if open
+            if (currentlySelectedSeat) {
+                releaseSeatHold(currentlySelectedSeat);
+            }
+            activeSession = null;
+            sessionStorage.removeItem('m2vai_session');
+            sessionStorage.removeItem('m2vai_current_page');
+            sessionStorage.removeItem('m2vai_booking_draft');
+            
+            // UI Element Reset to Page 1 view mode visibility
+            document.getElementById('menuBtn').classList.add('hidden');
+            document.getElementById('headerSearchContainer').classList.add('hidden');
+            document.getElementById('noticeBoard').classList.add('hidden');
+            
             navigateTo('page1');
         }
 
-        /******************************************************************************
-         * CORE INTERACTION ENGINE ROUTING LAYER (PAGE 2)
-         ******************************************************************************/
-        function filterDistricts(inputElem, dropdownId) {
-            const text = inputElem.value.toLowerCase();
-            const dropBox = document.getElementById(dropdownId);
-            dropBox.innerHTML = '';
-            
-            if(!text) {
-                dropBox.classList.add('hidden');
-                return;
+        // SYNC INTERNAL DATA CONTEXT CONSOLE ELEMENTS MEMORY STATE TO ACTIVE SCREENS INTERFACES RUNNERS
+        function syncUserInterfaceContextState() {
+            if (!isSessionValid()) return;
+            const user = usersDb.find(u => u.id === activeSession.userId);
+            if (!user) return;
+
+            // Mount core layout identity badges modules data fields rows configurations labels layout pointers element link
+            document.getElementById('userBadgeId').innerText = user.id;
+            document.getElementById('userBadgeWallet').innerText = user.wallet;
+
+            // Navigation dynamic hamburger icon view enable toggles link elements
+            document.getElementById('menuBtn').classList.remove('hidden');
+            document.getElementById('headerSearchContainer').classList.remove('hidden');
+            document.getElementById('noticeBoard').classList.remove('hidden');
+
+            // Conditional Admin rendering controls elements pipeline hooks integration toggle elements blocks links viewports
+            const isAdminPrivileged = ["Admin", "Moderator", "Counter Master"].includes(user.role);
+            document.getElementById('adminPanelMenuBtn').classList.toggle('hidden', !isAdminPrivileged);
+        }
+
+        // SINGLE PAGE APPLICATION CORE ROUTER ENGINE LAYER CONTROL VIEWPORTS PIPELINES HANDLER METHOD
+        function navigateTo(pageId) {
+            // State flow isolation control locks validations
+            if (pageId !== 'page1' && !isSessionValid()) {
+                pageId = 'page1';
             }
 
-            const matched = BANGLADESH_DISTRICTS.filter(d => d.toLowerCase().includes(text));
-            if(matched.length === 0) {
-                dropBox.classList.add('hidden');
-                return;
-            }
-
-            dropBox.classList.remove('hidden');
-            matched.forEach(dist => {
-                const row = document.createElement('div');
-                row.className = "p-2 hover:bg-gray-700 cursor-pointer text-gray-200 transition";
-                row.innerText = dist;
-                row.onclick = () => {
-                    inputElem.value = dist;
-                    dropBox.classList.add('hidden');
-                    calculateDynamicFareEngine();
-                };
-                dropBox.appendChild(row);
+            const targets = ['page1', 'page2', 'page3', 'page4'];
+            targets.forEach(t => {
+                document.getElementById(t).classList.toggle('hidden', t !== pageId);
             });
-        }
 
-        function setBusType(type) {
-            selectedRouteConfig.busType = type;
-            const btnAC = document.getElementById('btnBusAC');
-            const btnNonAC = document.getElementById('btnBusNonAC');
-
-            if(type === 'AC') {
-                btnAC.className = "bg-blue-600 border border-blue-500 py-2.5 rounded-lg font-bold text-sm text-white shadow-lg shadow-blue-900/40 transition";
-                btnNonAC.className = "bg-gray-800 border border-gray-700 py-2.5 rounded-lg font-medium text-sm text-gray-400 hover:bg-gray-700 transition";
-            } else {
-                btnNonAC.className = "bg-blue-600 border border-blue-500 py-2.5 rounded-lg font-bold text-sm text-white shadow-lg shadow-blue-900/40 transition";
-                btnAC.className = "bg-gray-800 border border-gray-700 py-2.5 rounded-lg font-medium text-sm text-gray-400 hover:bg-gray-700 transition";
-            }
-            calculateDynamicFareEngine();
-        }
-
-        function calculateDynamicFareEngine() {
-            const from = document.getElementById('routeFrom').value;
-            const to = document.getElementById('routeTo').value;
+            sessionStorage.setItem('m2vai_current_page', pageId);
             
-            if(!from || !to || !selectedRouteConfig.busType) return;
-
-            let baseFare = DIST_FARE_INDEX[from] || 400;
-            if(DIST_FARE_INDEX[to]) {
-                baseFare = Math.floor((baseFare + DIST_FARE_INDEX[to]) / 1.5);
-            }
-
-            // Premise scalar values modifier bounds checks
-            if(selectedRouteConfig.busType === 'AC') {
-                baseFare = Math.floor(baseFare * 1.75); // Premium segment markup configuration index rules
-            }
-
-            selectedRouteConfig.fare = baseFare;
-            
-            document.getElementById('fareDisplayCard').classList.remove('hidden');
-            document.getElementById('calculatedFareText').innerText = `${baseFare} BDT`;
+            // Populating back historical states manipulation routers loops vectors tracking pipelines triggers elements buttons
+            window.history.pushState({page: pageId}, "", "");
         }
 
-        function proceedToSeats() {
-            const from = document.getElementById('routeFrom').value;
-            const to = document.getElementById('routeTo').value;
-            const date = document.getElementById('routeDate').value;
-            const time = document.getElementById('routeTime').value;
-
-            if(!from || !to || !date || !selectedRouteConfig.busType) {
-                alert("Please provide valid inputs for route generation matrix indices mapping parameters.");
+        // MOBILE BRIDGES NAVIGATION HISTORY HARDWARE EVENTS INTERCEPTION LISTENER HANDLERS
+        window.addEventListener('popstate', (e) => {
+            if (!isSessionValid()) {
+                navigateTo('page1');
                 return;
             }
-            if(from === to) {
-                alert("Origin node mapping target cannot identical bounds destination endpoints values.");
-                return;
-            }
-
-            selectedRouteConfig.from = from;
-            selectedRouteConfig.to = to;
-            selectedRouteConfig.date = date;
-            selectedRouteConfig.time = time;
-
-            // Cache configuration mapping layers to buffer refresh instances safely
-            sessionStorage.setItem('active_m2vai_route_config', JSON.stringify(selectedRouteConfig));
-            navigateTo('page3');
-        }
-
-        /******************************************************************************
-         * DYNAMIC SEAT LAYOUT ENGINEERING GRID ENGINE (PAGE 3)
-         ******************************************************************************/
-        function renderCabinGridConfiguration() {
-            const matrixBox = document.getElementById('busSeatsMatrix');
-            matrixBox.innerHTML = '';
-            activeSeatSelected = null;
-            document.getElementById('activeSeatLabel').innerText = 'None';
-            document.getElementById('holdTimerNotification').classList.add('hidden');
-
-            const isAC = selectedRouteConfig.busType === 'AC';
-            document.getElementById('seatBusConfigTitle').innerText = `${selectedRouteConfig.busType} Cabin Format Matrix Configuration`;
-
-            // Load Global Allocation Registry map
-            const seatsCache = JSON.parse(localStorage.getItem('m2vai_seats_cache'));
-            const cacheKey = `${selectedRouteConfig.from}_${selectedRouteConfig.to}_${selectedRouteConfig.date}_${selectedRouteConfig.time}_${selectedRouteConfig.busType}`;
-            const reservedSeatsMap = seatsCache[cacheKey] || {};
-
-            const rowLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+            // Capture target route trace index pointers paths stack trace elements structures boundaries controls links
+            const currentStoredPage = sessionStorage.getItem('m2vai_current_page') || 'page2';
             
-            rowLabels.forEach(row => {
-                const rowWrapper = document.createElement('div');
-                rowWrapper.className = "flex items-center justify-between space-x-2 w-full";
-
-                if(isAC) {
-                    // AC 1+2 Matrix Core Logic Builder Layout Node Elements
-                    const leftColId = `${row}1`;
-                    const rightCol1Id = `${row}2`;
-                    const rightCol2Id = `${row}3`;
-
-                    rowWrapper.appendChild(buildSeatElementNode(leftColId, reservedSeatsMap));
-                    
-                    // Center Aisle Path Space Object
-                    const walkwayNode = document.createElement('div');
-                    walkwayNode.className = "flex-grow text-center text-[9px] uppercase tracking-widest text-gray-800 select-none font-bold";
-                    walkwayNode.innerText = "Aisle";
-                    rowWrapper.appendChild(walkwayNode);
-
-                    rowWrapper.appendChild(buildSeatElementNode(rightCol1Id, reservedSeatsMap));
-                    rowWrapper.appendChild(buildSeatElementNode(rightCol2Id, reservedSeatsMap));
-                } else {
-                    // Non-AC 2+2 Matrix Core Logic Builder Layout Node Elements
-                    const leftCol1Id = `${row}1`;
-                    const leftCol2Id = `${row}2`;
-                    const rightCol1Id = `${row}3`;
-                    const rightCol2Id = `${row}4`;
-
-                    rowWrapper.appendChild(buildSeatElementNode(leftCol1Id, reservedSeatsMap));
-                    rowWrapper.appendChild(buildSeatElementNode(leftCol2Id, reservedSeatsMap));
-
-                    // Center Aisle Path Space Object
-                    const walkwayNode = document.createElement('div');
-                    walkwayNode.className = "w-8 text-center text-[8px] uppercase tracking-widest text-gray-800 select-none font-bold";
-                    walkwayNode.innerText = "||";
-                    rowWrapper.appendChild(walkwayNode);
-
-                    rowWrapper.appendChild(buildSeatElementNode(rightCol1Id, reservedSeatsMap));
-                    rowWrapper.appendChild(buildSeatElementNode(rightCol2Id, reservedSeatsMap));
-                }
-
-                matrixBox.appendChild(rowWrapper);
-            });
-        }
-
-        function buildSeatElementNode(seatId, reservedSeatsMap) {
-            const btn = document.createElement('button');
-            btn.id = `seatBtn_${seatId}`;
-            btn.className = "w-10 h-9 rounded-lg flex flex-col items-center justify-center text-[10px] font-bold transition duration-200 shadow-sm relative border ";
-            btn.innerHTML = `<i class="fas fa-couch text-[11px] mb-0.5"></i><span>${seatId}</span>`;
-
-            // Evaluate allocation state lifecycle matrix variables indices flags bounds checks
-            const seatRecord = reservedSeatsMap[seatId];
-            let isLocked = false;
-
-            if(seatRecord) {
-                if(seatRecord.status === 'booked') {
-                    // Explicit permanently booked block
-                    btn.className += " bg-red-600/20 border-red-500/40 text-red-400 cursor-not-allowed";
-                    btn.disabled = true;
-                    isLocked = true;
-                } else if(seatRecord.status === 'hold') {
-                    // Temporary checkout transaction lock processing tracking calculations evaluations
-                    const elapsed = Date.now() - seatRecord.timestamp;
-                    const holdLimit = 3 * 60 * 1000; // 3 minutes timeout hold rule configuration profile
-                    
-                    if(elapsed < holdLimit) {
-                        if(seatRecord.holderId === currentUserSession.uid) {
-                            // Current user allocation instance retention match check mapping
-                            btn.className += " bg-green-600 text-white border-green-400 shadow-md shadow-green-900/20";
-                            activeSeatSelected = seatId;
-                            document.getElementById('activeSeatLabel').innerText = seatId;
-                            initiateSeatHoldTimerLifecycleLoop(seatRecord.timestamp);
-                        } else {
-                            // Alternative user thread boundary lock exclusion visibility blocking rules match
-                            btn.className += " bg-red-900/40 border-red-800/40 text-gray-600 cursor-not-allowed";
-                            btn.disabled = true;
-                            isLocked = true;
-                        }
-                    } else {
-                        // Hold reference allocation bounds window dead. Purge reference nodes cache traces.
-                        btn.className += " bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700";
-                    }
-                }
-            } else {
-                btn.className += " bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700";
-            }
-
-            if(!isLocked) {
-                btn.onclick = () => handleSeatSelectionMatrixClick(seatId);
-            }
-
-            return btn;
-        }
-
-        function handleSeatSelectionMatrixClick(seatId) {
-            const seatsCache = JSON.parse(localStorage.getItem('m2vai_seats_cache'));
-            const cacheKey = `${selectedRouteConfig.from}_${selectedRouteConfig.to}_${selectedRouteConfig.date}_${selectedRouteConfig.time}_${selectedRouteConfig.busType}`;
-            if(!seatsCache[cacheKey]) seatsCache[cacheKey] = {};
-
-            // Validation index parameter tracks to clean former state selection entries bounds maps
-            if(activeSeatSelected && activeSeatSelected !== seatId) {
-                if(seatsCache[cacheKey][activeSeatSelected] && seatsCache[cacheKey][activeSeatSelected].holderId === currentUserSession.uid) {
-                    delete seatsCache[cacheKey][activeSeatSelected];
-                }
-                const oldBtn = document.getElementById(`seatBtn_${activeSeatSelected}`);
-                if(oldBtn) oldBtn.className = "w-10 h-9 rounded-lg flex flex-col items-center justify-center text-[10px] font-bold transition duration-200 shadow-sm relative border bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700";
-            }
-
-            if(activeSeatSelected === seatId) {
-                // Toggle release mechanism operation
-                delete seatsCache[cacheKey][seatId];
-                activeSeatSelected = null;
-                document.getElementById('activeSeatLabel').innerText = 'None';
-                document.getElementById('holdTimerNotification').classList.add('hidden');
-                if(seatHoldCountdownInterval) clearInterval(seatHoldCountdownInterval);
-                localStorage.setItem('m2vai_seats_cache', JSON.stringify(seatsCache));
-                renderCabinGridConfiguration();
-                return;
-            }
-
-            // Assign reservation block hold data structure objects references maps tracks variables
-            const timestampNow = Date.now();
-            seatsCache[cacheKey][seatId] = {
-                status: 'hold',
-                holderId: currentUserSession.uid,
-                timestamp: timestampNow
-            };
-
-            localStorage.setItem('m2vai_seats_cache', JSON.stringify(seatsCache));
-            activeSeatSelected = seatId;
-            document.getElementById('activeSeatLabel').innerText = seatId;
-            
-            initiateSeatHoldTimerLifecycleLoop(timestampNow);
-            renderCabinGridConfiguration();
-        }
-
-        function initiateSeatHoldTimerLifecycleLoop(startTimestamp) {
-            if(seatHoldCountdownInterval) clearInterval(seatHoldCountdownInterval);
-            const notificationBar = document.getElementById('holdTimerNotification');
-            const countdownLabel = document.getElementById('holdCountdown');
-            
-            notificationBar.classList.remove('hidden');
-
-            seatHoldCountdownInterval = setInterval(() => {
-                const elapsed = Date.now() - startTimestamp;
-                const remaining = (3 * 60 * 1000) - elapsed;
-
-                if(remaining <= 0) {
-                    clearInterval(seatHoldCountdownInterval);
-                    notificationBar.classList.add('hidden');
-                    alert("Reservation tracking matrix frame timeout hit. Re-select seat signature allocation blocks.");
-                    renderCabinGridConfiguration();
-                    return;
-                }
-
-                const totalSec = Math.floor(remaining / 1000);
-                const m = String(Math.floor(totalSec / 60)).padStart(2, '0');
-                const s = String(totalSec % 60).padStart(2, '0');
-                countdownLabel.innerText = `${m}:${s}`;
-            }, 1000);
-        }
-
-        function processTicketConfirmation() {
-            if(!activeSeatSelected) {
-                alert("Please select an available seating target anchor point configuration index.");
-                return;
-            }
-
-            // Wallet verification algorithms execution bounds metrics verification evaluation calculations
-            if(currentUserSession.wallet < selectedRouteConfig.fare) {
-                if(seatHoldCountdownInterval) clearInterval(seatHoldCountdownInterval);
-                document.getElementById('rewardSystemModal').classList.remove('hidden');
-                return;
-            }
-
-            // Deduct system parameter values mappings registers databases instances bounds variables configurations
-            let users = JSON.parse(localStorage.getItem('m2vai_users'));
-            const userIndex = users.findIndex(u => u.uid === currentUserSession.uid);
-            
-            users[userIndex].wallet -= selectedRouteConfig.fare;
-            currentUserSession.wallet = users[userIndex].wallet;
-            
-            localStorage.setItem('m2vai_users', JSON.stringify(users));
-            sessionStorage.setItem('active_m2vai_session', JSON.stringify(currentUserSession));
-
-            // Upgrade allocation hold records status flags tokens into fully booked status
-            const seatsCache = JSON.parse(localStorage.getItem('m2vai_seats_cache'));
-            const cacheKey = `${selectedRouteConfig.from}_${selectedRouteConfig.to}_${selectedRouteConfig.date}_${selectedRouteConfig.time}_${selectedRouteConfig.busType}`;
-            
-            seatsCache[cacheKey][activeSeatSelected] = {
-                status: 'booked',
-                holderId: currentUserSession.uid,
-                timestamp: Date.now()
-            };
-            localStorage.setItem('m2vai_seats_cache', JSON.stringify(seatsCache));
-
-            if(seatHoldCountdownInterval) clearInterval(seatHoldCountdownInterval);
-
-            // Bind metadata parameter elements fields downstream ticket slip node visual components blocks references elements
-            document.getElementById('tixMemberId').innerText = currentUserSession.uid;
-            document.getElementById('tixPlayerName').innerText = currentUserSession.name;
-            document.getElementById('tixGameId').innerText = currentUserSession.gameId;
-            document.getElementById('tixMobile').innerText = currentUserSession.mobile;
-            document.getElementById('tixFrom').innerText = selectedRouteConfig.from;
-            document.getElementById('tixTo').innerText = selectedRouteConfig.to;
-            document.getElementById('tixDate').innerText = selectedRouteConfig.date;
-            document.getElementById('tixTime').innerText = selectedRouteConfig.time;
-            document.getElementById('tixBusType').innerText = selectedRouteConfig.busType;
-            document.getElementById('tixSeat').innerText = activeSeatSelected;
-            
-            const timestampObj = new Date();
-            document.getElementById('tixTimestamp').innerText = `${timestampObj.toLocaleTimeString()} | ${timestampObj.toLocaleDateString()}`;
-
-            navigateTo('page4');
-        }
-
-        /******************************************************************************
-         * DIGITAL TICKET SYSTEM DOWNLOAD & AUTO RE-ROUTE INTERFACES (PAGE 4)
-         ******************************************************************************/
-        function triggerTicketSnapshotDownload() {
-            const ticketElementNode = document.getElementById('printableTicketCard');
-            
-            // Execute HTML-to-Canvas Image stream generation processes metrics models pipeline parameters 
-            html2canvas(ticketElementNode, {
-                scale: 3, // HD quality enhancement scale tracking factor configuration profile metrics
-                logging: false,
-                useCORS: true
-            }).then(canvas => {
-                const base64ImgDataStream = canvas.toDataURL('image/png');
-                const virtualAnchorLink = document.createElement('a');
-                virtualAnchorLink.download = `M2Vai_OnlineTicket_Seat_${activeSeatSelected}.png`;
-                virtualAnchorLink.href = base64ImgDataStream;
-                document.body.appendChild(virtualAnchorLink);
-                virtualAnchorLink.click();
-                document.body.removeChild(virtualAnchorLink);
-
-                alert("Ticket downloaded successfully as HD Image! Returning to dashboard configuration interface page parameters.");
-                
-                // Post actions execution workflow states cleanup cycles triggers logs parameters loops sequences indices
-                activeSeatSelected = null;
-                sessionStorage.removeItem('active_m2vai_route_config');
-                
-                // Completely direct routing tracking endpoints pointers back straight context loop targets node parameters structures
+            if (currentStoredPage === 'page3') {
                 navigateTo('page2');
-            });
-        }
-
-        /******************************************************************************
-         * CAMPAIGN REWARDS SYSTEM MECHANICS ENGINE MODULES
-         ******************************************************************************/
-        function closeRewardModal() {
-            document.getElementById('rewardSystemModal').classList.add('hidden');
-        }
-
-        function claimSubscribeReward() {
-            // Forward channel destination interface contexts tracking streams configurations metrics references models parameters
-            window.open('https://youtube.com/@m2vai?si=ls4xlp9EG8hjwE7B', '_blank');
-            
-            // Allocate transaction payout variables arrays bounds registers storage elements definitions calculations metrics indices
-            let users = JSON.parse(localStorage.getItem('m2vai_users'));
-            const idx = users.findIndex(u => u.uid === currentUserSession.uid);
-            
-            users[idx].wallet += 5000; // 5000 BDT reward for subscription
-            currentUserSession.wallet = users[idx].wallet;
-            
-            localStorage.setItem('m2vai_users', JSON.stringify(users));
-            sessionStorage.setItem('active_m2vai_session', JSON.stringify(currentUserSession));
-            
-            alert("Reward authorization complete! 5000 BDT subscription funds added successfully.");
-            closeRewardModal();
-            renderCabinGridConfiguration();
-        }
-
-        function initiateVideoRewardWatch() {
-            closeRewardModal();
-            const playerOverlay = document.getElementById('videoStreamOverlay');
-            const videoFrame = document.getElementById('rewardVideoPlayerFrame');
-            const countdownText = document.getElementById('videoWatchCountdown');
-            
-            // Auto inject video element source stream parameter references paths indices tracking
-            videoFrame.src = "https://www.youtube.com/embed/aYwYMretqvE?autoplay=1";
-            playerOverlay.classList.remove('hidden');
-
-            let watchTimeRemaining = 60; // 1-minute runtime lock constraint specification rules parameters checks
-            countdownText.innerText = watchTimeRemaining;
-
-            const videoTimerLoop = setInterval(() => {
-                watchTimeRemaining--;
-                countdownText.innerText = watchTimeRemaining;
-
-                if(watchTimeRemaining <= 0) {
-                    clearInterval(videoTimerLoop);
-                    playerOverlay.classList.add('hidden');
-                    videoFrame.src = ""; // Flush streaming buffer tracks pipelines memory profiles objects
-
-                    // Disburse funds payouts arrays parameters databases modification values maps registers keys
-                    let users = JSON.parse(localStorage.getItem('m2vai_users'));
-                    const indexVal = users.findIndex(u => u.uid === currentUserSession.uid);
-                    
-                    users[indexVal].wallet += 2000; // 2000 BDT reward for video watch
-                    currentUserSession.wallet = users[indexVal].wallet;
-                    
-                    localStorage.setItem('m2vai_users', JSON.stringify(users));
-                    sessionStorage.setItem('active_m2vai_session', JSON.stringify(currentUserSession));
-
-                    alert("Verification algorithm matching validated complete! 2000 BDT video content payout added safely.");
-                    renderCabinGridConfiguration();
-                }
-            }, 1000);
-        }
-
-        /******************************************************************************
-         * MODAL MANAGEMENTS SYSTEM INTERFACES FRAMEWORK PANELS ENGINE (PROFILE, CONTACT)
-         ******************************************************************************/
-        function toggleMenu(forceClose = false) {
-            const sideMenu = document.getElementById('sideMenu');
-            if(sideMenu.classList.contains('translate-x-full') && !forceClose) {
-                sideMenu.classList.remove('translate-x-full');
-            } else {
-                sideMenu.classList.add('translate-x-full');
+            } else if (currentStoredPage === 'page4') {
+                navigateTo('page2');
+            } else if (currentStoredPage === 'page2') {
+                // Lock inside core app stack frame boundaries trace route tracking link prevent full breakout exit page
+                navigateTo('page2');
             }
-        }
+        });
 
+        // REFRESH MANAGEMENT STATE RESILIENCE PIPELINE EMULATOR MEMORY LAYER DATA HOOK LINK
+        (function() {
+            const lastSessionPage = sessionStorage.getItem('m2vai_current_page');
+            if (lastSessionPage && lastSessionPage !== 'page1' && JSON.parse(sessionStorage.getItem('m2vai_session'))) {
+                // Keep execution context locked cleanly inside frame layout structures boundaries track dynamic interface layout link
+                setTimeout(() => {
+                    navigateTo(lastSessionPage);
+                    if(lastSessionPage === 'page3') {
+                        // Re-trigger dynamic structure layout initialization matrices logic pipeline parsing framework context loaders
+                        const cachedDraft = JSON.parse(sessionStorage.getItem('m2vai_booking_draft'));
+                        if (cachedDraft) renderDynamicSeatsCabinLayout(cachedDraft.busType);
+                    }
+                }, 100);
+            }
+        })();
+
+        // COMPONENT DIALOG MODALS VISIBILITY CHANNELS OPERATIONS PIPELINES DRIVERS VIEWPORTS
         function openProfileModal() {
-            toggleMenu(true);
-            document.getElementById('profId').innerText = currentUserSession.uid;
-            document.getElementById('profName').innerText = currentUserSession.name;
-            document.getElementById('profGame').innerText = currentUserSession.gameId;
-            document.getElementById('profEmail').innerText = currentUserSession.email;
-            document.getElementById('profRole').innerText = currentUserSession.role.replace('_', ' ');
-            document.getElementById('profWallet').innerText = `${currentUserSession.wallet} BDT`;
+            const user = usersDb.find(u => u.id === activeSession.userId);
+            if (!user) return;
 
-            const imgAvatar = document.getElementById('profileDisplayAvatar');
-            const placeholderAvatar = document.getElementById('profilePlaceholderAvatar');
+            document.getElementById('profId').innerText = user.id;
+            document.getElementById('profName').innerText = user.name;
+            document.getElementById('profGameId').innerText = user.gameId;
+            document.getElementById('profRole').innerText = user.role;
+            document.getElementById('profWallet').innerText = user.wallet;
 
-            if(currentUserSession.avatar) {
-                imgAvatar.src = currentUserSession.avatar;
-                imgAvatar.classList.remove('hidden');
-                placeholderAvatar.classList.add('hidden');
+            const avatarFrame = document.getElementById('profileAvatarDisplayFrame');
+            const fallbackIcon = document.getElementById('avatarFallbackIcon');
+
+            if (user.avatar) {
+                avatarFrame.src = user.avatar;
+                avatarFrame.classList.remove('hidden');
+                fallbackIcon.classList.add('hidden');
             } else {
-                imgAvatar.classList.add('hidden');
-                placeholderAvatar.classList.remove('hidden');
+                avatarFrame.classList.add('hidden');
+                fallbackIcon.classList.remove('hidden');
             }
 
-            document.getElementById('profileDetailsModal').classList.remove('hidden');
+            document.getElementById('profileViewModalPortal').classList.remove('hidden');
+            document.getElementById('sideMenu').classList.add('translate-x-full');
+            document.getElementById('sideMenu').classList.remove('-translate-x-full');
         }
 
         function closeProfileModal() {
-            document.getElementById('profileDetailsModal').classList.add('hidden');
+            document.getElementById('profileViewModalPortal').classList.add('hidden');
         }
 
-        function processAvatarImageUpload(inputElem) {
-            const errorLabel = document.getElementById('avatarUploadError');
-            errorLabel.classList.add('hidden');
+        function openContactModal() {
+            document.getElementById('contactViewModalPortal').classList.remove('hidden');
+            document.getElementById('sideMenu').classList.add('translate-x-full');
+            document.getElementById('sideMenu').classList.remove('-translate-x-full');
+        }
 
-            if(!inputElem.files || !inputElem.files[0]) return;
-            const fileObj = inputElem.files[0];
+        // IMAGE LOADING STREAM PARSING FILE SIZE RESTRICTIONS CONTROLLER LOGIC HANDLER
+        function handleProfileImageUpload(e) {
+            const fileFile = e.target.files[0];
+            if (!fileFile) return;
 
-            // Filter bounds format properties parameter signature arrays
-            if(fileObj.type !== 'image/png') {
-                errorLabel.innerText = "Only PNG image formats are permissible targets parameters.";
-                errorLabel.classList.remove('hidden');
+            // Format type verification enforcement check pipeline loop criteria link
+            if (fileFile.type !== "image/png") {
+                alert("ভুল ফরম্যাট! শুধুমাত্র .png ফরম্যাটের ছবি আপলোড করা যাবে।");
                 return;
             }
 
-            // Validation boundary configuration file parameters dimension sizing scales logic constraints (Max 300KB)
-            if(fileObj.size > 300 * 1024) {
-                errorLabel.innerText = "Sizing bounds limitation threshold error. File violates strict 300KB scale ceiling caps rules.";
-                errorLabel.classList.remove('hidden');
+            // Size enforcement boundary execution check constraint (300 KB allocation threshold rule evaluation line parameter metric)
+            if (fileFile.size > 300 * 1024) {
+                alert("ছবির সাইজ অনেক বড়! ফাইল সাইজ অবশ্যই ৩০০ KB বা তার কম হতে হবে।");
                 return;
             }
 
             const streamReader = new FileReader();
-            streamReader.onload = function(e) {
-                const base64ResultString = e.target.result;
+            streamReader.onload = function(event) {
+                const base64UriData = event.target.result;
+                const userIndex = usersDb.findIndex(u => u.id === activeSession.userId);
                 
-                // Commit changes back to user context arrays indices states blocks nodes maps checks
-                let users = JSON.parse(localStorage.getItem('m2vai_users'));
-                const index = users.findIndex(u => u.uid === currentUserSession.uid);
-                
-                users[index].avatar = base64ResultString;
-                currentUserSession.avatar = base64ResultString;
-
-                localStorage.setItem('m2vai_users', JSON.stringify(users));
-                sessionStorage.setItem('active_m2vai_session', JSON.stringify(currentUserSession));
-
-                document.getElementById('profileDisplayAvatar').src = base64ResultString;
-                document.getElementById('profileDisplayAvatar').classList.remove('hidden');
-                document.getElementById('profilePlaceholderAvatar').classList.add('hidden');
+                if (userIndex !== -1) {
+                    usersDb[userIndex].avatar = base64UriData;
+                    localStorage.setItem('m2vai_users_db', JSON.stringify(usersDb));
+                    
+                    document.getElementById('profileAvatarDisplayFrame').src = base64UriData;
+                    document.getElementById('profileAvatarDisplayFrame').classList.remove('hidden');
+                    document.getElementById('avatarFallbackIcon').classList.add('hidden');
+                    alert("প্রোফাইল ছবি সফলভাবে আপলোড হয়েছে!");
+                }
             };
-            streamReader.readAsDataURL(fileObj);
+            streamReader.readAsDataURL(fileFile);
         }
 
-        function openContactModal() {
-            toggleMenu(true);
-            const gridBox = document.getElementById('contactSocialModalGrid');
-            gridBox.innerHTML = '';
+        // HAMBURGER INTERACTION TOGGLES ANIMATION EVENT BOUND PIXELS CAPTURE LISTENERS
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('sideMenu').classList.remove('-translate-x-full');
+        });
+        document.getElementById('closeMenuBtn').addEventListener('click', () => {
+            document.getElementById('sideMenu').classList.add('-translate-x-full');
+        });
 
-            SOCIAL_REGISTRY.forEach(item => {
-                const card = document.createElement('a');
-                card.href = item.link;
-                card.target = "_blank";
-                card.className = "bg-gray-950 border border-gray-800 p-3 rounded-xl flex flex-col items-center justify-center hover:border-blue-500 transition text-center";
-                card.innerHTML = `<i class="${item.icon} ${item.color} text-xl mb-1.5"></i><span class="text-[11px] font-medium text-gray-300">${item.name}</span>`;
-                gridBox.appendChild(card);
-            });
+        // SEARCHABLE INTER-DISTRICT DROPDOWNS ARCHITECTURE FUNCTIONAL CONTROLLER LOGICS
+        function showDistrictList(type) {
+            const targetDropdownContainer = document.getElementById(`${type}DistrictList`);
+            targetDropdownContainer.innerHTML = '';
+            targetDropdownContainer.classList.remove('hidden');
 
-            document.getElementById('contactInformationModal').classList.remove('hidden');
-        }
-
-        function closeContactModal() {
-            document.getElementById('contactInformationModal').classList.add('hidden');
-        }
-
-        /******************************************************************************
-         * GLOBAL MEMBERS INDICES SEARCH ENGINE ENGINE ARCHITECTURE
-         ******************************************************************************/
-        function handleGlobalSearch(event) {
-            const text = event.target.value.trim();
-            const dropdown = document.getElementById('searchDropdown');
-            dropdown.innerHTML = '';
-
-            if(!text) {
-                dropdown.classList.add('hidden');
-                return;
-            }
-
-            const users = JSON.parse(localStorage.getItem('m2vai_users'));
-            // Restrict target query parameter string arrays configurations strictly to user id numerical profiles parameters indices mapping values
-            const matchedUsers = users.filter(u => u.uid.includes(text));
-
-            if(matchedUsers.length === 0) {
-                dropdown.innerHTML = `<div class="p-2 text-gray-500 italic text-xs text-center">No structural member ID match found.</div>`;
-                dropdown.classList.remove('hidden');
-                return;
-            }
-
-            dropdown.classList.remove('hidden');
-            matchedUsers.forEach(u => {
-                const itemRow = document.createElement('div');
-                itemRow.className = "p-2 hover:bg-gray-700 cursor-pointer border-b border-gray-900 last:border-0 transition text-xs flex justify-between items-center";
-                itemRow.innerHTML = `
-                    <div><span class="font-bold text-blue-400 font-mono">[ID: ${u.uid}]</span> <span class="text-gray-200 ml-1.5">${u.name}</span></div>
-                    <span class="text-[10px] uppercase font-bold text-gray-500 tracking-widest">${u.role.replace('_', ' ')}</span>
-                `;
-                itemRow.onclick = () => {
-                    dropdown.classList.add('hidden');
-                    event.target.value = '';
-                    revealTargetedUserInspectionAlert(u);
+            BANGLADESH_DISTRICTS.forEach(dist => {
+                const elementRowNodeItem = document.createElement('div');
+                elementRowNodeItem.className = "px-4 py-2 text-xs text-gray-300 hover:bg-emerald-500 hover:text-slate-900 cursor-pointer font-medium transition";
+                elementRowNodeItem.innerText = dist;
+                elementRowNodeItem.onclick = () => {
+                    document.getElementById(`${type}SearchInput`).value = dist;
+                    targetDropdownContainer.classList.add('hidden');
+                    evalLiveFareDisplayContextState();
                 };
-                dropdown.appendChild(itemRow);
+                targetDropdownContainer.appendChild(elementRowNodeItem);
             });
         }
 
-        function revealTargetedUserInspectionAlert(userObj) {
-            alert(`[MEMBER AUDIT SEARCH CARD]\n\nID Code: ${userObj.uid}\nName Signature: ${userObj.name}\nIn-Game Profile: ${userObj.gameId}\nEmail Registry: ${userObj.email}\nSystem Role: ${userObj.role.toUpperCase()}\nWallet Balance: ${userObj.wallet} BDT\nAccount Status: ${userObj.isBanned ? 'BANNED / RESTRICTED' : 'ACTIVE / CLEAR'}`);
-        }
+        function filterDistricts(type) {
+            const inputValText = document.getElementById(`${type}SearchInput`).value.toLowerCase();
+            const targetDropdownContainer = document.getElementById(`${type}DistrictList`);
+            const matchedRowsItems = BANGLADESH_DISTRICTS.filter(d => d.toLowerCase().includes(inputValText));
 
-        /******************************************************************************
-         * INTERACTIVE ADMINISTRATIVE DASHBOARD CONTROL PANEL (ADMIN DASH)
-         ******************************************************************************/
-        function openAdminPanel() {
-            toggleMenu(true);
-            document.getElementById('adminPanelRoleLabel').innerText = currentUserSession.role.replace('_', ' ').toUpperCase();
-            
-            // Set dynamic functional configuration interfaces permissions modifiers elements layout arrays parameters bounds
-            if(['super_admin', 'moderator'].includes(currentUserSession.role)) {
-                document.getElementById('adminOnlyWalletControls').classList.remove('hidden');
-            } else {
-                document.getElementById('adminOnlyWalletControls').classList.add('hidden');
+            targetDropdownContainer.innerHTML = '';
+            if(matchedRowsItems.length === 0) {
+                targetDropdownContainer.innerHTML = `<div class="px-4 py-2 text-xs text-gray-500 italic">কোনো জেলা পাওয়া যায়নি</div>`;
+                return;
             }
 
-            refreshAdminUsersDatabaseGrid();
-            document.getElementById('adminControlDashboardModal').classList.remove('hidden');
+            matchedRowsItems.forEach(dist => {
+                const elementRowNodeItem = document.createElement('div');
+                elementRowNodeItem.className = "px-4 py-2 text-xs text-gray-300 hover:bg-emerald-500 hover:text-slate-900 cursor-pointer font-medium transition";
+                elementRowNodeItem.innerText = dist;
+                elementRowNodeItem.onclick = () => {
+                    document.getElementById(`${type}SearchInput`).value = dist;
+                    targetDropdownContainer.classList.add('hidden');
+                    evalLiveFareDisplayContextState();
+                };
+                targetDropdownContainer.appendChild(elementRowNodeItem);
+            });
+        }
+
+        // Close dropdown list frames on clicking outside window focus coordinate paths execution layers click intercept handlers
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#fromSearchInput') && !e.target.closest('#fromDistrictList')) {
+                document.getElementById('fromDistrictList').classList.add('hidden');
+            }
+            if (!e.target.closest('#toSearchInput') && !e.target.closest('#toDistrictList')) {
+                document.getElementById('toDistrictList').classList.add('hidden');
+            }
+        });
+
+        // SELECT BUS TYPE SWITCH DRIVERS MANAGERS INTERFACES
+        let globalSelectedBusTypeState = null;
+        function selectBusType(type) {
+            globalSelectedBusTypeState = type;
+            document.getElementById('btnAC').className = `py-2.5 rounded-xl border text-sm font-semibold transition ${type === 'AC' ? 'border-emerald-500 bg-emerald-500 text-slate-900 shadow-md neon-glow' : 'border-gray-700 bg-[#161d2b] text-gray-300'}`;
+            document.getElementById('btnNonAC').className = `py-2.5 rounded-xl border text-sm font-semibold transition ${type === 'Non-AC' ? 'border-emerald-500 bg-emerald-500 text-slate-900 shadow-md neon-glow' : 'border-gray-700 bg-[#161d2b] text-gray-300'}`;
+            
+            evalLiveFareDisplayContextState();
+        }
+
+        // FARE VALUE DYNAMIC CALCULATOR EVALUATOR ENGINE UPDATE METHOD RENDERS LOOP LINK
+        function evalLiveFareDisplayContextState() {
+            const f = document.getElementById('fromSearchInput').value;
+            const t = document.getElementById('toSearchInput').value;
+            
+            if (f && t && globalSelectedBusTypeState) {
+                const pricingRateMetricCost = FARE_MATRIX[globalSelectedBusTypeState];
+                document.getElementById('calculatedFareText').innerText = `${pricingRateMetricCost} BDT`;
+                document.getElementById('fareCalculatorDisplay').classList.remove('hidden');
+            } else {
+                document.getElementById('fareCalculatorDisplay').classList.add('hidden');
+            }
+        }
+
+        // FORM PASSAGE NAVIGATION SUBMIT ACTIONS VALIDATION PIPELINES ROUTERS
+        function proceedToSeatSelection() {
+            const fromLoc = document.getElementById('fromSearchInput').value.trim();
+            const toLoc = document.getElementById('toSearchInput').value.trim();
+            const dateVal = document.getElementById('journeyDate').value;
+            const timeVal = document.getElementById('journeyTime').value;
+
+            if (!fromLoc || !toLoc || !dateVal || !globalSelectedBusTypeState) {
+                alert("দয়া করে রুট, তারিখ এবং বাসের টাইপ সম্পূর্ণ সঠিকভাবে নির্বাচন করুন!");
+                return;
+            }
+
+            if (fromLoc === toLoc) {
+                alert("যাত্রার স্থান এবং গন্তব্যের জেলা একই হতে পারে না!");
+                return;
+            }
+
+            // Cache validation structure draft into transient session variables arrays maps schemas logs pipeline storage
+            const draftDataModelPayload = {
+                from: fromLoc, to: toLoc, date: dateVal, time: timeVal, busType: globalSelectedBusTypeState,
+                fare: FARE_MATRIX[globalSelectedBusTypeState]
+            };
+            sessionStorage.setItem('m2vai_booking_draft', JSON.stringify(draftDataModelPayload));
+
+            // Run structural engine layout drawing renderer mechanics context pipeline setup hooks instances
+            renderDynamicSeatsCabinLayout(globalSelectedBusTypeState);
+            navigateTo('page3');
+        }
+
+        // DYNAMIC BUS CABIN MATRIX GRID GENERATION LOGIC ENGINE METHODS INJECTION LAYOUT PIPELINE
+        function renderDynamicSeatsCabinLayout(busType) {
+            const containerGridFrame = document.getElementById('seatsGridEngine');
+            containerGridFrame.innerHTML = '';
+            currentlySelectedSeat = null;
+            document.getElementById('selectedSeatNumberLabel').innerText = "None";
+            document.getElementById('lockTimerAlertBanner').classList.add('hidden');
+
+            const charactersRowsLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+            
+            // Build dynamic route composite hashing string trace to track seats bookings individually across multiple dimensions layout maps data
+            const draft = JSON.parse(sessionStorage.getItem('m2vai_booking_draft'));
+            const tripHashKey = `${draft.from}_${draft.to}_${draft.date}_${draft.time}_${busType}`.toLowerCase();
+            const bookedSeatsListForCurrentRouteMap = bookedSeatsDb[tripHashKey] || [];
+
+            // Evaluates configuration layouts mapping options grid columns specifications layout pointers link parameters lines text
+            const isAC3SeatsRowLayout = busType === 'AC';
+
+            charactersRowsLabels.forEach(rowChar => {
+                const flexRowContainerRowWrapperNode = document.createElement('div');
+                flexRowContainerRowWrapperNode.className = "flex items-center justify-between gap-2";
+
+                // LEFT PORTION ROW CONTAINER COLUMNS STRUCT GRID FRAME MATRIX DESIGN PIN ELEMENT
+                const leftSideContainerBox = document.createElement('div');
+                leftSideContainerBox.className = "flex items-center gap-2";
+
+                // RIGHT PORTION ROW CONTAINER COLUMNS STRUCT GRID FRAME MATRIX DESIGN PIN ELEMENT
+                const rightSideContainerBox = document.createElement('div');
+                rightSideContainerBox.className = "flex items-center gap-2";
+
+                if (isAC3SeatsRowLayout) {
+                    // AC 1 + 2 SEAT STRUCTURAL GRID CONFIGURATION MAPPING LOOPS
+                    // Column Index number 1 seat layout placement row element tracking logic injection link
+                    const seatId1 = `${rowChar}1`;
+                    const btn1 = createSeatDomNodeButtonElement(seatId1, bookedSeatsListForCurrentRouteMap);
+                    leftSideContainerBox.appendChild(btn1);
+
+                    // Column Index number 2 and 3 layout processing side pipeline engine tracking context structure block
+                    const seatId2 = `${rowChar}2`;
+                    const btn2 = createSeatDomNodeButtonElement(seatId2, bookedSeatsListForCurrentRouteMap);
+                    rightSideContainerBox.appendChild(btn2);
+
+                    const seatId3 = `${rowChar}3`;
+                    const btn3 = createSeatDomNodeButtonElement(seatId3, bookedSeatsListForCurrentRouteMap);
+                    rightSideContainerBox.appendChild(btn3);
+                } else {
+                    // NON-AC 2 + 2 SEAT STRUCTURAL GRID CONFIGURATION MAPPING LOOPS
+                    const seatId1 = `${rowChar}1`;
+                    const btn1 = createSeatDomNodeButtonElement(seatId1, bookedSeatsListForCurrentRouteMap);
+                    leftSideContainerBox.appendChild(btn1);
+
+                    const seatId2 = `${rowChar}2`;
+                    const btn2 = createSeatDomNodeButtonElement(seatId2, bookedSeatsListForCurrentRouteMap);
+                    leftSideContainerBox.appendChild(btn2);
+
+                    const seatId3 = `${rowChar}3`;
+                    const btn3 = createSeatDomNodeButtonElement(seatId3, bookedSeatsListForCurrentRouteMap);
+                    rightSideContainerBox.appendChild(btn3);
+
+                    const seatId4 = `${rowChar}4`;
+                    const btn4 = createSeatDomNodeButtonElement(seatId4, bookedSeatsListForCurrentRouteMap);
+                    rightSideContainerBox.appendChild(btn4);
+                }
+
+                // Construct complete flex alignment tree pipeline elements
+                flexRowContainerRowWrapperNode.appendChild(leftSideContainerBox);
+                
+                // Draw middle center aisle walking walking path clearance spacer layout separator row element marker
+                const centerAisleSpacerWalkingRowNodeSeparator = document.createElement('div');
+                centerAisleSpacerWalkingRowNodeSeparator.className = "flex-1 min-w-[24px]";
+                flexRowContainerRowWrapperNode.appendChild(centerAisleSpacerWalkingRowNodeSeparator);
+                
+                flexRowContainerRowWrapperNode.appendChild(rightSideContainerBox);
+                containerGridFrame.appendChild(flexRowContainerRowWrapperNode);
+            });
+        }
+
+        // COMPONENT ELEMENT DOM INJECTORS FABRICATOR SEAT COMPONENT GENERATOR LOOPS ROUTINE
+        function createSeatDomNodeButtonElement(seatId, bookedSeatsListForCurrentRouteMap) {
+            const btnNode = document.createElement('button');
+            btnNode.type = "button";
+            btnNode.id = `seat_node_id_${seatId}`;
+            btnNode.innerText = seatId;
+            btnNode.className = "w-10 h-9 rounded-lg text-[11px] font-mono font-bold border transition flex items-center justify-center tracking-tighter ";
+
+            // Evaluate state conditions metrics parameters arrays mappings check rules boundaries elements link rows pointers keys
+            const isSeatAlreadyPermanentlyBooked = bookedSeatsListForCurrentRouteMap.some(b => b.seat === seatId && b.status === 'booked');
+            const isSeatCurrentlyHeldBySomeoneElse = bookedSeatsListForCurrentRouteMap.some(b => b.seat === seatId && b.status === 'held' && b.heldBy !== activeSession.userId && Date.now() < b.heldUntil);
+
+            if (isSeatAlreadyPermanentlyBooked) {
+                btnNode.className += "bg-red-600 border-red-700 text-white cursor-not-allowed shadow shadow-red-950";
+                btnNode.disabled = true;
+            } else if (isSeatCurrentlyHeldBySomeoneElse) {
+                btnNode.className += "bg-amber-600 border-amber-700 text-white cursor-not-allowed animate-pulse";
+                btnNode.disabled = true;
+                btnNode.title = "সিটটি সাময়িকভাবে অন্য মেম্বার ব্লক করে রেখেছে";
+            } else {
+                // Available vacant standard baseline style profile layout parameter tracking configurations blocks elements
+                btnNode.className += "bg-[#1e293b] border-gray-700 text-gray-300 hover:border-emerald-500 hover:text-white";
+                btnNode.onclick = () => handleSeatNodeClickInteractionSequence(seatId);
+            }
+
+            return btnNode;
+        }
+
+        // SEAT USER CLICKS HANDLING FLOW ARCHITECTURE IMPLEMENTATION PIPELINE HOOK INTERACTION
+        function handleSeatNodeClickInteractionSequence(seatId) {
+            const draft = JSON.parse(sessionStorage.getItem('m2vai_booking_draft'));
+            const tripHashKey = `${draft.from}_${draft.to}_${draft.date}_${draft.time}_${draft.busType}`.toLowerCase();
+            
+            // Re-fetch clean state array mapping matrices values pointers database references links
+            bookedSeatsDb = JSON.parse(localStorage.getItem('m2vai_booked_seats')) || {};
+            if(!bookedSeatsDb[tripHashKey]) bookedSeatsDb[tripHashKey] = [];
+
+            // Trace real-time lock collision errors boundaries validation checks before executing operations hooks links lines
+            const isCollisionDoubleBookCheck = bookedSeatsDb[tripHashKey].some(b => b.seat === seatId && (b.status === 'booked' || (b.status === 'held' && b.heldBy !== activeSession.userId && Date.now() < b.heldUntil)));
+            if (isCollisionDoubleBookCheck) {
+                alert("দুঃখিত! এইমাত্র অন্য একজন মেম্বার এই সিটটি লক করে ফেলেছেন। অনুগ্রহ করে অন্য সিট চেষ্টা করুন।");
+                renderDynamicSeatsCabinLayout(draft.busType);
+                return;
+            }
+
+            // Deselect old target tracking pipelines elements blocks nodes
+            if (currentlySelectedSeat) {
+                // If clicking same seat node clear allocation completely pipeline release lock routine hook instance link
+                if (currentlySelectedSeat === seatId) {
+                    releaseSeatHold(currentlySelectedSeat);
+                    currentlySelectedSeat = null;
+                    document.getElementById('selectedSeatNumberLabel').innerText = "None";
+                    document.getElementById('lockTimerAlertBanner').classList.add('hidden');
+                    renderDynamicSeatsCabinLayout(draft.busType);
+                    return;
+                }
+                releaseSeatHold(currentlySelectedSeat);
+            }
+
+            // Lock selected seat node under present sessions credentials loop assignments parameters matrix data
+            const lockExpirationBound = Date.now() + (3 * 60 * 1000); // 3 Minutes countdown threshold assignment line parameter metric
+            
+            // Purge old held tokens remnants elements
+            bookedSeatsDb[tripHashKey] = bookedSeatsDb[tripHashKey].filter(b => b.seat !== seatId);
+            
+            // Insert hold entity parameters block trace payload log maps configuration
+            bookedSeatsDb[tripHashKey].push({
+                seat: seatId, status: 'held', heldBy: activeSession.userId, heldUntil: lockExpirationBound
+            });
+            localStorage.setItem('m2vai_booked_seats', JSON.stringify(bookedSeatsDb));
+
+            currentlySelectedSeat = seatId;
+            document.getElementById('selectedSeatNumberLabel').innerText = seatId;
+            
+            // Refresh visuals inline nodes displays configurations
+            renderDynamicSeatsCabinLayout(draft.busType);
+            
+            // Color manually the presently modified target active node layout button color tracking logic selection inline element
+            const nodeDomTarget = document.getElementById(`seat_node_id_${seatId}`);
+            if (nodeDomTarget) {
+                nodeDomTarget.className = "w-10 h-9 rounded-lg text-[11px] font-mono font-bold border transition flex items-center justify-center tracking-tighter bg-emerald-500 border-emerald-600 text-slate-900 neon-glow";
+            }
+
+            // Setup real-time dynamic count timers banners alert overlays link text parameter display parameters lines text
+            initSeatLockCountdownUiTimer(lockExpirationBound, seatId);
+        }
+
+        function initSeatLockCountdownUiTimer(expirationTimestamp, seatId) {
+            if (seatLockTimer) clearInterval(seatLockTimer);
+            document.getElementById('lockTimerAlertBanner').classList.remove('hidden');
+
+            seatLockTimer = setInterval(() => {
+                const remainingSecsTotal = Math.max(0, Math.round((expirationTimestamp - Date.now()) / 1000));
+                document.getElementById('lockCountdownSecs').innerText = remainingSecsTotal;
+
+                if (remainingSecsTotal <= 0) {
+                    clearInterval(seatLockTimer);
+                    if (currentlySelectedSeat === seatId) {
+                        alert("আপনার সিট লকিং এর ৩ মিনিটের সময়সীমা শেষ হয়ে গেছে! সিটটি আবার সবার জন্য উন্মুক্ত করা হলো।");
+                        releaseSeatHold(seatId);
+                        currentlySelectedSeat = null;
+                        document.getElementById('selectedSeatNumberLabel').innerText = "None";
+                        document.getElementById('lockTimerAlertBanner').classList.add('hidden');
+                        const draft = JSON.parse(sessionStorage.getItem('m2vai_booking_draft'));
+                        renderDynamicSeatsCabinLayout(draft.busType);
+                    }
+                }
+            }, 1000);
+        }
+
+        function releaseSeatHold(seatId) {
+            if (seatLockTimer) clearInterval(seatLockTimer);
+            const draft = JSON.parse(sessionStorage.getItem('m2vai_booking_draft'));
+            if (!draft) return;
+            const tripHashKey = `${draft.from}_${draft.to}_${draft.date}_${draft.time}_${draft.busType}`.toLowerCase();
+            
+            bookedSeatsDb = JSON.parse(localStorage.getItem('m2vai_booked_seats')) || {};
+            if (bookedSeatsDb[tripHashKey]) {
+                // Drop holds allocations match markers
+                bookedSeatsDb[tripHashKey] = bookedSeatsDb[tripHashKey].filter(b => !(b.seat === seatId && b.status === 'held' && b.heldBy === activeSession.userId));
+                localStorage.setItem('m2vai_booked_seats', JSON.stringify(bookedSeatsDb));
+            }
+        }
+
+        // TICKET PAYMENT RESOLUTION BALANCE ENGINE TRANSACTIONAL LOGICS HANDLERS
+        function handleConfirmTicket() {
+            if (!currentlySelectedSeat) {
+                alert("দয়া করে বুকিং কনফার্ম করার জন্য প্রথমে বাসের একটি সিট সিলেক্ট করুন!");
+                return;
+            }
+
+            const currentUserIndexNum = usersDb.findIndex(u => u.id === activeSession.userId);
+            const userEntityRecord = usersDb[currentUserIndexNum];
+            const draftPayloadRecord = JSON.parse(sessionStorage.getItem('m2vai_booking_draft'));
+
+            // Funds validation parameter threshold logic assignment check criteria links trace
+            if (userEntityRecord.wallet < draftPayloadRecord.fare) {
+                openRewardModal();
+                return;
+            }
+
+            // Deduct processing transactional data balances points entries matrix mapping ledger logs accounts pipelines links
+            userEntityRecord.wallet -= draftPayloadRecord.fare;
+            usersDb[currentUserIndexNum] = userEntityRecord;
+            localStorage.setItem('m2vai_users_db', JSON.stringify(usersDb));
+
+            // Commit seat hold to absolute permanent booked status item asset model record tracker logic block map configuration
+            const tripHashKey = `${draftPayloadRecord.from}_${draftPayloadRecord.to}_${draftPayloadRecord.date}_${draftPayloadRecord.time}_${draftPayloadRecord.busType}`.toLowerCase();
+            bookedSeatsDb = JSON.parse(localStorage.getItem('m2vai_booked_seats')) || {};
+            
+            bookedSeatsDb[tripHashKey] = bookedSeatsDb[tripHashKey].filter(b => b.seat !== currentlySelectedSeat);
+            bookedSeatsDb[tripHashKey].push({
+                seat: currentlySelectedSeat, status: 'booked', bookedBy: userEntityRecord.id, bookedAtTimestamp: Date.now()
+            });
+            localStorage.setItem('m2vai_booked_seats', JSON.stringify(bookedSeatsDb));
+
+            // Populate Digital Ticket interface data labels text pointers metrics records blocks views container fields mapping
+            document.getElementById('ticketMemberId').innerText = userEntityRecord.id;
+            document.getElementById('ticketPlayerName').innerText = userEntityRecord.name;
+            document.getElementById('ticketGameId').innerText = userEntityRecord.gameId;
+            document.getElementById('ticketMobile').innerText = userEntityRecord.mobile;
+            document.getElementById('ticketFrom').innerText = draftPayloadRecord.from;
+            document.getElementById('ticketTo').innerText = draftPayloadRecord.to;
+            document.getElementById('ticketDate').innerText = draftPayloadRecord.date;
+            document.getElementById('ticketTime').innerText = draftPayloadRecord.time;
+            document.getElementById('ticketBusType').innerText = draftPayloadRecord.busType;
+            document.getElementById('ticketSeatNumber').innerText = currentlySelectedSeat;
+
+            // Generate fine-grained current system operational time stamping string layouts indicators logs view trackers elements lines
+            const instanceClockNow = new Date();
+            let h = instanceClockNow.getHours();
+            const m = String(instanceClockNow.getMinutes()).padStart(2, '0');
+            const s = String(instanceClockNow.getSeconds()).padStart(2, '0');
+            const ap = h >= 12 ? 'AM' : 'PM';
+            h = h % 12; h = h ? h : 12;
+            const liveIssueTimeStringResult = `${String(h).padStart(2, '0')}:${m}:${s} ${ap} | ${String(instanceClockNow.getDate()).padStart(2, '0')}/${String(instanceClockNow.getMonth()+1).padStart(2, '0')}/${instanceClockNow.getFullYear()}`;
+            document.getElementById('ticketIssueClock').innerText = liveIssueTimeStringResult;
+
+            // Clear transients references pointers trackers logs hold allocation nodes arrays loops memory items variables
+            if (seatLockTimer) clearInterval(seatLockTimer);
+            currentlySelectedSeat = null;
+
+            // Trigger navigation transfer to download digital pass receipt layout grid pane view board interface elements
+            syncUserInterfaceContextState();
+            navigateTo('page4');
+        }
+
+        // DYNAMIC POPUPS ADVERTISING INTEGRATION MODAL OPERATIONS LOGICS CHANNELS
+        function openRewardModal() {
+            document.getElementById('rewardSystemModal').classList.remove('hidden');
+        }
+        function closeRewardModal() {
+            // Kill any residual iframe bindings dynamically running background processes traces log variables components nodes layout parameters
+            document.getElementById('videoRewardPlayerWrapper').classList.add('hidden');
+            document.getElementById('iframeVideoInjectTarget').innerHTML = '';
+            document.getElementById('rewardSystemModal').classList.add('hidden');
+        }
+
+        function triggerYoutubeSubscribeReward() {
+            // Launch channel profile redirect path sequence context window viewport links triggers structures parameters blocks elements lines
+            window.open(SOCIAL_RESOURCES.youtubeM2, '_blank');
+            
+            // Emulate return processing credit loops reward values update configurations maps memory accounts pipelines
+            setTimeout(() => {
+                const idx = usersDb.findIndex(u => u.id === activeSession.userId);
+                usersDb[idx].wallet += 5000; // +5000 BDT subscription bonus standard metrics fixed validation score injection block link
+                localStorage.setItem('m2vai_users_db', JSON.stringify(usersDb));
+                syncUserInterfaceContextState();
+                
+                document.getElementById('btnRewardSub').disabled = true;
+                document.getElementById('btnRewardSub').className = "bg-gray-700 text-gray-500 font-bold text-xs py-1.5 px-3 rounded-lg cursor-not-allowed";
+                document.getElementById('btnRewardSub').innerText = "Claimed ✓";
+                alert("চ্যানেল সাবস্ক্রাইব বোনাস ৫০০০ BDT আপনার ওয়ালেটে সফলভাবে যোগ করা হয়েছে!");
+            }, 2000);
+        }
+
+        let videoCountdownTrackerTimerInstance = null;
+        function triggerVideoWatchReward() {
+            const playerContainerAreaTarget = document.getElementById('iframeVideoInjectTarget');
+            document.getElementById('videoRewardPlayerWrapper').classList.remove('hidden');
+            document.getElementById('btnRewardWatch').disabled = true;
+
+            // Inject secure sandbox video player components block element pipelines tags links anchors parameters configurations fields data
+            playerContainerAreaTarget.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${SOCIAL_RESOURCES.rewardVideoEmbedId}?autoplay=1&controls=1&rel=0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+
+            let timerSecsLeftCounterValueMetric = 60; // Must watch video for at least 1 minute plus (60 seconds standard benchmark enforcement boundary metric rule line)
+            document.getElementById('videoCountdownLabel').innerText = `${timerSecsLeftCounterValueMetric} সেকেন্ড বাকি`;
+
+            if(videoCountdownTrackerTimerInstance) clearInterval(videoCountdownTrackerTimerInstance);
+            
+            videoCountdownTrackerTimerInstance = setInterval(() => {
+                timerSecsLeftCounterValueMetric--;
+                document.getElementById('videoCountdownLabel').innerText = `${timerSecsLeftCounterValueMetric} সেকেন্ড বাকি`;
+
+                if (timerSecsLeftCounterValueMetric <= 0) {
+                    clearInterval(videoCountdownTrackerTimerInstance);
+                    
+                    const idx = usersDb.findIndex(u => u.id === activeSession.userId);
+                    usersDb[idx].wallet += 2000; // +2000 BDT Watch dynamic bonus payout metric fixed ledger assignment entry loop
+                    localStorage.setItem('m2vai_users_db', JSON.stringify(usersDb));
+                    syncUserInterfaceContextState();
+
+                    document.getElementById('videoCountdownLabel').innerText = "টাস্ক কমপ্লিট! ✓";
+                    document.getElementById('btnRewardWatch').className = "bg-gray-700 text-gray-500 font-bold text-xs py-1.5 px-3 rounded-lg cursor-not-allowed";
+                    document.getElementById('btnRewardWatch').innerText = "Claimed ✓";
+                    
+                    alert("ভিডিও ওয়াচিং টাস্ক সফল হয়েছে! ২০০০ BDT আপনার ওয়ালেটে যোগ করা হয়েছে।");
+                    closeRewardModal();
+                }
+            }, 1000);
+        }
+
+        // TICKET RENDERING IMAGE CAPTURING ENGINE PIPELINE DOWNLOAD DRIVERS CONTROLLERS
+        function downloadTicketAsImage() {
+            const targetContainerCaptureSourceNode = document.getElementById('digitalTicketCaptureWrapper');
+            
+            // Execute rendering graphics transformation libraries hooks processes configurations parameters boundaries models layout parameters mapping info
+            html2canvas(targetContainerCaptureSourceNode, {
+                scale: 3, // Upscale asset dimension for pristine high definition rendering crisp clarity output image profile matrix lines
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff"
+            }).then(canvasImageResultBufferTarget => {
+                const imgBase64DataStringUrlPayloadStream = canvasImageResultBufferTarget.toDataURL("image/png");
+                
+                // Fabricate anchor download pipelines virtual nodes events triggers executions paths lines structures
+                const triggerAnchorLinkDownloadBridgeNode = document.createElement('a');
+                triggerAnchorLinkDownloadBridgeNode.href = imgBase64DataStringUrlPayloadStream;
+                triggerAnchorLinkDownloadBridgeNode.download = `M2Vai_Online_Ticket_${Date.now()}.png`;
+                document.body.appendChild(triggerAnchorLinkDownloadBridgeNode);
+                triggerAnchorLinkDownloadBridgeNode.click();
+                document.body.removeChild(triggerAnchorLinkDownloadBridgeNode);
+
+                alert("টিকিটটি ছবি (Image) আকারে আপনার ডিভাইসে সফলভাবে ডাউনলোড হয়েছে!");
+                
+                // Clear state memory session variables and route cleanly back onto dashboard initialization frame layout parameters row
+                sessionStorage.removeItem('m2vai_booking_draft');
+                navigateTo('page2');
+            }).catch(err => {
+                console.error("Image rendering capture exception: ", err);
+                alert("দুঃখিত, টিকিট ডাউনলোড করার সময় একটি টেকনিক্যাল সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+            });
+        }
+
+        // MEMBER LIVE IDENTITIES QUICK RESOLUTION SEARCHES ENGINES SETUP DRIVERS FUNCTIONS
+        function setupSearchEngineFilters() {
+            const globalFilterBox = document.getElementById('memberSearchInput');
+            globalFilterBox.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const lookupQueryIdStringVal = globalFilterBox.value.trim();
+                    if (!lookupQueryIdStringVal) return;
+
+                    const matchResultEntityUser = usersDb.find(u => u.id === lookupQueryIdStringVal);
+                    if (!matchResultEntityUser) {
+                        alert(`মেম্বার আইডি: ${lookupQueryIdStringVal} সংবলিত কোনো সদস্যের তথ্য ডাটাবেজে পাওয়া যায়নি!`);
+                        return;
+                    }
+
+                    // Direct routing layout trigger display box modal pipeline inject arrays profiles context parameters
+                    alert(`[সদস্য তথ্য পাওয়া গেছে]\n-------------------------\nID: ${matchResultEntityUser.id}\nName: ${matchResultEntityUser.name}\nGame ID: ${matchResultEntityUser.gameId}\nRole: ${matchResultEntityUser.role}\nWallet Balance: ${matchResultEntityUser.wallet} BDT\nAccount Status: ${matchResultEntityUser.isBanned ? 'Banned' : 'Active'}`);
+                    globalFilterBox.value = '';
+                }
+            });
+        }
+
+        // PRIVILEGED CORE MANAGEMENT PIPELINE: ADMINISTRATIVE CONTROL PANEL CONTROLLERS ENGINE
+        function openAdminPanel() {
+            const currentSessionAuthorizedUserObj = usersDb.find(u => u.id === activeSession.userId);
+            if (!currentSessionAuthorizedUserObj || !["Admin", "Moderator", "Counter Master"].includes(currentSessionAuthorizedUserObj.role)) {
+                alert("অননুমোদিত অ্যাক্সেস! এই প্যানেলটি শুধুমাত্র ম্যানেজমেন্ট টিমের জন্য সংরক্ষিত।");
+                return;
+            }
+
+            document.getElementById('adminRoleDisplayBadge').innerText = currentSessionAuthorizedUserObj.role;
+            document.getElementById('adminTotalUsersBadge').innerText = usersDb.length;
+            
+            renderAdminUserDirectory();
+            document.getElementById('adminPanelPortalLayer').classList.remove('hidden');
+            document.getElementById('sideMenu').classList.add('translate-x-full');
+            document.getElementById('sideMenu').classList.remove('-translate-x-full');
         }
 
         function closeAdminPanel() {
-            document.getElementById('adminControlDashboardModal').classList.add('hidden');
+            document.getElementById('adminPanelPortalLayer').classList.add('hidden');
         }
 
-        function refreshAdminUsersDatabaseGrid() {
-            const gridBox = document.getElementById('adminUsersListGrid');
-            gridBox.innerHTML = '';
-
-            const users = JSON.parse(localStorage.getItem('m2vai_users'));
-            document.getElementById('dbCountLabel').innerText = users.length;
-
-            users.forEach(u => {
-                const card = document.createElement('div');
-                card.className = "bg-gray-900 border border-gray-800 p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition hover:border-gray-700";
-                
-                // Construct internal details context metrics maps configuration indexes
-                let actionControlsDeckBlockHTML = '';
-                
-                if(currentUserSession.role === 'super_admin') {
-                    // Super Admin Complete Rights Access Interface Generation Markup Models
-                    actionControlsDeckBlockHTML = `
-                        <div class="flex flex-wrap gap-1.5">
-                            <button onclick="modifyUserRolePrivilege('${u.uid}', 'moderator')" class="bg-blue-950 text-blue-400 border border-blue-900 px-2 py-1 rounded hover:bg-blue-900/40 transition">Make Mod</button>
-                            <button onclick="modifyUserRolePrivilege('${u.uid}', 'counter_master')" class="bg-indigo-950 text-indigo-400 border border-indigo-900 px-2 py-1 rounded hover:bg-indigo-900/40 transition">Make Counter</button>
-                            ${u.isBanned ? 
-                                `<button onclick="toggleUserBanStateStatus('${u.uid}', false)" class="bg-green-950 text-green-400 border border-green-900 px-2 py-1 rounded hover:bg-green-900/40 transition">Unban</button>` : 
-                                `<button onclick="toggleUserBanStateStatus('${u.uid}', true)" class="bg-red-950 text-red-400 border border-red-900 px-2 py-1 rounded hover:bg-red-900/40 transition">Ban Account</button>`
-                            }
-                        </div>
-                    `;
-                } else if(currentUserSession.role === 'moderator') {
-                    // Moderator standard operational management controls profile metrics mapping loops
-                    actionControlsDeckBlockHTML = `
-                        <div class="flex gap-1.5">
-                            ${u.isBanned ? 
-                                `<button onclick="toggleUserBanStateStatus('${u.uid}', false)" class="bg-green-950 text-green-400 border border-green-900 px-2 py-1 rounded hover:bg-green-900/40 transition">Unban</button>` : 
-                                `<button onclick="toggleUserBanStateStatus('${u.uid}', true)" class="bg-red-950 text-red-400 border border-red-900 px-2 py-1 rounded hover:bg-red-900/40 transition">Ban Account</button>`
-                            }
-                        </div>
-                    `;
-                } else {
-                    // Counter Master access visibility view blocks layout structures fields markers
-                    actionControlsDeckBlockHTML = `<span class="text-[10px] uppercase font-bold text-gray-600 tracking-widest">Audit View Only</span>`;
+        function renderAdminUserDirectory() {
+            const targetAppendListLayoutContainer = document.getElementById('adminUserDirectoryTargetContainer');
+            const searchFilterValueTextStringInput = document.getElementById('adminUserSearchQuery').value.toLowerCase().trim();
+            
+            targetAppendListLayoutContainer.innerHTML = '';
+            
+            const sessionActiveOperatorUserNode = usersDb.find(u => u.id === activeSession.userId);
+            
+            // Loop iterate match profiles mapping array databases links variables sets lines parameters
+            usersDb.forEach(u => {
+                // Skips visual matching loops trace queries filters parameters checks lines markers text bounds layout Pointers info
+                if (searchFilterValueTextStringInput && !u.id.includes(searchFilterValueTextStringInput) && !u.name.toLowerCase().includes(searchFilterValueTextStringInput)) {
+                    return;
                 }
 
-                card.innerHTML = `
-                    <div class="space-y-0.5">
-                        <div class="flex items-center space-x-2">
-                            <span class="font-mono font-bold text-blue-400">[ID: ${u.uid}]</span>
-                            <span class="font-bold text-gray-200">${u.name}</span>
-                            <span class="text-[9px] uppercase font-extrabold px-1.5 py-0.5 rounded bg-gray-800 text-yellow-500 border border-gray-700">${u.role.replace('_', ' ')}</span>
-                        </div>
-                        <div class="text-[11px] text-gray-500">IGN: ${u.gameId} | Email: ${u.email} | Wallet: <span class="text-green-500 font-bold">${u.wallet} BDT</span></div>
-                        ${u.isBanned ? `<div class="text-[10px] text-red-400 font-bold uppercase tracking-wider"><i class="fas fa-ban mr-1"></i> Account Suspended Token Flag Marked</div>` : ''}
-                    </div>
-                    ${actionControlsDeckBlockHTML}
+                const itemRowBoxNodeFrameWrapperElement = document.createElement('div');
+                itemRowBoxNodeFrameWrapperElement.className = "bg-[#0d131f] border border-gray-800 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono";
+                
+                // Profile summary block layout parameter tags data info row
+                const infoPaneTextColumnArea = document.createElement('div');
+                infoPaneTextColumnArea.className = "text-left leading-normal";
+                infoPaneTextColumnArea.innerHTML = `
+                    <div><span class="text-emerald-400 font-bold">[ID: ${u.id}]</span> <strong class="text-white font-sans">${u.name}</strong> (${u.role})</div>
+                    <div class="text-[10px] text-gray-500 font-sans mt-0.5">Game ID: ${u.gameId} | Wallet: <span class="text-emerald-500 font-bold font-mono">${u.wallet} BDT</span></div>
+                    ${u.isBanned ? '<span class="text-[9px] font-sans font-bold bg-red-950 text-red-400 px-1.5 py-0.2 rounded border border-red-900 mt-1 inline-block">BANNED ACCOUNT</span>' : ''}
                 `;
-                gridBox.appendChild(card);
+                itemRowBoxNodeFrameWrapperElement.appendChild(infoPaneTextColumnArea);
+
+                // Right action items controllers mapping elements button configurations modules links layout maps data pipelines
+                const controlActionButtonsGroupRowContainerStrip = document.createElement('div');
+                controlActionButtonsGroupRowContainerStrip.className = "flex items-center gap-1.5 self-end sm:self-center";
+
+                // PRIVILEGED MATRICES ROLE-BASED ACCESS CONTROL ENFORCEMENT ENGINE PIPELINES VALIDATORS
+                const isOperatorSuperAdmin = sessionActiveOperatorUserNode.role === "Admin";
+                const isOperatorModerator = sessionActiveOperatorUserNode.role === "Moderator";
+
+                // Action Control Button component: Ban Toggles (Super Admin Only authorization checks metrics link parameters fixed assignment)
+                if (isOperatorSuperAdmin && u.id !== sessionActiveOperatorUserNode.id) {
+                    const btnBanToggle = document.createElement('button');
+                    btnBanToggle.type = "button";
+                    btnBanToggle.innerText = u.isBanned ? "Unban" : "Ban";
+                    btnBanToggle.className = `px-2 py-1 rounded font-bold text-[10px] font-sans transition ${u.isBanned ? 'bg-emerald-950 text-emerald-400 border border-emerald-800 hover:bg-emerald-500 hover:text-slate-900' : 'bg-red-950 text-red-400 border border-red-900 hover:bg-red-600 hover:text-white'}`;
+                    btnBanToggle.onclick = () => {
+                        u.isBanned = !u.isBanned;
+                        localStorage.setItem('m2vai_users_db', JSON.stringify(usersDb));
+                        renderAdminUserDirectory();
+                        alert(`সদস্য ${u.name} (ID: ${u.id}) কে সফলভাবে ${u.isBanned ? 'ব্যান' : 'আনব্যান'} করা হয়েছে!`);
+                    };
+                    controlActionButtonsGroupRowContainerStrip.appendChild(btnBanToggle);
+
+                    // Action Control Button component: Payout Wallet Gift items framework allocation block trace injection module anchor path
+                    const btnGiftWallet = document.createElement('button');
+                    btnGiftWallet.type = "button";
+                    btnGiftWallet.innerHTML = `<i class="fa-solid fa-gift"></i> Gift`;
+                    btnGiftWallet.className = "bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold text-[10px] font-sans px-2 py-1 rounded transition";
+                    btnGiftWallet.onclick = () => {
+                        const giftAmountStringValPrompt = prompt(`সদস্য ${u.name} (ID: ${u.id}) এর ওয়ালেটে কত টাকা উপহার হিসেবে যুক্ত করতে চান?`, "1000");
+                        const parsedAmtInt = parseInt(giftAmountStringValPrompt);
+                        if (parsedAmtInt && parsedAmtInt > 0) {
+                            u.wallet += parsedAmtInt;
+                            localStorage.setItem('m2vai_users_db', JSON.stringify(usersDb));
+                            renderAdminUserDirectory();
+                            syncUserInterfaceContextState();
+                            alert(`সফলভাবে ${parsedAmtInt} BDT গিফট ফান্ড সদস্য ${u.name} এর ওয়ালেটে ক্রেডিট করা হয়েছে!`);
+                        }
+                    };
+                    controlActionButtonsGroupRowContainerStrip.appendChild(btnGiftWallet);
+
+                    // Action Control Button component: Dynamic Role Authority promotion settings adjustments mapping interface block
+                    const btnRoleToggle = document.createElement('button');
+                    btnRoleToggle.type = "button";
+                    btnRoleToggle.innerHTML = `<i class="fa-solid fa-user-gear"></i> Role`;
+                    btnRoleToggle.className = "bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] font-sans px-2 py-1 rounded transition";
+                    btnRoleToggle.onclick = () => {
+                        const targetRoleChoiceStringValPrompt = prompt(`সদস্যের নতুন রোল টাইপ সিলেক্ট করুন:\n১. User\n২. Moderator\n৩. Counter Master`, u.role);
+                        if (["User", "Moderator", "Counter Master"].includes(targetRoleChoiceStringValPrompt)) {
+                            u.role = targetRoleChoiceStringValPrompt;
+                            localStorage.setItem('m2vai_users_db', JSON.stringify(usersDb));
+                            renderAdminUserDirectory();
+                            alert(`সদস্যের রোল পরিবর্তন করে '${targetRoleChoiceStringValPrompt}' করা হয়েছে।`);
+                        } else if(targetRoleChoiceStringValPrompt !== null) {
+                            alert("ভুল রোল টাইপ নির্বাচন করা হয়েছে!");
+                        }
+                    };
+                    controlActionButtonsGroupRowContainerStrip.appendChild(btnRoleToggle);
+                }
+
+                // Action Control Button component: Edit Updates metadata user parameters logs (Admin & Moderator permissions access loops layers fields tracking link info)
+                if (isOperatorSuperAdmin || isOperatorModerator) {
+                    const btnEditMetaFields = document.createElement('button');
+                    btnEditMetaFields.type = "button";
+                    btnEditMetaFields.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Update`;
+                    btnEditMetaFields.className = "bg-[#161d2b] hover:bg-gray-800 text-gray-300 border border-gray-700 font-bold text-[10px] font-sans px-2 py-1 rounded transition";
+                    btnEditMetaFields.onclick = () => {
+                        const targetUpdatedNameStrPrompt = prompt(`সদস্যের নাম আপডেট করুন:`, u.name);
+                        if (targetUpdatedNameStrPrompt && targetUpdatedNameStrPrompt.trim()) {
+                            u.name = targetUpdatedNameStrPrompt.trim();
+                            localStorage.setItem('m2vai_users_db', JSON.stringify(usersDb));
+                            renderAdminUserDirectory();
+                            alert("সদস্যের প্রোফাইল তথ্য সফলভাবে আপডেট হয়েছে!");
+                        }
+                    };
+                    controlActionButtonsGroupRowContainerStrip.appendChild(btnEditMetaFields);
+                }
+
+                itemRowBoxNodeFrameWrapperElement.appendChild(controlActionButtonsGroupRowContainerStrip);
+                targetAppendListLayoutContainer.appendChild(itemRowBoxNodeFrameWrapperElement);
             });
-        }
 
-        function modifyUserRolePrivilege(uid, targetRole) {
-            let users = JSON.parse(localStorage.getItem('m2vai_users'));
-            const idx = users.findIndex(u => u.uid === uid);
-            if(users[idx].email === 'info.m2vai380@gmail.com') {
-                alert("Cannot modify base root configuration variables permissions metrics for core super account profile.");
-                return;
-            }
-            users[idx].role = targetRole;
-            localStorage.setItem('m2vai_users', JSON.stringify(users));
-            refreshAdminUsersDatabaseGrid();
-        }
-
-        function toggleUserBanStateStatus(uid, shouldBan) {
-            let users = JSON.parse(localStorage.getItem('m2vai_users'));
-            const idx = users.findIndex(u => u.uid === uid);
-            if(users[idx].email === 'info.m2vai380@gmail.com') {
-                alert("Cannot ban root system master security keys identifiers.");
-                return;
-            }
-            users[idx].isBanned = shouldBan;
-            localStorage.setItem('m2vai_users', JSON.stringify(users));
-            refreshAdminUsersDatabaseGrid();
-        }
-
-        function executeWalletGiftGrant() {
-            const uid = document.getElementById('giftTargetUid').value.trim();
-            const amount = parseInt(document.getElementById('giftAmountVal').value);
-
-            if(!uid || isNaN(amount) || amount <= 0) {
-                alert("Provide valid grant parameters fields maps layout indices verification bounds checks.");
-                return;
-            }
-
-            let users = JSON.parse(localStorage.getItem('m2vai_users'));
-            const idx = users.findIndex(u => u.uid === uid);
-
-            if(idx === -1) {
-                alert("Target registration data matching user profile identification key not present inside registry records.");
-                return;
-            }
-
-            users[idx].wallet += amount;
-            localStorage.setItem('m2vai_users', JSON.stringify(users));
-            
-            // Sync up values checks instances maps loops configurations metrics values targets profiles
-            if(currentUserSession.uid === uid) {
-                currentUserSession.wallet = users[idx].wallet;
-                sessionStorage.setItem('active_m2vai_session', JSON.stringify(currentUserSession));
-            }
-
-            alert(`Wallet gift executed successfully!\nGranted ${amount} BDT to Member ID: ${uid}`);
-            document.getElementById('giftTargetUid').value = '';
-            document.getElementById('giftAmountVal').value = '';
-            refreshAdminUsersDatabaseGrid();
-        }
-
-        function flushCabinReservationState() {
-            localStorage.setItem('m2vai_seats_cache', JSON.stringify({}));
-            alert("Cabin allocation database clear command flushed successfully execution logs benchmarks complete.");
-            if(document.getElementById('page3').classList.contains('hidden') === false) {
-                renderCabinGridConfiguration();
+            if(targetAppendListLayoutContainer.innerHTML === '') {
+                targetAppendListLayoutContainer.innerHTML = `<div class="text-center text-xs text-gray-500 py-6 italic">ডিরেক্টরিতে কোনো সদস্যের রেকর্ড মেলেনি</div>`;
             }
         }
 
-        function executeSeatingAutoPurgeCycleCheck() {
-            // Check cache clean loop intervals routines (1 Hour Cyclic Cleanup Logic)
-            const lastPurgeTimestamp = localStorage.getItem('m2vai_last_purge_time');
-            const oneHourIntervalThreshold = 60 * 60 * 1000;
-
-            if(!lastPurgeTimestamp || (Date.now() - parseInt(lastPurgeTimestamp)) > oneHourIntervalThreshold) {
-                localStorage.setItem('m2vai_seats_cache', JSON.stringify({}));
-                localStorage.setItem('m2vai_last_purge_time', Date.now().toString());
+        function adminResetAllSeats() {
+            if (confirm("আপনি কি নিশ্চিতভাবে চলতি ট্রিপের বুকিং করা সকল সিট রিসেট করে খালি করে দিতে চান?")) {
+                bookedSeatsDb = {};
+                localStorage.setItem('m2vai_booked_seats', JSON.stringify(bookedSeatsDb));
+                
+                // Reset administrative operational countdown baseline references clocks intervals
+                localStorage.setItem('m2vai_cron_reset_timestamp', Date.now() + (60 * 60 * 1000));
+                
+                alert("সব বাসের বুকিং করা সিট সফলভাবে রিসেট করা হয়েছে!");
+                const lastDraftObjCheck = JSON.parse(sessionStorage.getItem('m2vai_booking_draft'));
+                if (lastDraftObjCheck) renderDynamicSeatsCabinLayout(lastDraftObjCheck.busType);
+                renderAdminUserDirectory();
             }
         }
 
-        /******************************************************************************
-         * STATIC FRONT-END STRUCTURAL UTILITIES VISUAL RENDER ENGINE ASSEMBLIES
-         ******************************************************************************/
-        function renderSocialIconsLayouts() {
-            const footerIconsBox = document.getElementById('footerSocialIconsMatrix');
-            footerIconsBox.innerHTML = '';
-
-            SOCIAL_REGISTRY.forEach(item => {
-                const anchor = document.createElement('a');
-                anchor.href = item.link;
-                anchor.target = "_blank";
-                anchor.className = `${item.color} hover:scale-125 transition-transform duration-200 block text-xl`;
-                anchor.innerHTML = `<i class="${item.icon}"></i>`;
-                footerIconsBox.appendChild(anchor);
-            });
-        }
-
-        function toggleLanguage() {
-            languageMode = languageMode === 'EN' ? 'BN' : 'EN';
-            document.getElementById('langBtn').innerText = languageMode === 'EN' ? "EN | বাংলা" : "বাংলা | EN";
-            
-            const noticeMarquee = document.getElementById('scrollingNotice');
-            if(languageMode === 'BN') {
-                noticeMarquee.innerText = "M2Vai অনলাইন টিকিট কাউন্টারে আপনাকে স্বাগতম! নিরাপদ ট্রিপ নিশ্চিত করতে সোসাইটির নিয়মাবলী মেনে চলুন।";
-            } else {
-                noticeMarquee.innerText = "Welcome to M2Vai Online Ticket Platform! Drive safely and follow society conveyor norms.";
+        // MANAGEMENT AUTOMATION ENGINE: 1 HOUR ABSOLUTE AUTO SEATS EXPIRATION PURGING ENGINE RUNNER LOGIC
+        function initAutoResetCronEngine() {
+            let nextPurgeTargetTimestamp = localStorage.getItem('m2vai_cron_reset_timestamp');
+            if (!nextPurgeTargetTimestamp) {
+                nextPurgeTargetTimestamp = Date.now() + (60 * 60 * 1000); // 1 Hour relative futuristic time boundary checkpoint metric logic line
+                localStorage.setItem('m2vai_cron_reset_timestamp', nextPurgeTargetTimestamp);
             }
+
+            setInterval(() => {
+                const curTimeMarker = Date.now();
+                const totalRemMillis = nextPurgeTargetTimestamp - curTimeMarker;
+                
+                if (totalRemMillis <= 0) {
+                    // Timeout trigger automated background database cleaning cycles instances routines hooks links elements
+                    bookedSeatsDb = {};
+                    localStorage.setItem('m2vai_booked_seats', JSON.stringify(bookedSeatsDb));
+                    
+                    nextPurgeTargetTimestamp = Date.now() + (60 * 60 * 1000);
+                    localStorage.setItem('m2vai_cron_reset_timestamp', nextPurgeTargetTimestamp);
+                    
+                    const runningDraftVerificationCheck = JSON.parse(sessionStorage.getItem('m2vai_booking_draft'));
+                    if (runningDraftVerificationCheck) renderDynamicSeatsCabinLayout(runningDraftVerificationCheck.busType);
+                    console.log("Automated background operational 1-Hour seats clean-up cycle completed successfully.");
+                }
+
+                // Render metrics timer into text container fields tags overlay loops if admin portal layout is active view interface mode
+                const remainingSecsTotalVal = Math.max(0, Math.round(totalRemMillis / 1000));
+                const minComputedValuePart = String(Math.floor(remainingSecsTotalVal / 60)).padStart(2, '0');
+                const secComputedValuePart = String(remainingSecsTotalVal % 60).padStart(2, '0');
+                
+                const adminClockElementNodeTarget = document.getElementById('adminAutoResetTimerBadge');
+                if(adminClockElementNodeTarget) adminClockElementNodeTarget.innerText = `${minComputedValuePart}:${secComputedValuePart}`;
+            }, 1000);
         }
     </script>
 </body>
