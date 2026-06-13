@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,845 +7,1129 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
     <style>
-        /* Custom Glowing & Neon Effects matching screenshots */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@300;400;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', 'Kalpurush', sans-serif;
+            background-color: #0b111e;
+            color: #e2e8f0;
+        }
+        .digital-clock {
+            font-family: 'Orbitron', monospace;
+        }
+        /* Neon Glowing Effects matching screenshots */
         .glow-cyan {
             box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+            border-color: rgba(6, 182, 212, 0.8);
         }
         .glow-green {
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+            border-color: rgba(16, 185, 129, 0.8);
         }
-        .watermark {
+        .glow-btn:hover {
+            transform: scale(1.02);
+            transition: all 0.2s ease-in-out;
+        }
+        /* Custom scrollbar for active members marquee */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            background: rgba(15, 23, 42, 0.6);
+            border-top: 1px solid rgba(6, 182, 212, 0.2);
+            border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 25s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translate3d(100%, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+        /* Watermark Background Styling */
+        .watermark-bg {
+            position: relative;
+        }
+        .watermark-bg::before {
+            content: "";
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 8rem;
-            font-weight: 900;
-            color: rgba(255, 255, 255, 0.03);
-            z-index: 0;
+            width: 300px;
+            height: 300px;
+            background: url('image/M2Vai Official YouTube Channel Logo.png') no-repeat center;
+            background-size: contain;
+            opacity: 0.04;
             pointer-events: none;
-            user-select: none;
-            letter-spacing: 0.5rem;
-        }
-        .bg-dark-panel {
-            background-color: #0d1527;
-        }
-        .bg-card-dark {
-            background-color: #131e35;
+            z-index: 0;
         }
     </style>
 </head>
-<body class="bg-dark-panel text-gray-200 min-h-screen flex flex-col font-sans relative overflow-x-hidden">
+<body class="min-height-screen flex flex-col justify-between select-none">
 
-    <div class="watermark fixed">M2Vai</div>
-
-    <header class="w-full max-w-4xl mx-auto px-4 py-4 flex justify-between items-center z-10 relative">
-        <div class="flex items-center gap-3">
-            <button id="menuBtn" class="text-2xl text-cyan-400 hover:text-cyan-300 transition focus:outline-none">
+    <header class="bg-[#0f172a] border-b border-slate-800 px-4 py-3 flex justify-between items-center z-50">
+        <div class="flex items-center space-x-2">
+            <img src="image/M2Vai Official YouTube Channel Logo.png" alt="Logo" class="w-8 height-8 rounded-full">
+            <span class="text-white font-bold tracking-wider text-sm md:text-base">M2Vai PANEL</span>
+        </div>
+        <nav class="flex items-center space-x-4">
+            <button onclick="showPage('homeDashboard')" class="text-xs md:text-sm text-cyan-400 font-semibold hover:text-white">Home</button>
+            <button onclick="alert('Notice: সর্বদা ট্রাফিক নিয়ম মেনে চলুন।')" class="text-xs md:text-sm text-slate-400 hover:text-white">Notice</button>
+            <div class="relative hidden md:block">
+                <input type="text" id="memberSearchInput" placeholder="Search Member ID..." class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-cyan-500">
+                <button onclick="searchMember()" class="absolute right-2 top-1.5 text-slate-400 hover:text-white text-xs"><i class="fa fa-search"></i></button>
+            </div>
+            <button onclick="toggleMobileMenu()" class="text-emerald-500 text-xl font-bold focus:outline-none">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <span class="text-xl font-bold tracking-wider text-white">M2Vai PANEL</span>
-        </div>
-        
-        <div class="flex items-center gap-6">
-            <nav class="hidden sm:flex gap-4 text-sm font-semibold">
-                <button onclick="navigateTo('page1')" class="text-cyan-400 hover:underline">Home</button>
-                <button onclick="alert('Notice: Welcome to M2Vai Tickets System!')" class="text-gray-400 hover:text-white transition">Notice</button>
-                <button id="adminLoginBtn" onclick="toggleAdminPanel()" class="text-red-400 hover:text-red-300 transition hidden">Admin Panel</button>
-            </nav>
-            <div class="flex bg-slate-800 rounded-full p-1 text-xs font-bold border border-slate-700">
-                <button id="langEN" onclick="changeLang('en')" class="px-3 py-1 rounded-full bg-cyan-500 text-slate-900 transition">EN</button>
-                <button id="langBN" onclick="changeLang('bn')" class="px-3 py-1 rounded-full text-gray-400 transition">বাংলা</button>
+            <div class="flex items-center bg-slate-900 rounded-full p-1 border border-slate-700 text-xs">
+                <button id="langEN" onclick="changeLanguage('EN')" class="bg-cyan-500 text-slate-950 font-bold px-2 py-0.5 rounded-full">EN</button>
+                <button id="langBN" onclick="changeLanguage('BN')" class="text-slate-400 px-2 py-0.5 rounded-full">বাংলা</button>
             </div>
-        </div>
+        </nav>
     </header>
 
-    <div id="sideMenu" class="fixed top-16 left-4 w-64 bg-card-dark border border-slate-800 rounded-xl p-4 hidden z-30 shadow-2xl">
-        <div class="mb-4 pb-2 border-b border-slate-700">
-            <h3 class="text-cyan-400 font-bold mb-2"><i class="fa-solid fa-search mr-2"></i>Member Search</h3>
-            <div class="flex gap-1">
-                <input type="text" id="searchIdInput" placeholder="e.g. M2Vai-1001" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-cyan-500">
-                <button onclick="searchMember()" class="bg-cyan-500 text-slate-900 px-2 py-1 rounded text-xs font-bold hover:bg-cyan-400">Search</button>
-            </div>
-            <div id="searchResult" class="mt-2 text-xs text-gray-300 hidden bg-slate-900 p-2 rounded"></div>
+    <div id="mobileMenu" class="hidden fixed top-14 right-0 bg-[#0f172a] border-l border-slate-800 w-64 h-full z-40 p-4 transition-all">
+        <div class="block md:hidden mb-4">
+            <input type="text" id="memberSearchInputMobile" placeholder="Search Member ID..." class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-cyan-500">
+            <button onclick="searchMemberMobile()" class="mt-2 w-full bg-cyan-600 text-xs py-1 rounded text-white font-bold">Search</button>
         </div>
-        <div id="menuUserProfile" class="hidden text-sm space-y-2">
-            <p class="text-emerald-400 font-bold"><i class="fa-solid fa-user mr-2"></i><span id="menuUserName">M2Vai</span></p>
-            <p class="text-xs text-gray-400">ID: <span id="menuUserId">M2Vai-1000</span></p>
-            <p class="text-yellow-400 font-semibold">Wallet: <span id="menuUserWallet">100</span> BDT</p>
-            <button onclick="showBonusPopup()" class="w-full mt-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs py-1.5 rounded font-bold hover:opacity-90">Free BDT System</button>
-            <button onclick="logout()" class="w-full mt-1 bg-slate-800 text-gray-400 text-xs py-1 rounded hover:bg-red-900 hover:text-white">Logout</button>
-        </div>
+        <button onclick="showAdminPanel()" class="w-full text-left py-2 px-3 bg-red-950/40 border border-red-900/50 rounded text-red-400 font-semibold text-sm hover:bg-red-900/20 mb-2"><i class="fa fa-lock mr-2"></i>Admin Panel</button>
+        <button onclick="logout()" class="w-full text-left py-2 px-3 bg-slate-800 rounded text-slate-300 text-sm hover:bg-slate-700"><i class="fa fa-sign-out mr-2"></i>Logout</button>
     </div>
 
-    <main class="flex-grow flex items-center justify-center p-4 z-10 relative">
-
-        <section id="page1" class="w-full max-w-md bg-transparent flex flex-col items-center">
-            <div class="w-32 h-32 rounded-full border-4 border-cyan-400 flex items-center justify-center glow-cyan bg-slate-900/80 mb-6 transition-transform hover:scale-105">
-                <span class="text-center font-black text-2xl tracking-tighter text-cyan-400 leading-tight">M2Vai<br><span class="text-xs text-purple-400 font-bold">LOGO</span></span>
-            </div>
-            
-            <h1 class="text-2xl font-bold tracking-wide text-white text-center mb-1">M2Vai ONLINE TICKET COUNTER</h1>
-            <p class="text-cyan-400 text-xs font-medium tracking-widest text-center mb-4">Bangladesh Bussid Unique Society</p>
-
-            <div class="w-full bg-card-dark/60 border border-slate-800 rounded-xl p-4 text-center mb-6 backdrop-blur-sm">
-                <p id="greetingText" class="text-sm font-semibold mb-1 text-amber-400">Good Morning! 🌅</p>
-                <p id="liveClock" class="text-2xl font-bold text-cyan-400 tracking-wider">10:35:50 AM</p>
-                <p id="liveDate" class="text-xs text-gray-400 font-bold uppercase mt-1 tracking-wider">LIVE DATE: Sat, Jun 13, 2026</p>
+    <main class="flex-grow flex flex-col justify-center items-center px-4 py-6 watermark-bg relative">
+        
+        <div id="page-login" class="w-full max-w-md bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-6 glow-cyan z-10 block">
+            <div class="text-center mb-4">
+                <div class="inline-block p-2 rounded-full border-2 border-cyan-400 bg-slate-900 mb-2 glow-cyan">
+                    <img src="image/M2Vai Official YouTube Channel Logo.png" alt="M2Vai Logo" class="w-20 height-20 rounded-full mx-auto">
+                </div>
+                <h1 class="text-xl md:text-2xl font-bold tracking-wide text-white">M2Vai ONLINE TICKET COUNTER</h1>
+                <p class="text-xs text-cyan-400 tracking-widest uppercase mt-0.5">Bangladesh Bussid Unique Society</p>
             </div>
 
-            <div id="loginCard" class="w-full bg-card-dark border border-slate-800 rounded-2xl p-6 shadow-xl relative">
-                <h2 id="loginTitle" class="text-center text-gray-300 font-medium mb-6">Please login to book your bus seat</h2>
-                
-                <div class="space-y-4">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center mb-5">
+                <div id="greetingText" class="text-xs text-slate-400 font-medium mb-1">Good Morning! 🌅</div>
+                <div id="liveClock" class="digital-clock text-xl md:text-2xl font-bold text-emerald-400 tracking-wider">10:35:50 AM</div>
+                <div id="liveDate" class="text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">LIVE DATE: SAT, JUN 13, 2026</div>
+            </div>
+
+            <div id="loginFormState">
+                <p class="text-center text-xs text-slate-400 mb-4" id="txtPleaseLogin">Please login to book your bus seat</p>
+                <div class="space-y-3">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-wider">Email Address</label>
-                        <input type="email" id="loginEmail" placeholder="info.m2vai380@gmail.com" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                        <label class="block text-xs text-slate-400 mb-1">Email Address</label>
+                        <input type="email" id="loginEmail" placeholder="info.m2vai380@gmail.com" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-wider">Password</label>
-                        <input type="password" id="loginPassword" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition">
+                        <label class="block text-xs text-slate-400 mb-1">Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                     <div class="text-right">
-                        <a href="#" onclick="alert('Password reset link simulated!')" class="text-xs text-gray-400 hover:text-cyan-400 transition">Forget password</a>
+                        <a href="#" onclick="alert('পাসওয়ার্ড পুনরুদ্ধারের জন্য অ্যাডমিনের সাথে যোগাযোগ করুন।')" class="text-xs text-slate-500 hover:text-cyan-400">Forget password</a>
                     </div>
-                    
-                    <div class="flex gap-4 pt-2">
-                        <button onclick="handleLogin()" class="flex-1 bg-emerald-500 text-slate-900 font-bold py-3 rounded-xl glow-green hover:bg-emerald-400 transition">Login Now</button>
-                        <button onclick="toggleForm('signup')" class="flex-1 bg-slate-800 text-white font-bold py-3 rounded-xl border border-slate-700 hover:bg-slate-700 transition">Sign Up</button>
+                    <div class="flex space-x-3 pt-2">
+                        <button onclick="handleLogin()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2 rounded-lg text-sm glow-green glow-btn">Login Now</button>
+                        <button onclick="toggleLoginRegister(true)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 rounded-lg text-sm glow-btn">Sign Up</button>
                     </div>
                 </div>
             </div>
 
-            <div id="signupCard" class="w-full bg-card-dark border border-slate-800 rounded-2xl p-6 shadow-xl relative hidden">
-                <h2 class="text-center text-cyan-400 font-bold text-lg mb-4">M2Vai Registration Form</h2>
-                <div class="space-y-3 text-sm max-h-[400px] overflow-y-auto pr-1">
+            <div id="registerFormState" class="hidden">
+                <p class="text-center text-xs text-slate-400 mb-4" id="txtPleaseRegister">Create an account to join the Society</p>
+                <div class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
                     <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Full Name</label>
-                        <input type="text" id="regName" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                        <label class="block text-xs text-slate-400 mb-0.5">Full Name</label>
+                        <input type="text" id="regFullName" placeholder="M2Vai User" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">In-Game Name / ID</label>
-                        <input type="text" id="regGameId" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                        <label class="block text-xs text-slate-400 mb-0.5">In-Game Name / ID</label>
+                        <input type="text" id="regGameID" placeholder="M2V_GAMER" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Date of Birth</label>
-                        <input type="date" id="regDOB" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                        <label class="block text-xs text-slate-400 mb-0.5">Date of Birth</label>
+                        <input type="date" id="regDOB" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Mobile Number (Optional)</label>
-                        <input type="tel" id="regMobile" placeholder="Optional" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                        <label class="block text-xs text-slate-400 mb-0.5">Mobile Number <span class="text-slate-500 text-[10px]">(Optional)</span></label>
+                        <input type="text" id="regMobile" placeholder="018XXXXXXXX" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Facebook Profile Link</label>
-                        <input type="url" id="regFB" placeholder="https://facebook.com/..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                        <label class="block text-xs text-slate-400 mb-0.5">Facebook Profile Link</label>
+                        <input type="url" id="regFB" placeholder="https://facebook.com/..." class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Email Address</label>
-                        <input type="email" id="regEmail" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                        <label class="block text-xs text-slate-400 mb-0.5">Email Address</label>
+                        <input type="email" id="regEmail" placeholder="user@m2vai.com" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Set Password</label>
-                        <input type="password" id="regPassword" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                        <label class="block text-xs text-slate-400 mb-0.5">Set Password</label>
+                        <input type="password" id="regPassword" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs text-gray-400 mb-0.5">Confirm Password</label>
-                        <input type="password" id="regConfirmPassword" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500">
+                        <label class="block text-xs text-slate-400 mb-0.5">Confirm Password</label>
+                        <input type="password" id="regConfirmPassword" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                     </div>
                 </div>
-                <div class="flex gap-3 mt-4">
-                    <button onclick="handleSignUp()" class="flex-1 bg-emerald-500 text-slate-900 font-bold py-2 rounded-lg hover:bg-emerald-400 transition">Register Now</button>
-                    <button onclick="toggleForm('login')" class="flex-1 bg-slate-800 text-gray-400 py-2 rounded-lg hover:bg-slate-700 transition">Back to Login</button>
+                <div class="flex space-x-3 pt-3">
+                    <button onclick="handleRegister()" class="flex-1 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-2 rounded-lg text-sm glow-cyan glow-btn">Submit & Register</button>
+                    <button onclick="toggleLoginRegister(false)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 rounded-lg text-sm glow-btn">Back to Login</button>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <section id="page2" class="w-full max-w-md flex flex-col items-center hidden">
-            <div class="w-full bg-slate-900/80 border border-slate-800 rounded-lg py-1.5 px-4 mb-4 overflow-hidden relative">
-                <div id="marqueeTicker" class="whitespace-nowrap inline-block animate-marquee text-xs text-emerald-400 font-semibold">
-                    M2Vai (ID: M2Vai-1000) 🟢 Active &bull; GuestUser (ID: M2Vai-1002) 🟢 Active
+        <div id="page-route" class="w-full max-w-md bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-6 glow-cyan z-10 hidden">
+            <div class="marquee-container rounded-lg p-1.5 mb-4 text-xs text-emerald-400 font-mono">
+                <div class="marquee-content" id="activeMembersTicker">
+                    Loading active community members...
                 </div>
             </div>
 
-            <div class="w-24 h-24 rounded-full border-4 border-cyan-400 flex items-center justify-center glow-cyan bg-slate-900 mb-4">
-                <span class="text-center font-black text-lg text-cyan-400 leading-tight">M2Vai<br><span class="text-[9px] text-purple-400 font-bold">LOGO</span></span>
+            <div class="text-center mb-4">
+                <h2 id="welcomeUserText" class="text-emerald-400 font-bold text-lg">Welcome, M2Vai!</h2>
+                <div class="flex justify-center items-center space-x-2 mt-1">
+                    <span id="userDisplayID" class="bg-slate-800 px-2 py-0.5 rounded text-[11px] text-slate-400 font-mono">ID: M2V-1001</span>
+                    <span class="bg-emerald-950/80 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded text-xs font-bold"><i class="fa fa-wallet mr-1"></i>Wallet: <span id="userWalletBalance">100</span> BDT</span>
+                </div>
             </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">From (Boarding Point)</label>
+                    <select id="routeFrom" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                        <option value="Bagerhat">Bagerhat</option>
+                        <option value="Dhaka">Dhaka</option>
+                        <option value="Khulna">Khulna</option>
+                        <option value="Chittagong">Chittagong</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">To (Destination Point)</label>
+                    <select id="routeTo" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                        <option value="Cox's Bazar">Cox's Bazar</option>
+                        <option value="Dhaka">Dhaka</option>
+                        <option value="Sylhet">Sylhet</option>
+                        <option value="Kuakata">Kuakata</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Journey Date</label>
+                    <input type="date" id="routeDate" value="2026-06-08" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Bus Type</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="bg-slate-900 border border-slate-800 rounded-lg p-2.5 flex items-center justify-between cursor-pointer hover:border-cyan-500">
+                            <span class="text-sm text-white">AC Coach (3 Seat/Row)</span>
+                            <input type="radio" name="busType" value="AC" checked class="accent-cyan-500">
+                        </label>
+                        <label class="bg-slate-900 border border-slate-800 rounded-lg p-2.5 flex items-center justify-between cursor-pointer hover:border-cyan-500">
+                            <span class="text-sm text-white">Non-AC (4 Seat/Row)</span>
+                            <input type="radio" name="busType" value="Non-AC" class="accent-cyan-500">
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Journey Time</label>
+                    <select id="routeTime" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                        <option value="09:00 AM (Day Trip)">09:00 AM (Day Trip)</option>
+                        <option value="09:30 PM (Night Trip)">09:30 PM (Night Trip)</option>
+                    </select>
+                </div>
+
+                <button onclick="proceedToSeats()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm mt-2 glow-green glow-btn flex items-center justify-center space-x-1">
+                    <span>Select Seat</span> <span>🪑</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="page-seats" class="w-full max-w-md bg-[#0f172a]/90 border border-slate-800 rounded-2xl p-5 glow-cyan z-10 hidden">
+            <h3 class="text-center font-semibold text-sm text-white mb-3">Choose Your Desired Seat</h3>
             
-            <h1 class="text-xl font-bold text-white text-center mb-1">M2Vai ONLINE TICKET COUNTER</h1>
-            <p class="text-cyan-400 text-[10px] tracking-widest text-center mb-4">Bangladesh Bussid Unique Society</p>
+            <div class="flex justify-center space-x-4 text-xs mb-4 bg-slate-900/60 py-2 rounded-lg border border-slate-800">
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-3.5 h-3.5 bg-slate-800 rounded"></span> <span class="text-slate-400">Available</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-3.5 h-3.5 bg-emerald-500 rounded"></span> <span class="text-slate-400">Selected</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-3.5 h-3.5 bg-red-500 rounded"></span> <span class="text-slate-400">Booked</span>
+                </div>
+            </div>
 
-            <div class="w-full bg-card-dark border border-slate-800 rounded-2xl p-6 shadow-xl">
-                <h2 id="welcomeUserText" class="text-center text-emerald-400 font-bold text-lg mb-4">Welcome, M2Vai!</h2>
+            <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 mb-3 relative max-h-[340px] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-2">
+                    <div class="border border-red-500/40 text-red-400 text-[10px] px-2 py-0.5 rounded font-mono tracking-wider bg-red-950/20">DOOR</div>
+                    <div class="w-6 h-6 rounded-full border-2 border-slate-600 flex items-center justify-center text-slate-400 text-xs"><i class="fa fa-steering-wheel"></i>⚙️</div>
+                </div>
+
+                <div id="seatGridSystem" class="space-y-3">
+                    </div>
+            </div>
+
+            <div class="text-center text-xs mb-3">
+                <span class="text-slate-400">Selected Seat:</span> 
+                <span id="selectedSeatLabel" class="text-emerald-400 font-bold ml-1 font-mono text-sm">None</span>
+                <span id="lockTimerContainer" class="hidden text-amber-400 ml-2 font-mono">(Locked for: <span id="lockTimerSeconds">300</span>s)</span>
+            </div>
+
+            <div class="border border-red-900/50 bg-red-950/20 rounded-lg p-2.5 mb-4 text-[11px] text-slate-400">
+                <p class="font-semibold text-red-400 mb-0.5"><i class="fa fa-triangle-exclamation mr-1"></i>Important Notice / গুরুত্বপূর্ণ সতর্কতা</p>
+                <p class="leading-relaxed"><span class="font-bold text-slate-300">EN:</span> Please do not attempt to book or confirm your ticket if your internet connection is unstable.</p>
+                <p class="leading-relaxed mt-0.5"><span class="font-bold text-slate-300">বাংলা:</span> আপনার ইন্টারনেট সংযোগে কোনো সমস্যা বা স্লো থাকলে দয়া করে টিকিট কাটবেন না।</p>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="goBackToRoutePage()" class="bg-slate-800 text-white font-semibold px-4 py-2 rounded-lg text-sm glow-btn">Back</button>
+                <button onclick="handleConfirmTicket()" class="flex-grow bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2 rounded-lg text-sm glow-green glow-btn">Confirm Ticket & Download</button>
+            </div>
+        </div>
+
+        <div id="page-ticket" class="w-full max-w-md z-10 hidden">
+            <div id="printableTicketNode" class="bg-white text-slate-900 rounded-2xl p-5 shadow-2xl relative border-4 border-double border-slate-300">
                 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">From (Boarding Point)</label>
-                        <select id="routeFrom" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500">
-                            <option value="Bagerhat">Bagerhat</option>
-                            <option value="Dhaka">Dhaka</option>
-                            <option value="Khulna">Khulna</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">To (Destination Point)</label>
-                        <select id="routeTo" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500">
-                            <option value="Cox's Bazar">Cox's Bazar</option>
-                            <option value="Dhaka">Dhaka</option>
-                            <option value="Chittagong">Chittagong</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Journey Date</label>
-                        <input type="date" id="journeyDate" value="2026-06-08" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Bus Type</label>
-                        <select id="busType" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500">
-                            <option value="AC">AC (Premium 1+2 Layout)</option>
-                            <option value="Non-AC">Non-AC (Economy 2+2 Layout)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-gray-400 mb-1">Journey Time</label>
-                        <select id="journeyTime" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500">
-                            <option value="09:00 AM (Day Trip)">09:00 AM (Day Trip)</option>
-                            <option value="09:00 PM (Night Trip)">09:00 PM (Night Trip)</option>
-                        </select>
+                <div class="absolute inset-0 flex items-center justify-center opacity-[0.05] pointer-events-none z-0">
+                    <img src="image/M2Vai Official YouTube Channel Logo.png" alt="Watermark" class="w-56 height-56 object-contain">
+                </div>
+
+                <div class="relative z-10">
+                    <div class="flex items-center space-x-3 border-b-2 border-dashed border-slate-300 pb-3 mb-3">
+                        <img src="image/M2Vai Official YouTube Channel Logo.png" alt="Ticket Logo" class="w-12 h-12 rounded-full border border-slate-200">
+                        <div>
+                            <h4 class="font-black text-base tracking-wide text-slate-900 uppercase">M2Vai Online Ticket</h4>
+                            <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Official Online Counter</p>
+                        </div>
                     </div>
 
-                    <button onclick="buildSeatLayout()" class="w-full bg-emerald-500 text-slate-900 font-bold py-3 rounded-xl glow-green hover:bg-emerald-400 transition mt-2 flex items-center justify-center gap-2">
-                        Select Seat 🪑
+                    <div class="space-y-1.5 text-xs font-medium">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Member ID:</span>
+                            <span id="ticketMemberID" class="font-bold text-emerald-700 font-mono">M2Vai-1003</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Player Name:</span>
+                            <span id="ticketPlayerName" class="text-slate-900 font-semibold">M2Vai Gomer</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Game ID:</span>
+                            <span id="ticketGameID" class="text-slate-900 font-semibold">M2V_ID</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Mobile No:</span>
+                            <span id="ticketMobile" class="text-slate-900">01878335098</span>
+                        </div>
+                        <div class="flex justify-between border-t border-slate-100 pt-1.5">
+                            <span class="text-slate-500">From:</span>
+                            <span id="ticketFrom" class="text-slate-900 font-semibold">Bagerhat</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">To:</span>
+                            <span id="ticketTo" class="text-slate-900 font-semibold">Cox's Bazar</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Date:</span>
+                            <span id="ticketDate" class="text-slate-900">2026-06-08</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Time:</span>
+                            <span id="ticketTime" class="text-slate-900">09:00 AM</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Bus Type:</span>
+                            <span id="ticketBusType" class="text-slate-900 font-semibold">AC Coach</span>
+                        </div>
+                        <div class="flex justify-between bg-slate-100 p-1 rounded border border-slate-200 my-1">
+                            <span class="text-slate-600 font-bold">Seat Number:</span>
+                            <span id="ticketSeatNumber" class="text-red-600 font-black text-sm font-mono">C1</span>
+                        </div>
+                        <div class="flex justify-between border-t border-slate-200 pt-1.5 bg-slate-50 px-2 py-1 rounded font-mono text-[10px] text-slate-600">
+                            <span>Issue Time & Date:</span>
+                            <span id="ticketIssueStamp">11:03:59 AM | 13/06/2026</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 border-t border-slate-200 pt-2 text-[10px] text-slate-600 leading-normal">
+                        <p class="font-bold text-slate-800 uppercase tracking-wide mb-1">TERMS & RULES / নির্দেশনাবলী:</p>
+                        <ol class="list-decimal list-inside space-y-0.5">
+                            <li>অনগ্রহ করে ট্রিপ শুরু হওয়ার অন্তত ১০ মিনিট পূর্বে অনলাইন কাউন্টারে বা নির্দিষ্ট রুমে যুক্ত হোন।</li>
+                            <li>সোসাইটির কনভয় বা যাত্রার সময় ট্রাফিক নিয়ম এবং ভদ্রতা বজায় রেখে বাস ড্রাইভ করুন।</li>
+                            <li>ইচ্ছাকৃতভাবে অন্য বাসে ধাক্কা দেওয়া (Ramming) বা যেকোনো ধরনের অশোভন আচরণ করলে তাকে চিরতরে ব্যান করা হবে।</li>
+                        </ol>
+                    </div>
+
+                    <div class="mt-4 pt-2 border-t-2 border-dashed border-slate-200 text-center flex flex-col items-center justify-center">
+                        <div class="flex items-center space-x-1 mb-1">
+                            <img src="image/M2Vai Official YouTube Channel Logo.png" class="w-4 h-4 rounded-full" alt="tiny logo">
+                            <span class="text-[9px] font-mono text-slate-400">WEBSITE CREATED BY M2Vai</span>
+                        </div>
+                        <div class="flex space-x-2 w-full max-w-[240px]">
+                            <div class="flex-1 bg-red-600 text-white text-[8px] font-bold py-0.5 rounded flex items-center justify-center"><i class="fab fa-youtube mr-1"></i> M2Vai Sub</div>
+                            <div class="flex-1 bg-red-800 text-white text-[8px] font-bold py-0.5 rounded flex items-center justify-center"><i class="fab fa-youtube mr-1"></i> Traveller Sub</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button onclick="downloadTicketImagePipeline()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 rounded-lg text-sm glow-green glow-btn flex items-center justify-center space-x-2">
+                    <i class="fa fa-download"></i>
+                    <span>Download Ticket & Return Home</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="rewardModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 animate-fade-in">
+            <div class="bg-[#0f172a] border border-slate-800 p-6 rounded-2xl max-w-sm w-full text-center glow-cyan">
+                <div class="text-3xl mb-2">💰</div>
+                <h3 class="text-lg font-bold text-white mb-2" id="rewardModalTitle">Insufficient Wallet Balance!</h3>
+                <p class="text-xs text-slate-400 mb-4" id="rewardModalDesc">আপনাদের ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই। নিচের কাজগুলো সম্পন্ন করে ফ্রিতে ব্যালেন্স ইনকাম করুন!</p>
+                
+                <div class="space-y-2.5" id="rewardActionButtons">
+                    <button id="btnRewardSub" onclick="triggerYoutubeSubscribeTask()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-2 rounded-lg glow-btn flex items-center justify-center space-x-2">
+                        <i class="fab fa-youtube text-base"></i>
+                        <span>Subscribe M2Vai Channel (+200 BDT)</span>
+                    </button>
+                    <button id="btnRewardWatch" onclick="triggerWatchVideoTask()" class="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold text-xs py-2 rounded-lg glow-btn flex items-center justify-center space-x-2">
+                        <i class="fa fa-play-circle text-base"></i>
+                        <span>Watch Official Video 30s (+50 BDT)</span>
                     </button>
                 </div>
-            </div>
-        </section>
 
-        <section id="page3" class="w-full max-w-md flex flex-col items-center hidden">
-            <div class="w-full bg-card-dark border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <h2 class="text-center text-white font-bold mb-2">Choose Your Desired Seat</h2>
-                
-                <div class="flex justify-center gap-4 text-xs mb-4 text-gray-400">
-                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-slate-800 border border-slate-700 rounded"></span>Available</div>
-                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-emerald-500 rounded"></span>Selected</div>
-                    <div class="flex items-center gap-1.5"><span class="w-3 h-3 bg-red-500 rounded"></span>Booked</div>
-                </div>
-
-                <div class="flex justify-between items-center bg-slate-900/60 p-2 rounded-xl mb-4 border border-slate-800 text-xs font-bold">
-                    <span class="text-red-400 border border-dashed border-red-500/40 px-2 py-0.5 rounded">DOOR</span>
-                    <span id="holdTimerText" class="text-amber-400 hidden animate-pulse">LOCKED: 3:00</span>
-                    <span class="text-slate-500 text-base"><i class="fa-solid fa-circle-dot"></i></span>
-                </div>
-
-                <div id="seatGridContainer" class="bg-slate-900/40 rounded-xl p-4 min-h-[250px] border border-slate-800 mb-4">
-                    </div>
-
-                <p class="text-center text-sm font-semibold mb-4 text-emerald-400">Selected Seat: <span id="selectedSeatLabel" class="text-white">None</span></p>
-
-                <div class="border border-dashed border-red-500/50 bg-red-950/20 rounded-xl p-3 text-[11px] space-y-1 mb-4">
-                    <p class="text-amber-400 font-bold"><i class="fa-solid fa-circle-exclamation mr-1"></i>Important Notice / গুরুত্বপূর্ণ সতর্কতা</p>
-                    <p class="text-gray-400"><span class="text-white font-semibold">EN:</span> Please do not attempt to book or confirm your ticket if your internet connection is unstable.</p>
-                    <p class="text-gray-400"><span class="text-white font-semibold">বাংলা:</span> আপনার ইন্টারনেট সংযোগে কোনো সমস্যা বা স্লো থাকলে দয়া করে টিকিট কাটবেন না।</p>
-                </div>
-
-                <div class="flex gap-3">
-                    <button onclick="navigateTo('page2')" class="flex-1 bg-slate-800 text-gray-300 font-bold py-2.5 rounded-xl border border-slate-700 hover:bg-slate-700">Back</button>
-                    <button onclick="confirmSeatAndProceed()" class="flex-1 bg-emerald-500 text-slate-900 font-bold py-2.5 rounded-xl glow-green hover:bg-emerald-400 transition">Confirm Ticket & Download</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="page4" class="w-full max-w-md flex flex-col items-center hidden">
-            <div id="digitalTicketCard" class="w-full bg-white text-slate-900 rounded-2xl p-6 shadow-2xl relative overflow-hidden border border-gray-200">
-                <div class="absolute inset-0 flex items-center justify-center opacity-[0.04] pointer-events-none select-none">
-                    <span class="text-6xl font-black font-sans uppercase tracking-widest text-black">M2Vai</span>
-                </div>
-
-                <div class="flex items-center justify-between border-b-2 border-dashed border-gray-300 pb-3 mb-4">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-slate-900 text-cyan-400 flex items-center justify-center text-[8px] font-black font-sans">M2Vai</div>
-                        <div>
-                            <h2 class="font-black text-sm tracking-tight text-slate-900">M2Vai ONLINE TICKET</h2>
-                            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Official Online Counter</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded font-bold text-slate-700">LIVE BOARDING</span>
+                <div id="videoPlayerContainer" class="hidden my-3 bg-black rounded-lg overflow-hidden aspect-video relative">
+                    <div class="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center text-xs text-cyan-400">
+                        <p class="font-bold animate-pulse mb-1">Streaming Video Content...</p>
+                        <p class="font-mono text-slate-400">Remaining Time: <span id="videoCountdown">30</span>s</p>
                     </div>
                 </div>
 
-                <div class="text-xs space-y-2 font-medium">
-                    <div class="flex justify-between"><span class="text-gray-500">Member ID:</span><span id="tktMemberId" class="font-bold text-emerald-700">M2Vai-1003</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Player Name:</span><span id="tktPlayerName" class="font-bold text-slate-900">M2Vai</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Game ID:</span><span id="tktGameId" class="font-bold text-slate-900">M2Vai</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Mobile No:</span><span id="tktMobile" class="font-bold text-slate-900">Not Provided</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">From:</span><span id="tktFrom" class="font-bold text-slate-900">Bagerhat</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">To:</span><span id="tktTo" class="font-bold text-slate-900">Cox's Bazar</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Date:</span><span id="tktDate" class="font-bold text-slate-900">2026-06-08</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Time:</span><span id="tktTime" class="font-bold text-slate-900">09:00 AM</span></div>
-                    <div class="flex justify-between"><span class="text-gray-500">Bus Type:</span><span id="tktBusType" class="font-bold text-indigo-700">AC</span></div>
-                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg mt-1"><span class="text-gray-600 font-bold">Seat Number:</span><span id="tktSeatNum" class="text-base font-black text-red-600 tracking-wider">C1</span></div>
-                    
-                    <div class="border-t border-gray-100 pt-2 text-[10px] text-gray-500 flex justify-between">
-                        <span>Issue Time & Date:</span>
-                        <span id="tktIssueTime" class="font-bold text-slate-700">11:03:59 AM | 13/06/2026</span>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 border-t-2 border-dashed border-gray-200 text-[10px] text-gray-600 space-y-1">
-                    <p class="font-bold text-slate-900 mb-0.5">TERMS & RULES / নির্দেশনাভলী:</p>
-                    <p>১. অনুগ্রহ করে ট্রিপ শুরু হওয়ার অন্তত ১০ মিনিট পূর্বে অনলাইন কাউন্টারে বা নির্দিষ্ট রুমে যুক্ত হোন।</p>
-                    <p>২. সোসাইটির কনভয় বা যাত্রার সময় ট্রাফিক নিয়ম এবং ভদ্রতা বজায় রেখে বাস ড্রাইভ করুন।</p>
-                    <p>৩. ইচ্ছাকৃতভাবে অন্য বাসে ধাক্কা দেওয়া (Ramming) বা যেকোনো ধরনের অশোভন আচরণ করলে তাকে চিরতরে ব্যান করা হবে।</p>
-                </div>
-            </div>
-
-            <button onclick="downloadTicketImage()" class="w-full mt-5 bg-emerald-500 text-slate-900 font-bold py-3 rounded-xl glow-green hover:bg-emerald-400 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-cloud-arrow-down"></i> Download Ticket
-            </button>
-        </section>
-
-        <section id="adminSection" class="w-full max-w-2xl bg-card-dark border border-red-900/50 rounded-2xl p-6 shadow-2xl hidden">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
-                <h2 class="text-red-400 font-bold text-lg"><i class="fa-solid fa-lock mr-2"></i>Admin Dashboard</h2>
-                <button onclick="toggleAdminPanel()" class="text-xs bg-slate-800 px-2 py-1 rounded text-gray-400 hover:text-white">Close</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Registered Users</h3>
-                    <div id="adminUserList" class="bg-slate-900 rounded-xl p-3 text-xs space-y-2 max-h-60 overflow-y-auto"></div>
-                </div>
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Live Booking Logs</h3>
-                    <div id="adminBookingList" class="bg-slate-900 rounded-xl p-3 text-xs space-y-2 max-h-60 overflow-y-auto"></div>
-                </div>
-            </div>
-        </section>
-
-        <div id="bonusPopup" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
-            <div class="bg-card-dark border border-slate-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
-                <h3 class="text-xl font-bold text-yellow-400 mb-2">M2Vai Free Wallet System</h3>
-                <p class="text-xs text-gray-400 mb-4">আপনার ওয়ালেটে টাকা ফুরিয়ে গেলে নিচে থেকে একদম ফ্রিতে টপ-আপ করে নিন।</p>
-                
-                <div class="space-y-3">
-                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
-                        <p class="text-xs font-bold text-white mb-1.5">M2Vai YouTube Channel</p>
-                        <button onclick="claimBonus('sub')" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold text-xs py-2 rounded-lg transition">Subscribe & Get 200 BDT</button>
-                    </div>
-                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
-                        <p class="text-xs font-bold text-white mb-1">Watch Official Video</p>
-                        <p class="text-[10px] text-amber-500 mb-2">ভিডিওটি প্লে করে ৩০ সেকেন্ড কাউন্টডাউন পর্যন্ত দেখুন</p>
-                        <div id="videoContainer" class="hidden mb-2 aspect-video bg-black rounded overflow-hidden">
-                            <div class="w-full h-full flex flex-col items-center justify-center text-xs text-gray-500 p-2">
-                                <i class="fa-brands fa-youtube text-red-600 text-3xl mb-1 animate-bounce"></i>
-                                <span id="videoTimer">Playing Video... 30s</span>
-                            </div>
-                        </div>
-                        <button id="watchVideoBtn" onclick="startVideoWatch()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-2 rounded-lg transition">Watch Video & Get 50 BDT</button>
-                    </div>
-                </div>
-                <button onclick="hideBonusPopup()" class="mt-4 text-xs text-gray-500 hover:text-white underline">Close Window</button>
+                <button onclick="closeRewardModal()" class="mt-4 text-xs text-slate-500 hover:text-white underline">Close Window</button>
             </div>
         </div>
+
+        <div id="page-admin" class="w-full max-w-2xl bg-[#0f172a] border border-red-900/40 rounded-2xl p-5 z-10 hidden">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                <h2 class="text-red-400 font-bold text-base"><i class="fa fa-gauge mr-2"></i>M2Vai System Management Console</h2>
+                <button onclick="showPage('routeSelection')" class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded">Exit Console</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-xs">
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <h4 class="font-semibold text-slate-400 mb-2">Registered System Users</h4>
+                    <div class="space-y-1.5 max-h-[150px] overflow-y-auto font-mono" id="adminUserListDump">
+                        </div>
+                </div>
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <h4 class="font-semibold text-slate-400 mb-2">Live Booking Transactions</h4>
+                    <div class="space-y-1.5 max-h-[150px] overflow-y-auto font-mono" id="adminBookingListDump">
+                        </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
-    <footer class="w-full max-w-4xl mx-auto px-4 py-6 border-t border-slate-900 z-10 relative">
-        <div class="flex justify-center gap-4 mb-4">
-            <a href="#" class="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm hover:scale-110 transition shadow"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="#" class="w-9 h-9 bg-red-600 rounded-full flex items-center justify-center text-white text-sm hover:scale-110 transition shadow"><i class="fa-brands fa-youtube"></i></a>
-            <a href="#" class="w-9 h-9 bg-gradient-to-tr from-yellow-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm hover:scale-110 transition shadow"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#" class="w-9 h-9 bg-black rounded-full flex items-center justify-center text-white text-sm hover:scale-110 transition shadow border border-slate-800"><i class="fa-brands fa-x-twitter"></i></a>
-            <a href="#" class="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center text-white text-sm hover:scale-110 transition shadow"><i class="fa-brands fa-discord"></i></a>
-            <a href="#" class="w-9 h-9 bg-orange-600 rounded-full flex items-center justify-center text-white text-sm hover:scale-110 transition shadow"><i class="fa-solid fa-envelope"></i></a>
+    <footer class="bg-[#0b111e] border-t border-slate-900 px-4 py-5 text-center z-10">
+        <div class="flex justify-center space-x-3 mb-4">
+            <a href="https://facebook.com" target="_blank" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm glow-btn"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://youtube.com" target="_blank" class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center text-sm glow-btn"><i class="fab fa-youtube"></i></a>
+            <a href="https://instagram.com" target="_blank" class="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 text-white flex items-center justify-center text-sm glow-btn"><i class="fab fa-instagram"></i></a>
+            <a href="https://twitter.com" target="_blank" class="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 text-white flex items-center justify-center text-sm glow-btn"><i class="fab fa-x-twitter"></i></a>
+            <a href="https://discord.com" target="_blank" class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm glow-btn"><i class="fab fa-discord"></i></a>
+            <a href="mailto:info.m2vai380@gmail.com" class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center text-sm glow-btn"><i class="fa fa-envelope"></i></a>
         </div>
 
-        <div class="flex justify-center items-center gap-3 text-xs font-medium text-gray-400 mb-4">
-            <a href="#" class="hover:text-cyan-400 transition">Privacy Policy</a>
+        <div class="text-[11px] text-slate-500 space-x-2 mb-4">
+            <a href="#" onclick="alert('Privacy Policy Core Framework Implementation')" class="hover:text-cyan-400">Privacy Policy</a>
             <span>|</span>
-            <a href="#" class="hover:text-cyan-400 transition">Terms & Conditions</a>
+            <a href="#" onclick="alert('Terms & Conditions Template Specification')" class="hover:text-cyan-400">Terms & Conditions</a>
             <span>|</span>
-            <a href="#" class="hover:text-cyan-400 transition">Refund Policy</a>
+            <a href="#" onclick="alert('Refund Settlement Policies Details')" class="hover:text-cyan-400">Refund Policy</a>
         </div>
 
-        <div class="w-full bg-card-dark border border-slate-800 rounded-2xl p-4 text-center">
-            <div class="flex items-center justify-center gap-2 mb-3">
-                <div class="w-6 h-6 rounded-full bg-cyan-500 text-slate-900 flex items-center justify-center text-[7px] font-black">M2V</div>
-                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Website Created By <span class="text-white">M2Vai</span></p>
+        <div class="bg-[#0f172a] max-w-sm mx-auto border border-slate-800 rounded-xl p-3 flex flex-col items-center">
+            <div class="flex items-center space-x-2 mb-2">
+                <img src="image/M2Vai Official YouTube Channel Logo.png" alt="M2Vai Logo Footer" class="w-6 h-6 rounded-full">
+                <span class="text-slate-400 font-medium text-xs">WEBSITE CREATED BY <span class="text-white font-bold">M2Vai</span></span>
             </div>
-            <div class="grid grid-cols-2 gap-3">
-                <a href="#" class="bg-gradient-to-r from-red-700 to-red-600 text-white rounded-xl py-2.5 text-xs font-bold shadow hover:opacity-95 transition flex items-center justify-center gap-1.5"><i class="fa-brands fa-youtube text-sm"></i> M2Vai <span class="text-[9px] font-medium opacity-80">Subscribe Now</span></a>
-                <a href="#" class="bg-gradient-to-r from-red-800 to-red-700 text-white rounded-xl py-2.5 text-xs font-bold shadow hover:opacity-95 transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-compass text-sm"></i> Traveller <span class="text-[9px] font-medium opacity-80">Subscribe Now</span></a>
+            <div class="grid grid-cols-2 gap-2 w-full text-[10px]">
+                <a href="https://youtube.com" target="_blank" class="bg-gradient-to-r from-red-600 to-red-700 text-white font-bold p-2 rounded flex items-center justify-center space-x-1 shadow-lg shadow-red-900/30">
+                    <img src="image/M2Vai Official YouTube Channel Logo.png" class="w-3.5 h-3.5 rounded-full" alt="m2v inline">
+                    <div class="text-left leading-none"><p class="font-black text-[9px]">M2Vai</p><p class="text-[7px] text-red-200">Subscribe Now</p></div>
+                </a>
+                <a href="https://youtube.com" target="_blank" class="bg-gradient-to-r from-red-800 to-red-950 text-white font-bold p-2 rounded flex items-center justify-center space-x-1 border border-red-700/40">
+                    <img src="image/Traveller M2Vai.png" class="w-3.5 h-3.5 rounded-full" alt="traveller inline" onerror="this.src='image/M2Vai Official YouTube Channel Logo.png'">
+                    <div class="text-left leading-none"><p class="font-black text-[9px]">Traveller</p><p class="text-[7px] text-red-300">Subscribe Now</p></div>
+                </a>
             </div>
         </div>
     </footer>
 
     <script>
-        // Core Reactive Application State
-        let state = {
-            currentLang: 'en',
-            currentPage: 'page1',
-            pageHistory: ['page1'],
-            currentUser: null,
-            selectedSeat: null,
-            seatHoldTimer: null,
-            seatHoldSeconds: 180, // 3 Minutes seat blocking countdown
-            usersDB: [
-                // Demo Users Seed Data
-                { name: 'M2Vai', email: 'info.m2vai380@gmail.com', password: '123', id: 'M2Vai-1000', gameId: 'M2Vai', wallet: 100, mobile: '01878335098', active: true },
-                { name: 'GuestUser', email: 'guest@gmail.com', password: '123', id: 'M2Vai-1002', gameId: 'GuestGamer', wallet: 50, mobile: '', active: true }
-            ],
-            bookedSeats: {
-                'AC': ['A2', 'B1', 'B3', 'C2', 'D1', 'E2'],
-                'Non-AC': ['A2', 'B3', 'C4', 'E1', 'F2', 'H4']
-            }
-        };
-
-        // Real-Time System Clock Counter Setup
-        function initClock() {
-            setInterval(() => {
-                const now = new Date();
-                let hours = now.getHours();
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12;
-                hours = hours ? hours : 12; // formatting 0 to 12
-                
-                document.getElementById('liveClock').innerText = `${String(hours).padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
-                
-                // Greeting changes according to time
-                let greeting = "Good Morning! 🌅";
-                if(now.getHours() >= 12 && now.getHours() < 17) greeting = "Good Afternoon! ☀️";
-                else if(now.getHours() >= 17) greeting = "Good Evening! 🌆";
-                document.getElementById('greetingText').innerText = greeting;
-            }, 1000);
+        // Seed Initialization Dataset Mock data for simulation stability
+        if(!localStorage.getItem('m2vai_users')) {
+            const seedUsers = [
+                { id: "M2Vai-1001", name: "M2Vai Founder", email: "info.m2vai380@gmail.com", pass: "12345678", wallet: 500, gameid: "M2Vai_BOSS", mobile: "01700000001" },
+                { id: "M2Vai-1002", name: "Traveller Official", email: "traveller@m2vai.com", pass: "12345678", wallet: 100, gameid: "Traveller_Gamer", mobile: "" }
+            ];
+            localStorage.setItem('m2vai_users', JSON.stringify(seedUsers));
+        }
+        if(!localStorage.getItem('m2vai_bookings')) {
+            const seedBookings = [
+                { id: "BK-991", userId: "M2Vai-1001", seat: "A2", date: "2026-06-13", bus: "AC", from: "Bagerhat", to: "Cox's Bazar", time: "09:00 AM (Day Trip)" },
+                { id: "BK-992", userId: "M2Vai-1002", seat: "B1", date: "2026-06-13", bus: "AC", from: "Bagerhat", to: "Cox's Bazar", time: "09:00 AM (Day Trip)" }
+            ];
+            localStorage.setItem('m2vai_bookings', JSON.stringify(seedBookings));
         }
 
-        // Language Translation Handler mapping dictionary
-        const langDict = {
-            en: {
-                title: "M2Vai ONLINE TICKET COUNTER",
-                loginMsg: "Please login to book your bus seat"
-            },
-            bn: {
-                title: "এম২ভাই অনলাইন টিকিট কাউন্টার",
-                loginMsg: "বাসের সিট বুক করতে দয়া করে লগইন করুন"
-            }
-        };
+        // Global Dynamic Tracking Variables
+        let currentActiveLanguage = 'EN';
+        let currentlyLoggedInUser = null;
+        let selectedSeatState = null;
+        let seatLockCountdownTimerInterval = null;
+        let applicationNavigationStateHistoryStack = ['loginScreen'];
 
-        function changeLang(lang) {
-            state.currentLang = lang;
-            document.getElementById('langEN').className = lang === 'en' ? 'px-3 py-1 rounded-full bg-cyan-500 text-slate-900 transition' : 'px-3 py-1 rounded-full text-gray-400 transition';
-            document.getElementById('langBN').className = lang === 'bn' ? 'px-3 py-1 rounded-full bg-cyan-500 text-slate-900 transition' : 'px-3 py-1 rounded-full text-gray-400 transition';
+        // Live Dynamic Digital Clock Module Sync Engine Loop
+        function synchronizeLiveChronographClock() {
+            const clockNode = document.getElementById('liveClock');
+            const dateNode = document.getElementById('liveDate');
+            const greetingNode = document.getElementById('greetingText');
             
-            document.querySelector('h1').innerText = langDict[lang].title;
-            document.getElementById('loginTitle').innerText = langDict[lang].loginMsg;
+            const localTimestamp = new Date();
+            let hours = localTimestamp.getHours();
+            const minutes = String(localTimestamp.getMinutes()).padStart(2, '0');
+            const seconds = String(localTimestamp.getSeconds()).padStart(2, '0');
+            const meridiemMarker = hours >= 12 ? 'PM' : 'AM';
+            
+            // Set Dynamic localized Contextual Greeting Strings
+            if(hours < 12) greetingNode.innerHTML = currentActiveLanguage === 'EN' ? "Good Morning! 🌅" : "শুভ সকাল! 🌅";
+            else if(hours < 16) greetingNode.innerHTML = currentActiveLanguage === 'EN' ? "Good Afternoon! ☀️" : "শুভ দুপুর! ☀️";
+            else greetingNode.innerHTML = currentActiveLanguage === 'EN' ? "Good Evening! 🌌" : "শুভ সন্ধ্যা! 🌌";
+
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            const formattedHours = String(hours).padStart(2, '0');
+
+            clockNode.innerHTML = `${formattedHours}:${minutes}:${seconds} ${meridiemMarker}`;
+            
+            const textOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            const formattedDateString = localTimestamp.toLocaleDateString('en-US', textOptions);
+            dateNode.innerHTML = `LIVE DATE: ${formattedDateString.toUpperCase()}`;
+        }
+        setInterval(synchronizeLiveChronographClock, 1000);
+        synchronizeLiveChronographClock();
+
+        // Screen Routing View Coordinator Interface Block State Controller Switches
+        function showPage(targetPageStateId) {
+            document.getElementById('page-login').classList.add('hidden');
+            document.getElementById('page-route').classList.add('hidden');
+            document.getElementById('page-seats').classList.add('hidden');
+            document.getElementById('page-ticket').classList.add('hidden');
+            document.getElementById('page-admin').classList.add('hidden');
+
+            if (targetPageStateId === 'loginScreen') {
+                document.getElementById('page-login').classList.remove('hidden');
+            } else if (targetPageStateId === 'routeSelection') {
+                document.getElementById('page-route').classList.remove('hidden');
+                updateRouteDashboardDisplayView();
+            } else if (targetPageStateId === 'seatLayoutSelection') {
+                document.getElementById('page-seats').classList.remove('hidden');
+                renderCabinSeatConfigurationMatrixGrid();
+            } else if (targetPageStateId === 'digitalTicketDisplay') {
+                document.getElementById('page-ticket').classList.remove('hidden');
+                bindTicketDataDomNodes();
+            } else if (targetPageStateId === 'adminConsole') {
+                document.getElementById('page-admin').classList.remove('hidden');
+                populateAdminMetricsPanelData();
+            }
+            document.getElementById('mobileMenu').classList.add('hidden');
         }
 
-        // Toggle Form between Login & Signup Cards
-        function toggleForm(type) {
-            if(type === 'signup') {
-                document.getElementById('loginCard').classList.add('hidden');
-                document.getElementById('signupCard').classList.remove('hidden');
+        // Custom Navigation Push Pop State Interceptor Hook Architecture
+        function pushNavigationStateHistory(nextPageStateToken) {
+            applicationNavigationStateHistoryStack.push(nextPageStateToken);
+            window.history.pushState({viewToken: nextPageStateToken}, "");
+        }
+
+        // Intercept Hardware/Browser System Level Back Action Signals (Single Page Isolation)
+        window.addEventListener('popstate', function(browserStateEvent) {
+            if(applicationNavigationStateHistoryStack.length > 1) {
+                applicationNavigationStateHistoryStack.pop(); // discard current state view pointer
+                const strategicPreviousStateViewToken = applicationNavigationStateHistoryStack[applicationNavigationStateHistoryStack.length - 1];
+                
+                // Route navigation evaluation logically to prevent total exit resets
+                if(strategicPreviousStateViewToken === 'loginScreen') showPage('loginScreen');
+                else if(strategicPreviousStateViewToken === 'routeSelection') showPage('routeSelection');
+                else if(strategicPreviousStateViewToken === 'seatLayoutSelection') showPage('seatLayoutSelection');
+                else showPage('loginScreen');
             } else {
-                document.getElementById('signupCard').classList.add('hidden');
-                document.getElementById('loginCard').classList.remove('hidden');
+                window.history.pushState(null, ""); // re-force locked framework containment
             }
-        }
-
-        // Handling Authentic Registration logic with automatic 100 BDT reward allocation
-        function handleSignUp() {
-            const name = document.getElementById('regName').value.trim();
-            const gameId = document.getElementById('regGameId').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const pwd = document.getElementById('regPassword').value;
-            const confirmPwd = document.getElementById('regConfirmPassword').value;
-            const mobile = document.getElementById('regMobile').value.trim();
-
-            if(!name || !gameId || !email || !pwd) {
-                alert('Please fill out all mandatory fields.');
-                return;
-            }
-            if(pwd !== confirmPwd) {
-                alert('Passwords do not match.');
-                return;
-            }
-
-            // Generating sequential unique user ID automatically
-            const nextIdNumber = state.usersDB.length + 1001;
-            const generatedId = `M2Vai-${nextIdNumber}`;
-
-            const newUser = {
-                name: name,
-                email: email,
-                password: pwd,
-                id: generatedId,
-                gameId: gameId,
-                wallet: 100, // Automatic Registration Reward of 100 BDT
-                mobile: mobile || 'Not Provided',
-                active: true
-            };
-
-            state.usersDB.push(newUser);
-            alert(`Registration Successful!\nYour Auto ID is: ${generatedId}\n100 BDT Signup bonus added to your wallet!`);
-            toggleForm('login');
-            
-            // Auto fill email to ease user login
-            document.getElementById('loginEmail').value = email;
-            updateAdminDashboard();
-        }
-
-        // Login Check Mechanics
-        function handleLogin() {
-            const email = document.getElementById('loginEmail').value.trim();
-            const pwd = document.getElementById('loginPassword').value;
-
-            const user = state.usersDB.find(u => u.email === email && u.password === pwd);
-            if(user) {
-                state.currentUser = user;
-                // Seed dynamic UI headers
-                document.getElementById('welcomeUserText').innerText = `Welcome, ${user.name}!`;
-                document.getElementById('menuUserName').innerText = user.name;
-                document.getElementById('menuUserId').innerText = user.id;
-                document.getElementById('menuUserWallet').innerText = user.wallet;
-                document.getElementById('menuUserProfile').classList.remove('hidden');
-                document.getElementById('adminLoginBtn').classList.remove('hidden');
-                
-                // Populate active users list tracking ticker display
-                updateActiveTicker();
-                navigateTo('page2');
-            } else {
-                alert('Invalid Email or Password. Try again.');
-            }
-        }
-
-        // Dynamic Continuous Running Marquee Update Loader
-        function updateActiveTicker() {
-            const ticker = document.getElementById('marqueeTicker');
-            let tickerString = "";
-            state.usersDB.forEach(u => {
-                if(u.active) {
-                    tickerString += `${u.name} (ID: ${u.id}) 🟢 Active &nbsp;&nbsp;&bull;&nbsp;&nbsp; `;
-                }
-            });
-            ticker.innerHTML = tickerString;
-        }
-
-        // Custom Single Page Application Router preventing drastic browser pop exits
-        function navigateTo(pageId) {
-            // Hide all potential wrapper containers
-            document.getElementById('page1').classList.add('hidden');
-            document.getElementById('page2').classList.add('hidden');
-            document.getElementById('page3').classList.add('hidden');
-            document.getElementById('page4').classList.add('hidden');
-            document.getElementById('adminSection').classList.add('hidden');
-            
-            document.getElementById(pageId).classList.remove('hidden');
-            state.currentPage = pageId;
-            
-            if (state.pageHistory[state.pageHistory.length - 1] !== pageId) {
-                state.pageHistory.push(pageId);
-                history.pushState({page: pageId}, "");
-            }
-        }
-
-        // Intercepting hardware/browser back key presses to ensure linear 1-page fallback loop
-        window.onpopstate = function(event) {
-            if (state.pageHistory.length > 1) {
-                state.pageHistory.pop(); // remove current page
-                const previousPage = state.pageHistory.pop(); // fetch underlying stack
-                navigateTo(previousPage);
-            } else {
-                history.pushState(null, ""); // Lock exit forcefully
-            }
-        };
-
-        // Building the Requested Dynamic Bus Grid Layout Engine
-        function buildSeatLayout() {
-            const selectedType = document.getElementById('busType').value;
-            const container = document.getElementById('seatGridContainer');
-            container.innerHTML = ""; // Clear existing grid canvas
-            state.selectedSeat = null;
-            document.getElementById('selectedSeatLabel').innerText = "None";
-            clearInterval(state.seatHoldTimer);
-            document.getElementById('holdTimerText').classList.add('hidden');
-
-            const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-            
-            if (selectedType === 'AC') {
-                // PREMIUM 3 SEAT ROW CONFIGURATION GRID (1 + 2 Layout)
-                const grid = document.createElement('div');
-                grid.className = "grid grid-cols-3 gap-3 text-xs font-bold";
-                
-                rows.forEach(row => {
-                    for(let i=1; i<=3; i++) {
-                        const seatName = `${row}${i}`;
-                        const seatBtn = document.createElement('button');
-                        seatBtn.innerText = seatName;
-                        
-                        // Checking state variables to assert class tags
-                        if(state.bookedSeats['AC'].includes(seatName)) {
-                            seatBtn.className = "bg-red-500 text-white py-2 rounded-lg cursor-not-allowed shadow";
-                            seatBtn.disabled = true;
-                        } else {
-                            seatBtn.className = "bg-slate-800 text-slate-300 border border-slate-700 py-2 rounded-lg hover:bg-slate-700 transition shadow";
-                            seatBtn.onclick = () => selectSeatHandler(seatBtn, seatName);
-                        }
-                        
-                        grid.appendChild(seatBtn);
-                        
-                        // Injecting aesthetic blank walkway spacer node directly after first column index
-                        if(i === 1) {
-                            const spacer = document.createElement('div');
-                            spacer.className = "col-span-1 pointer-events-none";
-                            // Adjusting cols properties dynamically to center flow
-                            grid.style.gridTemplateColumns = "1fr 0.5fr 1fr 1fr";
-                            grid.appendChild(spacer);
-                        }
-                    }
-                });
-                container.appendChild(grid);
-            } else {
-                // ECONOMY 4 SEAT ROW CONFIGURATION GRID (2 + 2 Layout)
-                const grid = document.createElement('div');
-                grid.className = "grid grid-cols-4 gap-3 text-xs font-bold";
-                grid.style.gridTemplateColumns = "1fr 1fr 0.5fr 1fr 1fr";
-                
-                rows.forEach(row => {
-                    for(let i=1; i<=4; i++) {
-                        const seatName = `${row}${i}`;
-                        const seatBtn = document.createElement('button');
-                        seatBtn.innerText = seatName;
-                        
-                        if(state.bookedSeats['Non-AC'].includes(seatName)) {
-                            seatBtn.className = "bg-red-500 text-white py-2 rounded-lg cursor-not-allowed shadow";
-                            seatBtn.disabled = true;
-                        } else {
-                            seatBtn.className = "bg-slate-800 text-slate-300 border border-slate-700 py-2 rounded-lg hover:bg-slate-700 transition shadow";
-                            seatBtn.onclick = () => selectSeatHandler(seatBtn, seatName);
-                        }
-                        
-                        grid.appendChild(seatBtn);
-                        
-                        if(i === 2) {
-                            const spacer = document.createElement('div');
-                            spacer.className = "col-span-1 pointer-events-none";
-                            grid.appendChild(spacer);
-                        }
-                    }
-                });
-                container.appendChild(grid);
-            }
-            navigateTo('page3');
-        }
-
-        // Managing individual clicked seat logic alongside real-time 3 min locking rule
-        function selectSeatHandler(btnElement, seatName) {
-            // Deselect old element node if exists within DOM scope
-            const selectedType = document.getElementById('busType').value;
-            buildSeatLayout(); // Re-render clean frame layout instantly
-            
-            // Locate the fresh button on reconstructed interface grid
-            const allBtns = document.getElementById('seatGridContainer').querySelectorAll('button');
-            let targetedBtn = null;
-            allBtns.forEach(b => { if(b.innerText === seatName) targetedBtn = b; });
-
-            if(targetedBtn) {
-                targetedBtn.className = "bg-emerald-500 text-slate-900 py-2 rounded-lg font-black scale-105 transition shadow-lg";
-                state.selectedSeat = seatName;
-                document.getElementById('selectedSeatLabel').innerText = seatName;
-                
-                // Initialize the Requested 3-minute temporary Hold System countdown clock
-                startSeatHoldCountdown();
-            }
-        }
-
-        function startSeatHoldCountdown() {
-            clearInterval(state.seatHoldTimer);
-            state.seatHoldSeconds = 180; // 3 Minutes countdown
-            const timerDisplay = document.getElementById('holdTimerText');
-            timerDisplay.classList.remove('hidden');
-
-            state.seatHoldTimer = setInterval(() => {
-                state.seatHoldSeconds--;
-                let mins = Math.floor(state.seatHoldSeconds / 60);
-                let secs = state.seatHoldSeconds % 60;
-                timerDisplay.innerText = `LOCKED: ${mins}:${String(secs).padStart(2, '0')}`;
-
-                if(state.seatHoldSeconds <= 0) {
-                    clearInterval(state.seatHoldTimer);
-                    alert('Time Expired! Your seat selection lock has been released.');
-                    buildSeatLayout(); // Auto-release and re-empty seat selection grid
-                }
-            }, 1000);
-        }
-
-        // Wallet checkout assertion and ticket rendering script flow
-        function confirmSeatAndProceed() {
-            if(!state.selectedSeat) {
-                alert('Please select a seat first.');
-                return;
-            }
-
-            // Static cost per seat deduction configuration rule
-            const seatCost = 50; 
-            if(state.currentUser.wallet < seatCost) {
-                alert(`Insufficient Balance! Your seat requires ${seatCost} BDT.\nOpen the Free BDT System window to earn balance!`);
-                showBonusPopup();
-                return;
-            }
-
-            // Deduct funds from user state safely
-            state.currentUser.wallet -= seatCost;
-            document.getElementById('menuUserWallet').innerText = state.currentUser.wallet;
-
-            // Commit seat conversion permanently into booking log variables
-            const bType = document.getElementById('busType').value;
-            state.bookedSeats[bType].push(state.selectedSeat);
-            clearInterval(state.seatHoldTimer);
-
-            // Populate page 4 ticket values
-            document.getElementById('tktMemberId').innerText = state.currentUser.id;
-            document.getElementById('tktPlayerName').innerText = state.currentUser.name;
-            document.getElementById('tktGameId').innerText = state.currentUser.gameId;
-            document.getElementById('tktMobile').innerText = state.currentUser.mobile;
-            document.getElementById('tktFrom').innerText = document.getElementById('routeFrom').value;
-            document.getElementById('tktTo').innerText = document.getElementById('routeTo').value;
-            document.getElementById('tktDate').innerText = document.getElementById('journeyDate').value;
-            document.getElementById('tktTime').innerText = document.getElementById('journeyTime').value;
-            document.getElementById('tktBusType').innerText = bType;
-            document.getElementById('tktSeatNum').innerText = state.selectedSeat;
-            
-            const currentTimestamp = new Date();
-            document.getElementById('tktIssueTime').innerText = `${currentTimestamp.toLocaleTimeString()} | 13/06/2026`;
-
-            updateAdminDashboard();
-            navigateTo('page4');
-        }
-
-        // Converting ticket frame element directly into high-res PNG image for local download
-        function downloadTicketImage() {
-            const ticketElement = document.getElementById('digitalTicketCard');
-            
-            html2canvas(ticketElement, { scale: 2 }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `M2Vai_Ticket_${state.selectedSeat || 'Booking'}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                // Requested Redirect Loop logic execution triggered immediately following processing sequence
-                setTimeout(() => {
-                    alert('Ticket downloaded successfully! Returning to Dashboard.');
-                    navigateTo('page1');
-                }, 500);
-            });
-        }
-
-        // Reward Window UI Controllers
-        function showBonusPopup() { document.getElementById('bonusPopup').classList.remove('hidden'); }
-        function hideBonusPopup() { document.getElementById('bonusPopup').classList.add('hidden'); }
-
-        function claimBonus(type) {
-            if(type === 'sub') {
-                // Simulate launching official Youtube channel endpoint node externally
-                window.open('https://youtube.com', '_blank');
-                state.currentUser.wallet += 200; // Allocate subscription reward sum
-                document.getElementById('menuUserWallet').innerText = state.currentUser.wallet;
-                alert('Success! 200 BDT subscription bonus has been injected into your wallet.');
-            }
-        }
-
-        // Play and monitor interactive embedded tracking stopwatch timer rules
-        function startVideoWatch() {
-            const btn = document.getElementById('watchVideoBtn');
-            const videoContainer = document.getElementById('videoContainer');
-            btn.disabled = true;
-            btn.innerText = "Watching video...";
-            videoContainer.classList.remove('hidden');
-
-            let remainingTime = 30; // Mandatory 30 Seconds threshold hold system
-            const countdown = setInterval(() => {
-                remainingTime--;
-                document.getElementById('videoTimer').innerText = `Playing Video... ${remainingTime}s`;
-                
-                if(remainingTime <= 0) {
-                    clearInterval(countdown);
-                    state.currentUser.wallet += 50; // Credit video viewing incentive balance bonus
-                    document.getElementById('menuUserWallet').innerText = state.currentUser.wallet;
-                    alert('Success! You watched the whole clip and received 50 BDT credit reward.');
-                    
-                    // Restore interface controls state seamlessly
-                    videoContainer.classList.add('hidden');
-                    btn.disabled = false;
-                    btn.innerText = "Watch Video & Get 50 BDT";
-                }
-            }, 1000);
-        }
-
-        // Member Search Function implementation parsing array maps dynamically
-        function searchMember() {
-            const queryId = document.getElementById('searchIdInput').value.trim();
-            const resultBox = document.getElementById('searchResult');
-            resultBox.classList.remove('hidden');
-
-            const match = state.usersDB.find(u => u.id.toLowerCase() === queryId.toLowerCase());
-            if(match) {
-                resultBox.innerHTML = `
-                    <p class="text-emerald-400 font-bold">Member Found</p>
-                    <p class="text-white font-semibold">Name: ${match.name}</p>
-                    <p>Game ID: ${match.gameId}</p>
-                    <p class="text-gray-400">Status: 🟢 Active Group Member</p>
-                `;
-            } else {
-                resultBox.innerHTML = `<p class="text-red-400 font-bold">No member found with this ID.</p>`;
-            }
-        }
-
-        // Restricted Admin-only operational logs view generator
-        function toggleAdminPanel() {
-            const adminPanel = document.getElementById('adminSection');
-            if(adminPanel.classList.contains('hidden')) {
-                adminPanel.classList.remove('hidden');
-                updateAdminDashboard();
-            } else {
-                adminPanel.classList.add('hidden');
-            }
-        }
-
-        function updateAdminDashboard() {
-            const uList = document.getElementById('adminUserList');
-            const bList = document.getElementById('adminBookingList');
-            
-            uList.innerHTML = "";
-            state.usersDB.forEach(u => {
-                uList.innerHTML += `<div class="p-1.5 bg-slate-800 rounded border border-slate-700">ID: <span class="text-cyan-400">${u.id}</span> | Name: ${u.name}<br>Email: ${u.email}</div>`;
-            });
-
-            bList.innerHTML = `
-                <div class="p-1 bg-slate-800 rounded text-cyan-400">AC Bus Booked Seats: [${state.bookedSeats['AC'].join(', ')}]</div>
-                <div class="p-1 bg-slate-800 rounded text-indigo-400 mt-2">Non-AC Bus Booked Seats: [${state.bookedSeats['Non-AC'].join(', ')}]</div>
-            `;
-        }
-
-        function logout() {
-            state.currentUser = null;
-            document.getElementById('menuUserProfile').classList.add('hidden');
-            document.getElementById('adminLoginBtn').classList.add('hidden');
-            document.getElementById('sideMenu').classList.add('hidden');
-            navigateTo('page1');
-        }
-
-        // Wire Event Listeners & Initialize
-        document.getElementById('menuBtn').addEventListener('click', () => {
-            const menu = document.getElementById('sideMenu');
-            menu.classList.toggle('hidden');
         });
 
-        window.onload = () => {
-            initClock();
-            history.pushState({page: 'page1'}, "");
-        };
+        // Toggle Views Between Login Interface and Register Panel Box Inside Node 1
+        function toggleLoginRegister(displayRegisterFlag) {
+            if(displayRegisterFlag) {
+                document.getElementById('loginFormState').classList.add('hidden');
+                document.getElementById('registerFormState').classList.remove('hidden');
+            } else {
+                document.getElementById('loginFormState').classList.remove('hidden');
+                document.getElementById('registerFormState').classList.add('hidden');
+            }
+        }
+
+        // Registration Event Handler Pipeline Logic
+        function handleRegister() {
+            const name = document.getElementById('regFullName').value.trim();
+            const gameid = document.getElementById('regGameID').value.trim();
+            const dob = document.getElementById('regDOB').value;
+            const mobile = document.getElementById('regMobile').value.trim();
+            const fb = document.getElementById('regFB').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const pass = document.getElementById('regPassword').value;
+            const confirmPass = document.getElementById('regConfirmPassword').value;
+
+            if(!name || !gameid || !dob || !fb || !email || !pass) {
+                alert(currentActiveLanguage === 'EN' ? "Please fulfill all mandatory parameters fields!" : "দয়া করে সব বাধ্যতামূলক ঘরগুলো পূরণ করুন!");
+                return;
+            }
+            if(pass !== confirmPass) {
+                alert(currentActiveLanguage === 'EN' ? "Passwords confirmation matching mismatch!" : "পাসওয়ার্ড দুটি মেলেনি!");
+                return;
+            }
+
+            let usersDatabaseList = JSON.parse(localStorage.getItem('m2vai_users'));
+            if(usersDatabaseList.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+                alert(currentActiveLanguage === 'EN' ? "Email already exists in system ecosystem!" : "এই ইমেইলটি ইতিপূর্বে ব্যবহৃত হয়েছে!");
+                return;
+            }
+
+            // Generate System Auto Increment Custom Member Account Identifier Token
+            const computedNextAutoNumericId = 1000 + usersDatabaseList.length + 1;
+            const systemGeneratedIdentifierToken = `M2Vai-${computedNextAutoNumericId}`;
+
+            // Instantiation Object Schema Profile Map (Includes 100 BDT Sign On Incentive)
+            const newUserProfileObjectInstance = {
+                id: systemGeneratedIdentifierToken,
+                name: name,
+                gameid: gameid,
+                dob: dob,
+                mobile: mobile, // Optional property retention parameter safe
+                fb: fb,
+                email: email,
+                pass: pass,
+                wallet: 100 // Automatic Free Allocation Signup Incentive Grant Awarded
+            };
+
+            usersDatabaseList.push(newUserProfileObjectInstance);
+            localStorage.setItem('m2vai_users', JSON.stringify(usersDatabaseList));
+
+            alert(currentActiveLanguage === 'EN' ? `Registration Successful! Assigned ID: ${systemGeneratedIdentifierToken}\nReceived 100 BDT Welcome Bonus!` : `রেজিস্ট্রেশন সফল হয়েছে! আপনার আইডি: ${systemGeneratedIdentifierToken}\nআপনি ১০০ টাকা ফ্রি বোনাস পেয়েছেন!`);
+            
+            // Auto Login Experience Flow Bridge
+            currentlyLoggedInUser = newUserProfileObjectInstance;
+            toggleLoginRegister(false);
+            showPage('routeSelection');
+            pushNavigationStateHistory('routeSelection');
+        }
+
+        // Login Submission Evaluation Processing Module
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPassword').value;
+
+            if(!email || !pass) {
+                alert("Please enter authorization access credentials.");
+                return;
+            }
+
+            const usersDatabaseList = JSON.parse(localStorage.getItem('m2vai_users'));
+            const matchingIdentityMatch = usersDatabaseList.find(u => u.email.toLowerCase() === email.toLowerCase() && u.pass === pass);
+
+            if(matchingIdentityMatch) {
+                currentlyLoggedInUser = matchingIdentityMatch;
+                showPage('routeSelection');
+                pushNavigationStateHistory('routeSelection');
+            } else {
+                alert(currentActiveLanguage === 'EN' ? "Invalid Email identity or Secure Key Password!" : "ভুল ইমেইল অথবা পাসওয়ার্ড!");
+            }
+        }
+
+        // Dashboard Visual Population Rendering Loop View Update
+        function updateRouteDashboardDisplayView() {
+            if(!currentlyLoggedInUser) return;
+            document.getElementById('welcomeUserText').innerHTML = currentActiveLanguage === 'EN' ? `Welcome, ${currentlyLoggedInUser.name}!` : `স্বাগতম, ${currentlyLoggedInUser.name}!`;
+            document.getElementById('userDisplayID').innerHTML = `ID: ${currentlyLoggedInUser.id}`;
+            document.getElementById('userWalletBalance').innerHTML = currentlyLoggedInUser.wallet;
+
+            // Update Marquee Active Directory Loop Simulation Feed
+            const tickerContainerNode = document.getElementById('activeMembersTicker');
+            const usersDatabaseList = JSON.parse(localStorage.getItem('m2vai_users'));
+            let builtTickerStringContent = "";
+            usersDatabaseList.forEach(user => {
+                builtTickerStringContent += ` • ${user.name} (${user.id}) <span class="text-emerald-500">🟢 Active</span> `;
+            });
+            tickerContainerNode.innerHTML = builtTickerStringContent + builtTickerStringContent; // Duplicate for smooth looping overflow bounds wrap
+        }
+
+        // Bridge Step Route Input Processing evaluation before Seat map Initialization
+        function proceedToSeats() {
+            selectedSeatState = null;
+            document.getElementById('selectedSeatLabel').innerHTML = "None";
+            document.getElementById('lockTimerContainer').classList.add('hidden');
+            if(seatLockCountdownTimerInterval) clearInterval(seatLockCountdownTimerInterval);
+
+            showPage('seatLayoutSelection');
+            pushNavigationStateHistory('seatLayoutSelection');
+        }
+
+        // Dynamic Cabin Row Column Layout Calculation UI Matrix Factory Generator Engine
+        function renderCabinSeatConfigurationMatrixGrid() {
+            const gridTargetNode = document.getElementById('seatGridSystem');
+            gridTargetNode.innerHTML = ""; // Clear buffer array data references
+
+            const chosenBusClassOption = document.querySelector('input[name="busType"]:checked').value;
+            const chosenDate = document.getElementById('routeDate').value;
+            const chosenTime = document.getElementById('routeTime').value;
+
+            // Fetch transactional seat arrays matches to mask existing occupancy maps safely
+            const currentGlobalBookingsArray = JSON.parse(localStorage.getItem('m2vai_bookings')) || [];
+            const occupiedSeatsMaskMap = currentGlobalBookingsArray
+                .filter(b => b.date === chosenDate && b.bus === chosenBusClassOption && b.time === chosenTime)
+                .map(b => b.seat);
+
+            // Fetch transient runtime lock block tracking data caches from browser storage layers
+            const temporaryRuntimeLockBlockCaches = JSON.parse(localStorage.getItem('m2vai_locks')) || [];
+            const runningTimestampMs = Date.now();
+
+            const rowsAlphabetMap = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+
+            rowsAlphabetMap.forEach(rowLetter => {
+                const rowRowFlexWrapperDiv = document.createElement('div');
+                rowRowFlexWrapperDiv.className = "flex justify-between items-center text-xs font-bold font-mono";
+
+                if(chosenBusClassOption === 'AC') {
+                    // ====== 3 Seats per Row Architecture Scheme Model (1 + 2 Configuration View) ======
+                    const leftColDiv = document.createElement('div');
+                    leftColDiv.className = "w-1/4";
+                    const seatId1 = `${rowLetter}1`;
+                    leftColDiv.appendChild(createSeatNodeElement(seatId1, occupiedSeatsMaskMap, temporaryRuntimeLockBlockCaches, runningTimestampMs));
+
+                    const centerWalkwayAisleGapSpacerDiv = document.createElement('div');
+                    centerWalkwayAisleGapSpacerDiv.className = "w-1/4 flex justify-center text-slate-700 text-[10px]";
+                    centerWalkwayAisleGapSpacerDiv.innerHTML = "═══";
+
+                    const rightColDivPair = document.createElement('div');
+                    rightColDivPair.className = "w-2/4 flex space-x-2 justify-end";
+                    const seatId2 = `${rowLetter}2`;
+                    const seatId3 = `${rowLetter}3`;
+                    rightColDivPair.appendChild(createSeatNodeElement(seatId2, occupiedSeatsMaskMap, temporaryRuntimeLockBlockCaches, runningTimestampMs));
+                    rightColDivPair.appendChild(createSeatNodeElement(seatId3, occupiedSeatsMaskMap, temporaryRuntimeLockBlockCaches, runningTimestampMs));
+
+                    rowRowFlexWrapperDiv.appendChild(leftColDiv);
+                    rowRowFlexWrapperDiv.appendChild(centerWalkwayAisleGapSpacerDiv);
+                    rowRowFlexWrapperDiv.appendChild(rightColDivPair);
+
+                } else {
+                    // ====== 4 Seats per Row Architecture Scheme Model (2 + 2 Configuration View) ======
+                    const leftColDivPair = document.createElement('div');
+                    leftColDivPair.className = "w-2/5 flex space-x-2";
+                    const seatId1 = `${rowLetter}1`;
+                    const seatId2 = `${rowLetter}2`;
+                    leftColDivPair.appendChild(createSeatNodeElement(seatId1, occupiedSeatsMaskMap, temporaryRuntimeLockBlockCaches, runningTimestampMs));
+                    leftColDivPair.appendChild(createSeatNodeElement(seatId2, occupiedSeatsMaskMap, temporaryRuntimeLockBlockCaches, runningTimestampMs));
+
+                    const centerWalkwayAisleGapSpacerDiv = document.createElement('div');
+                    centerWalkwayAisleGapSpacerDiv.className = "w-1/5 text-center text-slate-700 text-[10px]";
+                    centerWalkwayAisleGapSpacerDiv.innerHTML = "║ ║";
+
+                    const rightColDivPair = document.createElement('div');
+                    rightColDivPair.className = "w-2/5 flex space-x-2 justify-end";
+                    const seatId3 = `${rowLetter}3`;
+                    const seatId4 = `${rowLetter}4`;
+                    rightColDivPair.appendChild(createSeatNodeElement(seatId3, occupiedSeatsMaskMap, temporaryRuntimeLockBlockCaches, runningTimestampMs));
+                    rightColDivPair.appendChild(createSeatNodeElement(seatId4, occupiedSeatsMaskMap, temporaryRuntimeLockBlockCaches, runningTimestampMs));
+
+                    rowRowFlexWrapperDiv.appendChild(leftColDivPair);
+                    rowRowFlexWrapperDiv.appendChild(centerWalkwayAisleGapSpacerDiv);
+                    rowRowFlexWrapperDiv.appendChild(rightColDivPair);
+                }
+
+                gridTargetNode.appendChild(rowRowFlexWrapperDiv);
+            });
+        }
+
+        // Helper Functional Component Node Builder mapped to structural grid arrays safely
+        function createSeatNodeElement(seatCodeToken, occupiedSeatsList, runningLocksList, currentSysTimeEpoch) {
+            const seatBtn = document.createElement('button');
+            seatBtn.innerHTML = seatCodeToken;
+            seatBtn.id = `btn-seat-${seatCodeToken}`;
+
+            // Check absolute persistent booking confirmation registry locks matches
+            const isPermanentlyBooked = occupiedSeatsList.includes(seatCodeToken);
+
+            // Check transient temporary block expiry bounds metrics
+            const systemActiveActiveLockMatch = runningLocksList.find(l => l.seat === seatCodeToken && l.expiry > currentSysTimeEpoch);
+            const isCurrentlyLockedBySomeoneElse = systemActiveActiveLockMatch && systemActiveActiveLockMatch.userId !== currentlyLoggedInUser.id;
+            const isCurrentlyLockedByMe = systemActiveActiveLockMatch && systemActiveActiveLockMatch.userId === currentlyLoggedInUser.id;
+
+            if(isPermanentlyBooked) {
+                seatBtn.className = "w-full text-center py-2 bg-red-500 text-slate-950 font-bold rounded cursor-not-allowed";
+                seatBtn.disabled = true;
+            } else if (isCurrentlyLockedBySomeoneElse) {
+                // Temporary hold display representation block rendered state color (Amber indicators matching standard)
+                seatBtn.className = "w-full text-center py-2 bg-amber-600 text-slate-950 font-bold rounded cursor-not-allowed animate-pulse";
+                seatBtn.disabled = true;
+            } else if (isCurrentlyLockedByMe || selectedSeatState === seatCodeToken) {
+                seatBtn.className = "w-full text-center py-2 bg-emerald-500 text-slate-950 font-black rounded border border-white";
+                seatBtn.onclick = () => releaseSelectedSeatPipeline(seatCodeToken);
+            } else {
+                seatBtn.className = "w-full text-center py-2 bg-slate-800 text-slate-300 rounded hover:bg-slate-700 transition";
+                seatBtn.onclick = () => acquireTemporarySeatLockPipeline(seatCodeToken);
+            }
+
+            return seatBtn;
+        }
+
+        // Core Pipeline Action: Lock and Reserve seat temporarily block mechanism (3-5 mins hold logic spec)
+        function acquireTemporarySeatLockPipeline(targetedSeatCode) {
+            // Check concurrency collisions explicitly before running instantiation allocations
+            let currentLocksDatabase = JSON.parse(localStorage.getItem('m2vai_locks')) || [];
+            const rightNow = Date.now();
+            
+            // Wipe dead entries dynamically to reclaim block optimization spaces
+            currentLocksDatabase = currentLocksDatabase.filter(l => l.expiry > rightNow);
+
+            if(currentLocksDatabase.some(l => l.seat === targetedSeatCode)) {
+                alert("This specific seat was just blocked by another terminal! Refreshing layout...");
+                renderCabinSeatConfigurationMatrixGrid();
+                return;
+            }
+
+            // Release any previously held transient locks owned by this specific terminal context profile
+            currentLocksDatabase = currentLocksDatabase.filter(l => l.userId !== currentlyLoggedInUser.id);
+
+            // Inject 5 Minute Hold Span Parameters configuration limit blocks (300 Seconds)
+            const lockDurationSeconds = 300; 
+            const computationalExpiryEpoch = rightNow + (lockDurationSeconds * 1000);
+
+            currentLocksDatabase.push({
+                seat: targetedSeatCode,
+                userId: currentlyLoggedInUser.id,
+                expiry: computationalExpiryEpoch
+            });
+
+            localStorage.setItem('m2vai_locks', JSON.stringify(currentLocksDatabase));
+            
+            selectedSeatState = targetedSeatCode;
+            document.getElementById('selectedSeatLabel').innerHTML = targetedSeatCode;
+
+            // Fire up ticking thread synchronization countdown rendering engines
+            initializeLockTimerCountdownViewCountdown(lockDurationSeconds);
+            renderCabinSeatConfigurationMatrixGrid();
+        }
+
+        // Release Active Block Pipeline Task Logic
+        function releaseSelectedSeatPipeline(seatCode) {
+            let currentLocksDatabase = JSON.parse(localStorage.getItem('m2vai_locks')) || [];
+            currentLocksDatabase = currentLocksDatabase.filter(l => !(l.seat === seatCode && l.userId === currentlyLoggedInUser.id));
+            localStorage.setItem('m2vai_locks', JSON.stringify(currentLocksDatabase));
+
+            selectedSeatState = null;
+            document.getElementById('selectedSeatLabel').innerHTML = "None";
+            document.getElementById('lockTimerContainer').classList.add('hidden');
+            if(seatLockCountdownTimerInterval) clearInterval(seatLockCountdownTimerInterval);
+            renderCabinSeatConfigurationMatrixGrid();
+        }
+
+        // Secondary Utility Execution loop thread driving lock counter state panels
+        function initializeLockTimerCountdownViewCountdown(totalDurationSecondsLeft) {
+            const timerContainer = document.getElementById('lockTimerContainer');
+            const timerSecondsSpan = document.getElementById('lockTimerSeconds');
+            
+            timerContainer.classList.remove('hidden');
+            timerSecondsSpan.innerHTML = totalDurationSecondsLeft;
+
+            if(seatLockCountdownTimerInterval) clearInterval(seatLockCountdownTimerInterval);
+
+            seatLockCountdownTimerInterval = setInterval(() => {
+                totalDurationSecondsLeft--;
+                if(totalDurationSecondsLeft <= 0) {
+                    clearInterval(seatLockCountdownTimerInterval);
+                    alert(currentActiveLanguage === 'EN' ? "Seat holding block session expired! Seat released." : "সিট ধরে রাখার সময় শেষ! সিটটি আবার খালি হয়ে গেছে।");
+                    releaseSelectedSeatPipeline(selectedSeatState);
+                } else {
+                    timerSecondsSpan.innerHTML = totalDurationSecondsLeft;
+                }
+            }, 1000);
+        }
+
+        // Handle Checkout validation metrics logic (Incentive wallet charge framework verification)
+        function handleConfirmTicket() {
+            if(!selectedSeatState) {
+                alert(currentActiveLanguage === 'EN' ? "Please choose an available seat first!" : "দয়া করে প্রথমে একটি সিট সিলেক্ট করুন!");
+                return;
+            }
+
+            // Evaluation cost metrics variables (Flat cost model mapped 100 BDT per operation unit)
+            const transactionalSeatCostUnits = 100;
+
+            if(currentlyLoggedInUser.wallet < transactionalSeatCostUnits) {
+                // Invoke Ad Engagement Dynamic Earning Modal Box Interceptor Loop
+                openRewardModalWindow();
+                return;
+            }
+
+            // Process Transaction Deductions balances balances
+            let usersList = JSON.parse(localStorage.getItem('m2vai_users'));
+            const loggedInUserIndexRef = usersList.findIndex(u => u.id === currentlyLoggedInUser.id);
+            
+            usersList[loggedInUserIndexRef].wallet -= transactionalSeatCostUnits;
+            currentlyLoggedInUser.wallet = usersList[loggedInUserIndexRef].wallet;
+            localStorage.setItem('m2vai_users', JSON.stringify(usersList));
+
+            // Commit Persistent Booking Ledger Entry Record to Storage Blocks Context
+            let bookingsLedger = JSON.parse(localStorage.getItem('m2vai_bookings')) || [];
+            const nextBookingNumericTokenId = 500 + bookingsLedger.length + 1;
+            const generatedBookingIdString = `BK-${nextBookingNumericTokenId}`;
+
+            const newBookingLedgerObjectInstance = {
+                id: generatedBookingIdString,
+                userId: currentlyLoggedInUser.id,
+                seat: selectedSeatState,
+                date: document.getElementById('routeDate').value,
+                bus: document.querySelector('input[name="busType"]:checked').value,
+                from: document.getElementById('routeFrom').value,
+                to: document.getElementById('routeTo').value,
+                time: document.getElementById('routeTime').value
+            };
+
+            bookingsLedger.push(newBookingLedgerObjectInstance);
+            localStorage.setItem('m2vai_bookings', JSON.stringify(bookingsLedger));
+
+            // Clear transient runtime checkout state caches safely
+            let activeLocks = JSON.parse(localStorage.getItem('m2vai_locks')) || [];
+            activeLocks = activeLocks.filter(l => l.userId !== currentlyLoggedInUser.id);
+            localStorage.setItem('m2vai_locks', JSON.stringify(activeLocks));
+            if(seatLockCountdownTimerInterval) clearInterval(seatLockCountdownTimerInterval);
+
+            // Shift App Router Views State context mapping parameters out to Ticket view screen
+            showPage('digitalTicketDisplay');
+            pushNavigationStateHistory('digitalTicketDisplay');
+        }
+
+        // Bind Ticket Template HTML DOM element attributes from active booking context object data points
+        function bindTicketDataDomNodes() {
+            const bookingsLedger = JSON.parse(localStorage.getItem('m2vai_bookings')) || [];
+            const targetedActiveBookingMatch = bookingsLedger[bookingsLedger.length - 1]; // Pull latest generated record index pointer
+
+            if(!targetedActiveBookingMatch) return;
+
+            document.getElementById('ticketMemberID').innerHTML = currentlyLoggedInUser.id;
+            document.getElementById('ticketPlayerName').innerHTML = currentlyLoggedInUser.name;
+            document.getElementById('ticketGameID').innerHTML = currentlyLoggedInUser.gameid;
+            document.getElementById('ticketMobile').innerHTML = currentlyLoggedInUser.mobile || "N/A";
+            
+            document.getElementById('ticketFrom').innerHTML = targetedActiveBookingMatch.from;
+            document.getElementById('ticketTo').innerHTML = targetedActiveBookingMatch.to;
+            document.getElementById('ticketDate').innerHTML = targetedActiveBookingMatch.date;
+            document.getElementById('ticketTime').innerHTML = targetedActiveBookingMatch.time;
+            document.getElementById('ticketBusType').innerHTML = targetedActiveBookingMatch.bus === 'AC' ? "AC Luxury Coach (1+2)" : "Non-AC Standard (2+2)";
+            document.getElementById('ticketSeatNumber').innerHTML = targetedActiveBookingMatch.seat;
+
+            const timeNow = new Date();
+            document.getElementById('ticketIssueStamp').innerHTML = `${timeNow.toLocaleTimeString()} | ${timeNow.toLocaleDateString()}`;
+        }
+
+        // HTML5 Canvas Capture and Render download processing micro pipeline routine
+        function downloadTicketImagePipeline() {
+            const targetNodeContainer = document.getElementById('printableTicketNode');
+            
+            // Execute html2canvas asynchronous drawing operations
+            html2canvas(targetNodeContainer, {
+                backgroundColor: "#ffffff",
+                scale: 2, // Scale booster factors for rendering crystalline quality clarity print maps
+                useCORS: true
+            }).then(canvasInstanceNode => {
+                const convertedImgDataUrlRepresentation = canvasInstanceNode.toDataURL("image/png");
+                
+                // Construct transient anchor file download channel hooks
+                const virtualAnchorElement = document.createElement('a');
+                virtualAnchorElement.download = `M2Vai_BusTicket_${selectedSeatState || 'Ticket'}.png`;
+                virtualAnchorElement.href = convertedImgDataUrlRepresentation;
+                document.body.appendChild(virtualAnchorElement);
+                virtualAnchorElement.click();
+                document.body.removeChild(virtualAnchorElement);
+
+                // Requirements Enforcement Reset: Clear active states and re-pivot immediately back to home screen context routing configurations 
+                selectedSeatState = null;
+                // Re-initialize state tracing arrays back to base dashboard maps cleanly
+                applicationNavigationStateHistoryStack = ['loginScreen', 'routeSelection'];
+                window.history.pushState({viewToken: 'routeSelection'}, "");
+                showPage('routeSelection');
+            }).catch(err => {
+                console.error("Canvas capture matrix pipeline exception trace:", err);
+                // Graceful fallback auto navigation safety routine
+                showPage('routeSelection');
+            });
+        }
+
+        // Reward Window UI Toggle Management Module Actions
+        function openRewardModalWindow() {
+            document.getElementById('rewardModal').classList.remove('hidden');
+            document.getElementById('rewardActionButtons').classList.remove('hidden');
+            document.getElementById('videoPlayerContainer').classList.add('hidden');
+        }
+        function closeRewardModal() {
+            document.getElementById('rewardModal').classList.add('hidden');
+        }
+
+        // Task implementation actions: Youtube channel registration reward mechanism grant mapping
+        function triggerYoutubeSubscribeTask() {
+            alert(currentActiveLanguage === 'EN' ? "Redirecting to Official YouTube Channel!\nReturn after subscribing to claim your 200 BDT reward." : "অফিসিয়াল ইউটিউব চ্যানেলে নিয়ে যাওয়া হচ্ছে!\nসাবস্ক্রাইব শেষ করে ফিরে আসলেই ২০০ টাকা যুক্ত হবে।");
+            
+            // Fire virtual anchor branch out into external social platform namespaces securely
+            window.open("https://youtube.com", "_blank");
+
+            setTimeout(() => {
+                let usersDatabase = JSON.parse(localStorage.getItem('m2vai_users'));
+                const targetIdx = usersDatabase.findIndex(u => u.id === currentlyLoggedInUser.id);
+                usersDatabase[targetIdx].wallet += 200;
+                currentlyLoggedInUser.wallet = usersDatabase[targetIdx].wallet;
+                localStorage.setItem('m2vai_users', JSON.stringify(usersDatabase));
+
+                updateRouteDashboardDisplayView();
+                alert(currentActiveLanguage === 'EN' ? "Thank you for subscribing! 200 BDT added to wallet." : "সাবস্ক্রাইব করার জন্য ধন্যবাদ! আপনার ওয়ালেটে ২০০ টাকা যুক্ত হয়েছে।");
+                closeRewardModal();
+                renderCabinSeatConfigurationMatrixGrid();
+            }, 3000); // Fast simulation verification fallback hook limits
+        }
+
+        // Task implementation actions: 30 Second Embedded Video ads loop countdown watch reward pipeline
+        function triggerWatchVideoTask() {
+            document.getElementById('rewardActionButtons').className = "hidden";
+            const videoContainer = document.getElementById('videoPlayerContainer');
+            const countdownSpan = document.getElementById('videoCountdown');
+            
+            videoContainer.classList.remove('hidden');
+            let timeRemaining = 30;
+            countdownSpan.innerHTML = timeRemaining;
+
+            const videoTimerThreadInterval = setInterval(() => {
+                timeRemaining--;
+                if(timeRemaining <= 0) {
+                    clearInterval(videoTimerThreadInterval);
+                    
+                    let usersDatabase = JSON.parse(localStorage.getItem('m2vai_users'));
+                    const targetIdx = usersDatabase.findIndex(u => u.id === currentlyLoggedInUser.id);
+                    usersDatabase[targetIdx].wallet += 50;
+                    currentlyLoggedInUser.wallet = usersDatabase[targetIdx].wallet;
+                    localStorage.setItem('m2vai_users', JSON.stringify(usersDatabase));
+
+                    updateRouteDashboardDisplayView();
+                    alert(currentActiveLanguage === 'EN' ? "Video view requirement fully fulfilled! 50 BDT credited." : "ভিডিও দেখা সম্পূর্ণ হয়েছে! আপনার ওয়ালেটে ৫০ টাকা যুক্ত হয়েছে।");
+                    closeRewardModal();
+                    renderCabinSeatConfigurationMatrixGrid();
+                } else {
+                    countdownSpan.innerHTML = timeRemaining;
+                }
+            }, 1000);
+        }
+
+        // Localization Translation Engine mapping context states
+        function changeLanguage(selectedLangCode) {
+            currentActiveLanguage = selectedLangCode;
+            const langENBtn = document.getElementById('langEN');
+            const langBNBtn = document.getElementById('langBN');
+
+            if(selectedLangCode === 'EN') {
+                langENBtn.className = "bg-cyan-500 text-slate-950 font-bold px-2 py-0.5 rounded-full";
+                langBNBtn.className = "text-slate-400 px-2 py-0.5 rounded-full";
+                // Page 1 UI text string mappings
+                document.getElementById('txtPleaseLogin').innerHTML = "Please login to book your bus seat";
+                document.getElementById('txtPleaseRegister').innerHTML = "Create an account to join the Society";
+            } else {
+                langBNBtn.className = "bg-cyan-500 text-slate-950 font-bold px-2 py-0.5 rounded-full";
+                langENBtn.className = "text-slate-400 px-2 py-0.5 rounded-full";
+                // Page 1 UI translation text string mappings
+                document.getElementById('txtPleaseLogin').innerHTML = "বাসের সিট বুকিং করতে দয়া করে লগইন করুন";
+                document.getElementById('txtPleaseRegister').innerHTML = "সোসাইটিতে যোগ দিতে একটি অ্যাকাউন্ট তৈরি করুন";
+            }
+            synchronizeLiveChronographClock();
+            if(currentlyLoggedInUser) updateRouteDashboardDisplayView();
+        }
+
+        // Search member dataset queries matching requirement
+        function searchMember() {
+            const queryTokenInput = document.getElementById('memberSearchInput').value.trim();
+            executeSearchLogic(queryTokenInput);
+        }
+        function searchMemberMobile() {
+            const queryTokenInput = document.getElementById('memberSearchInputMobile').value.trim();
+            executeSearchLogic(queryTokenInput);
+        }
+        function executeSearchLogic(memberIdStringToken) {
+            if(!memberIdStringToken) {
+                alert("Please type a Member ID token string first!");
+                return;
+            }
+            const usersList = JSON.parse(localStorage.getItem('m2vai_users'));
+            const userProfileMatch = usersList.find(u => u.id.toLowerCase() === memberIdStringToken.toLowerCase());
+
+            if(userProfileMatch) {
+                alert(`[Member Profile Found]\n──────────────────\nID: ${userProfileMatch.id}\nName: ${userProfileMatch.name}\nIn-Game ID: ${userProfileMatch.gameid}\nStatus: Active member 🟢`);
+            } else {
+                alert("No matching member profiles found matching this credential identifier.");
+            }
+        }
+
+        // Secret Admin dashboard entry metrics processing factory
+        function showAdminPanel() {
+            showPage('adminConsole');
+        }
+        function populateAdminMetricsPanelData() {
+            const userDumpNode = document.getElementById('adminUserListDump');
+            const bookingDumpNode = document.getElementById('adminBookingListDump');
+
+            userDumpNode.innerHTML = "";
+            bookingDumpNode.innerHTML = "";
+
+            const users = JSON.parse(localStorage.getItem('m2vai_users')) || [];
+            const bookings = JSON.parse(localStorage.getItem('m2vai_bookings')) || [];
+
+            users.forEach(u => {
+                userDumpNode.innerHTML += `<div class="p-1 bg-slate-900 border-b border-slate-800 text-[11px] text-slate-300 flex justify-between"><span>👤 ${u.name} (${u.id})</span> <span class="text-emerald-400 font-bold">${u.wallet} BDT</span></div>`;
+            });
+
+            bookings.forEach(b => {
+                bookingDumpNode.innerHTML += `<div class="p-1 bg-slate-900 border-b border-slate-800 text-[10px] text-slate-400">🎟️ ID: ${b.userId} -> Seat <span class="text-red-400 font-bold">${b.seat}</span> (${b.date})</div>`;
+            });
+        }
+
+        // Sidebar Panel UI Toggles Layout mechanics
+        function toggleMobileMenu() {
+            const mobileMenuNode = document.getElementById('mobileMenu');
+            mobileMenuNode.classList.toggle('hidden');
+        }
+
+        // Exit Authorization handling loop resets
+        function logout() {
+            currentlyLoggedInUser = null;
+            selectedSeatState = null;
+            applicationNavigationStateHistoryStack = ['loginScreen'];
+            showPage('loginScreen');
+        }
+
+        // Intercept Fallback execution block hooks to return back safely out of seat selections layouts
+        function goBackToRoutePage() {
+            if(selectedSeatState) {
+                releaseSelectedSeatPipeline(selectedSeatState);
+            }
+            showPage('routeSelection');
+        }
     </script>
 </body>
 </html>
