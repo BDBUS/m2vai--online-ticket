@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>স্মার্ট কার্ড ড্রাইভিং লাইসেন্স জেনারেটর ও ভিউয়ার</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Hind Siliguri for Bengali & Inter for English -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- QR Code Generator Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- html2canvas for Downloading Card as PNG -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Hind Siliguri', 'Inter', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .font-en {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .font-signature {
+      font-family: 'Caveat', cursive;
+    }
+
+    /* 3D Card Flip Container */
+    .perspective-container {
+      perspective: 1400px;
+    }
+
+    .card-flipper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 85.6 / 53.98; /* Standard CR80 Smart Card Ratio */
+      transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .card-flipper.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(148, 163, 184, 0.4);
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Security Guilloche & Microprint Pattern */
+    .security-bg {
+      background:
+        radial-gradient(circle at 85% 20%, rgba(16, 185, 129, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 15% 85%, rgba(14, 165, 233, 0.14) 0%, transparent 45%),
+        repeating-linear-gradient(
+          45deg,
+          rgba(148, 163, 184, 0.06) 0px,
+          rgba(148, 163, 184, 0.06) 2px,
+          transparent 2px,
+          transparent 8px
+        ),
+        linear-gradient(135deg, #ffffff 0%, #f0fdf4 55%, #e0f2fe 100%);
+    }
+
+    .security-bg-back {
+      background:
+        radial-gradient(circle at 15% 25%, rgba(16, 185, 129, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
+        repeating-linear-gradient(
+          -45deg,
+          rgba(148, 163, 184, 0.06) 0px,
+          rgba(148, 163, 184, 0.06) 2px,
+          transparent 2px,
+          transparent 8px
+        ),
+        linear-gradient(135deg, #f8fafc 0%, #f0fdf4 50%, #eff6ff 100%);
+    }
+
+    /* Holographic Security Seal */
+    .holo-seal {
+      background: conic-gradient(
+        from 45deg,
+        rgba(16, 185, 129, 0.45),
+        rgba(59, 130, 246, 0.45),
+        rgba(236, 72, 153, 0.35),
+        rgba(245, 158, 11, 0.45),
+        rgba(16, 185, 129, 0.45)
+      );
+      backdrop-filter: blur(2px);
+      animation: holoShift 6s linear infinite;
+    }
+
+    @keyframes holoShift {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+
+    /* Metallic Smart Chip */
+    .emv-chip {
+      background: linear-gradient(135deg, #fde68a 0%, #d97706 45%, #fef3c7 75%, #b45309 100%);
+      border: 1px solid #92400e;
+    }
+
+    /* Microprint line */
+    .microprint-strip {
+      font-size: 5px;
+      letter-spacing: 0.8px;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-emerald-900 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-700 border border-emerald-500 flex items-center justify-center shadow-inner">
+          <svg class="w-6 h-6 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold leading-tight">স্মার্ট কার্ড ড্রাইভিং লাইসেন্স</h1>
+          <p class="text-xs text-emerald-200">ডিজিটাল প্রিভিউ ও তথ্য আপডেট সিস্টেম (নমুনা / ডেমো)</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btnDownloadFront" type="button" class="px-3 py-1.5 text-xs sm:text-sm font-medium bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg border border-emerald-500 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          সামনের ছবি সেভ
+        </button>
+        <button id="btnDownloadBack" type="button" class="px-3 py-1.5 text-xs sm:text-sm font-medium bg-sky-700 hover:bg-sky-600 text-white rounded-lg border border-sky-500 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          পিছনের ছবি সেভ
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast / Status Notification Banner -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300 translate-y-4 opacity-0">
+    <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 flex items-center gap-2.5 text-sm">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span id="toastMessage">তথ্য সফলভাবে আপডেট হয়েছে!</span>
+    </div>
+  </div>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+    <!-- LEFT / TOP COLUMN: Interactive Smart Card Preview & Side Switch Buttons -->
+    <section class="lg:col-span-6 lg:sticky lg:top-20 flex flex-col items-center">
+      
+      <!-- Side Switch Control Buttons (Front Side & Back Side) -->
+      <div class="w-full max-w-[500px] bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-5 grid grid-cols-2 gap-2">
+        <button id="btnShowFront" type="button"
+          class="py-2.5 px-4 rounded-xl font-semibold text-sm sm:text-base transition-all flex items-center justify-center gap-2 bg-emerald-600 text-white shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          সামনের সাইড দেখুন
+        </button>
+
+        <button id="btnShowBack" type="button"
+          class="py-2.5 px-4 rounded-xl font-semibold text-sm sm:text-base transition-all flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          পিছনের সাইড দেখুন
+        </button>
+      </div>
+
+      <!-- 3D Flip Smart Card Wrapper -->
+      <div class="w-full max-w-[500px] perspective-container">
+        <div id="smartCardFlipper" class="card-flipper">
+
+          <!-- ==================== FRONT SIDE ==================== -->
+          <div id="cardFrontCapture" class="card-face card-front security-bg flex flex-col justify-between p-3 sm:p-4 select-none">
+            
+            <!-- Top Header Bar -->
+            <div class="flex items-center justify-between border-b border-emerald-700/25 pb-1.5">
+              <div class="flex items-center gap-2">
+                <!-- Emblem SVG -->
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-800 text-amber-300 flex items-center justify-center border border-amber-400/60 shadow-sm shrink-0">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L14.8 8.5L22 9.2L16.5 13.9L18.2 21L12 17.3L5.8 21L7.5 13.9L2 9.2L9.2 8.5L12 2Z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-[9px] sm:text-[10px] font-bold text-emerald-900 uppercase tracking-wider font-en leading-none">
+                    PEOPLE'S REPUBLIC OF BANGLADESH
+                  </p>
+                  <h2 class="text-xs sm:text-sm font-extrabold text-red-700 tracking-tight leading-tight">
+                    DRIVING LICENCE <span class="text-[10px] sm:text-xs font-semibold text-emerald-900">(স্মার্ট কার্ড)</span>
+                  </h2>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="inline-block px-2 py-0.5 rounded bg-emerald-800 text-white text-[9px] sm:text-[10px] font-bold font-en tracking-widest">
+                  BRTA
+                </span>
+                <p class="text-[8px] text-slate-600 font-en mt-0.5">SMART CARD</p>
+              </div>
+            </div>
+
+            <!-- Main Front Body Grid -->
+            <div class="grid grid-cols-12 gap-2.5 sm:gap-3 my-auto py-1 items-center">
+              
+              <!-- Left Column: 1. Driver's Color Photo + 9. Driver's Signature -->
+              <div class="col-span-4 flex flex-col items-center justify-between gap-1.5">
+                <!-- 1. Driver's Color Photo -->
+                <div class="w-full aspect-[4/4.6] rounded-lg border-2 border-emerald-700/40 bg-white overflow-hidden shadow-inner relative">
+                  <img id="previewPhoto"
+                    src="https://placehold.co/200x230/e2e8f0/334155?text=Driver+Photo"
+                    onerror="this.src='https://placehold.co/200x230/e2e8f0/334155?text=Photo'"
+                    alt="Driver Photo"
+                    class="w-full h-full object-cover" />
+                  <!-- Subtle Security Watermark Overlay on Photo -->
+                  <div class="absolute bottom-0 inset-x-0 bg-emerald-900/75 text-white text-[7px] text-center font-en py-0.5 tracking-widest">
+                    VERIFIED PHOTO
+                  </div>
+                </div>
+
+                <!-- 9. Driver's Signature -->
+                <div class="w-full text-center">
+                  <div class="h-6 sm:h-7 w-full bg-white/80 rounded border border-slate-300/80 flex items-center justify-center px-1 overflow-hidden">
+                    <img id="previewSignatureImg" src="" alt="Signature" class="max-h-full max-w-full object-contain hidden" />
+                    <span id="previewSignatureText" class="font-signature text-sm sm:text-base text-slate-900 font-bold truncate">
+                      Ariful Islam
+                    </span>
+                  </div>
+                  <p class="text-[7px] sm:text-[8px] text-slate-600 font-en uppercase tracking-wider mt-0.5">
+                    Holder's Signature / স্বাক্ষর
+                  </p>
+                </div>
+              </div>
+
+              <!-- Right Column: Serial Fields 2 to 8 + Hologram -->
+              <div class="col-span-8 flex flex-col justify-between space-y-1 text-[10px] sm:text-[11px] leading-tight relative">
+                
+                <!-- 2. Full Name -->
+                <div>
+                  <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold uppercase block">
+                    নাম / Full Name
+                  </span>
+                  <p id="previewFullName" class="font-bold text-slate-950 text-xs sm:text-sm uppercase truncate">
+                    MD. ARIFUL ISLAM (মোঃ আরিফুল ইসলাম)
+                  </p>
+                </div>
+
+                <!-- 3. Father's / Mother's Name -->
+                <div>
+                  <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold uppercase block">
+                    পিতা / মাতার নাম (Father / Mother)
+                  </span>
+                  <p id="previewParentName" class="font-semibold text-slate-800 truncate">
+                    MD. ABDUR RAHMAN (মোঃ আব্দুর রহমান)
+                  </p>
+                </div>
+
+                <!-- 4. Date of Birth & 5. Blood Group -->
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold uppercase block">
+                      জন্ম তারিখ / Date of Birth
+                    </span>
+                    <p id="previewDob" class="font-bold text-slate-900 font-en">
+                      15 AUG 1994
+                    </p>
+                  </div>
+                  <div>
+                    <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold uppercase block">
+                      রক্তের গ্রুপ / Blood Group
+                    </span>
+                    <p id="previewBloodGroup" class="font-extrabold text-red-600 font-en text-xs sm:text-sm">
+                      B+
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 6. Driving Licence Number -->
+                <div class="bg-emerald-900/5 px-2 py-1 rounded border border-emerald-700/20">
+                  <span class="text-[8px] sm:text-[9px] text-emerald-800 font-semibold uppercase block">
+                    ড্রাইভিং লাইসেন্স নম্বর / Licence No.
+                  </span>
+                  <p id="previewLicenceNo" class="font-extrabold text-emerald-950 font-en tracking-wider text-xs sm:text-sm">
+                    DK0123456CL0009
+                  </p>
+                </div>
+
+                <!-- 7. Issue Date & Expiry Date -->
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold uppercase block">
+                      ইস্যুর তারিখ / Issue Date
+                    </span>
+                    <p id="previewIssueDate" class="font-bold text-slate-900 font-en">
+                      10 JAN 2024
+                    </p>
+                  </div>
+                  <div>
+                    <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold uppercase block">
+                      মেয়াদোত্তীর্ণ / Expiry Date
+                    </span>
+                    <p id="previewExpiryDate" class="font-bold text-red-700 font-en">
+                      09 JAN 2034
+                    </p>
+                  </div>
+                </div>
+
+                <!-- 8. Vehicle Class / Category + 9b. Holographic Security Seal -->
+                <div class="flex items-end justify-between pt-0.5">
+                  <div>
+                    <span class="text-[8px] sm:text-[9px] text-slate-500 font-semibold uppercase block">
+                      যানবাহনের শ্রেণি / Vehicle Class
+                    </span>
+                    <span id="previewVehicleClass" class="inline-block mt-0.5 px-2 py-0.5 rounded bg-slate-900 text-amber-300 font-en font-bold text-[10px] sm:text-xs tracking-wide">
+                      LIGHT, MOTORCYCLE
+                    </span>
+                  </div>
+
+                  <!-- Holographic Security Seal -->
+                  <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full holo-seal border border-white/80 shadow flex flex-col items-center justify-center text-center p-0.5 shrink-0" title="Holographic Security Feature">
+                    <span class="text-[6px] font-extrabold text-slate-900 font-en leading-none">BRTA</span>
+                    <span class="text-[5px] font-bold text-slate-800 font-en leading-tight">SECURE</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Microprint Bottom Security Line -->
+            <div class="microprint-strip text-emerald-900/60 font-en border-t border-emerald-800/20 pt-0.5">
+              BANGLADESH ROAD TRANSPORT AUTHORITY • SMART CARD DRIVING LICENCE • SECURITY VERIFIED DOCUMENT • BRTA •
+            </div>
+          </div>
+
+          <!-- ==================== BACK SIDE ==================== -->
+          <div id="cardBackCapture" class="card-face card-back security-bg-back flex flex-col justify-between p-3 sm:p-4 select-none">
+            
+            <!-- Top Strip: Smart EMV Chip + Magnetic/Security Header -->
+            <div class="flex items-center justify-between gap-3 border-b border-slate-300/80 pb-2">
+              <div class="flex items-center gap-2.5">
+                <!-- Realistic Metallic EMV Smart Chip -->
+                <div class="w-10 h-7 sm:w-11 sm:h-8 rounded-md emv-chip shadow-inner relative overflow-hidden shrink-0">
+                  <div class="absolute inset-x-0 top-1/3 h-[1px] bg-amber-900/50"></div>
+                  <div class="absolute inset-x-0 bottom-1/3 h-[1px] bg-amber-900/50"></div>
+                  <div class="absolute inset-y-0 left-1/3 w-[1px] bg-amber-900/50"></div>
+                  <div class="absolute inset-y-0 right-1/3 w-[1px] bg-amber-900/50"></div>
+                </div>
+                <div>
+                  <p class="text-[9px] sm:text-[10px] font-bold text-slate-800 uppercase font-en">
+                    SMART CHIP & DIGITAL VERIFICATION
+                  </p>
+                  <p class="text-[8px] sm:text-[9px] text-slate-500">
+                    সংরক্ষিত বায়োমেট্রিক ও লাইসেন্স রেকর্ড
+                  </p>
+                </div>
+              </div>
+
+              <!-- 2. NID / Passport Number -->
+              <div class="text-right bg-white/80 px-2 py-1 rounded border border-slate-300">
+                <span class="text-[8px] text-slate-500 font-semibold uppercase block">
+                  NID / পাসপোর্ট নম্বর
+                </span>
+                <p id="previewNid" class="font-extrabold text-slate-900 font-en text-[10px] sm:text-xs tracking-wide">
+                  19942691234567890
+                </p>
+              </div>
+            </div>
+
+            <!-- Middle Section: Address, Category Conditions & Dynamic QR Code -->
+            <div class="grid grid-cols-12 gap-2.5 my-auto py-1.5 items-center">
+              
+              <!-- Left 8 Cols: 1. Address & 3. Vehicle Category Conditions -->
+              <div class="col-span-8 space-y-2 text-[10px] sm:text-[11px] leading-snug">
+                
+                <!-- 1. Permanent / Present Address -->
+                <div>
+                  <span class="text-[8px] sm:text-[9px] text-slate-500 font-bold uppercase block">
+                    ঠিকানা (স্থায়ী / বর্তমান) / Address
+                  </span>
+                  <p id="previewAddress" class="font-semibold text-slate-900 line-clamp-2">
+                    বাসা-১২, রোড-০৫, ধানমন্ডি, ঢাকা-১২০৫ (House-12, Road-05, Dhanmondi, Dhaka-1205)
+                  </p>
+                </div>
+
+                <!-- 3. Vehicle Category Details / Conditions -->
+                <div class="bg-white/75 p-1.5 rounded border border-slate-200">
+                  <span class="text-[8px] sm:text-[9px] text-emerald-800 font-bold uppercase block">
+                    ক্যাটাগরি বিবরণ ও শর্তাবলি / Category & Conditions
+                  </span>
+                  <p id="previewConditions" class="text-[9px] sm:text-[10px] text-slate-700 font-medium">
+                    Non-Professional (অপেশাদার) • Light Motor Vehicle & Motorcycle Only. No Special Restrictions.
+                  </p>
+                </div>
+
+                <!-- Visual Barcode Strip -->
+                <div class="pt-0.5">
+                  <div class="h-4 w-full bg-white border border-slate-300 rounded px-1.5 flex items-center justify-between overflow-hidden" aria-hidden="true">
+                    <span class="font-en text-[8px] tracking-[3px] font-black text-slate-800 truncate">
+                      || ||| | |||| || | ||| || |||| | ||| ||
+                    </span>
+                    <span id="previewBarcodeLabel" class="font-en text-[7px] font-bold text-slate-600 ml-1 shrink-0">
+                      DK0123456
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right 4 Cols: 4. Dynamic QR Code -->
+              <div class="col-span-4 flex flex-col items-center justify-center bg-white p-1.5 rounded-xl border border-slate-300 shadow-sm">
+                <div id="qrcodeContainer" class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center overflow-hidden"></div>
+                <span class="text-[7px] sm:text-[8px] font-bold text-slate-600 font-en mt-1 tracking-wider">
+                  SCAN TO VERIFY
+                </span>
+              </div>
+            </div>
+
+            <!-- 5. Issuing Authority Instructions / Print Note / Security Mark -->
+            <div class="border-t border-slate-300 pt-1.5 flex items-center justify-between gap-2 text-[8px] sm:text-[9px] text-slate-600">
+              <div class="leading-tight">
+                <p class="font-semibold text-slate-800">
+                  নির্দেশনা: গাড়ি চালানোর সময় লাইসেন্সটি সাথে রাখুন। হারিয়ে গেলে নিকটস্থ থানায় ও BRTA-তে জানান।
+                </p>
+                <p class="text-[7px] text-slate-500 font-en">
+                  Issuing Authority: BRTA • Digital Simulation / Sample Card Preview Only
+                </p>
+              </div>
+              <div class="px-1.5 py-0.5 rounded bg-emerald-50 border border-emerald-300 text-emerald-900 font-bold font-en text-[8px] shrink-0">
+                ✓ VERIFIED
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Helper Caption below card -->
+      <p class="text-xs text-slate-500 mt-3 text-center">
+        উপরের <span class="font-semibold text-emerald-700">"সামনের সাইড দেখুন"</span> অথবা <span class="font-semibold text-slate-700">"পিছনের সাইড দেখুন"</span> বাটনে ক্লিক করে কার্ডটি ঘুরিয়ে দেখুন।
+      </p>
+    </section>
+
+    <!-- RIGHT / BOTTOM COLUMN: Information Update Form ("তথ্য আপডেট করুন") -->
+    <section class="lg:col-span-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-4 mb-5">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+            <span class="w-2.5 h-6 bg-emerald-600 rounded-full inline-block"></span>
+            লাইসেন্সের তথ্য আপডেট করুন
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+            নিচের ফর্মে তথ্য পরিবর্তন করলে কার্ডের সামনের ও পিছনের সাইডে তাৎক্ষণিক আপডেট দেখা যাবে।
+          </p>
+        </div>
+
+        <button id="btnResetForm" type="button"
+          class="px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition">
+          ডিফল্ট রিসেট করুন
+        </button>
+      </div>
+
+      <form id="licenceForm" class="space-y-5">
+        
+        <!-- Group A: Front Side Fields -->
+        <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-200/70 space-y-4">
+          <h3 class="text-sm font-bold text-emerald-900 uppercase tracking-wide flex items-center justify-between">
+            <span>১. সামনের সাইডের তথ্যসমূহ (Front Side)</span>
+            <span class="text-[11px] font-normal text-emerald-700">সিরিয়াল ১ - ৯</span>
+          </h3>
+
+          <!-- 1. Photo Upload & 9. Signature Upload -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="inputPhoto" class="block text-xs font-semibold text-slate-700 mb-1">
+                ১. চালকের রঙিন ছবি আপলোড করুন
+              </label>
+              <input id="inputPhoto" type="file" accept="image/*"
+                class="block w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer bg-white border border-slate-300 rounded-lg p-1" />
+            </div>
+
+            <div>
+              <label for="inputSignatureImg" class="block text-xs font-semibold text-slate-700 mb-1">
+                ৯. স্বাক্ষরের ছবি (অথবা নিচে নাম লিখুন)
+              </label>
+              <input id="inputSignatureImg" type="file" accept="image/*"
+                class="block w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-800 cursor-pointer bg-white border border-slate-300 rounded-lg p-1" />
+            </div>
+          </div>
+
+          <!-- 2. Full Name -->
+          <div>
+            <label for="inputFullName" class="block text-xs font-semibold text-slate-700 mb-1">
+              ২. লাইসেন্সধারীর পূর্ণ নাম (Full Name)
+            </label>
+            <input id="inputFullName" type="text" value="MD. ARIFUL ISLAM (মোঃ আরিফুল ইসলাম)"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white" />
+          </div>
+
+          <!-- 3. Father's / Mother's Name -->
+          <div>
+            <label for="inputParentName" class="block text-xs font-semibold text-slate-700 mb-1">
+              ৩. পিতা বা মাতার নাম (Father's / Mother's Name)
+            </label>
+            <input id="inputParentName" type="text" value="MD. ABDUR RAHMAN (মোঃ আব্দুর রহমান)"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white" />
+          </div>
+
+          <!-- 4. Date of Birth & 5. Blood Group -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="inputDob" class="block text-xs font-semibold text-slate-700 mb-1">
+                ৪. জন্ম তারিখ (Date of Birth)
+              </label>
+              <input id="inputDob" type="text" value="15 AUG 1994" placeholder="যেমন: 15 AUG 1994"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white font-en" />
+            </div>
+
+            <div>
+              <label for="inputBloodGroup" class="block text-xs font-semibold text-slate-700 mb-1">
+                ৫. রক্তের গ্রুপ (Blood Group)
+              </label>
+              <select id="inputBloodGroup"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white font-en font-semibold">
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+" selected>B+</option>
+                <option value="B-">B-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 6. Driving Licence Number & Signature Text -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="inputLicenceNo" class="block text-xs font-semibold text-slate-700 mb-1">
+                ৬. ড্রাইভিং লাইসেন্স নম্বর (Licence No.)
+              </label>
+              <input id="inputLicenceNo" type="text" value="DK0123456CL0009"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white font-en uppercase" />
+            </div>
+
+            <div>
+              <label for="inputSignatureText" class="block text-xs font-semibold text-slate-700 mb-1">
+                ৯. ডিজিটাল স্বাক্ষর টেক্সট (Signature Text)
+              </label>
+              <input id="inputSignatureText" type="text" value="Ariful Islam"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white" />
+            </div>
+          </div>
+
+          <!-- 7. Issue Date & Expiry Date -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="inputIssueDate" class="block text-xs font-semibold text-slate-700 mb-1">
+                ৭(ক). ইস্যুর তারিখ (Issue Date)
+              </label>
+              <input id="inputIssueDate" type="text" value="10 JAN 2024"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white font-en" />
+            </div>
+
+            <div>
+              <label for="inputExpiryDate" class="block text-xs font-semibold text-slate-700 mb-1">
+                ৭(খ). মেয়াদোত্তীর্ণের তারিখ (Expiry Date)
+              </label>
+              <input id="inputExpiryDate" type="text" value="09 JAN 2034"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white font-en" />
+            </div>
+          </div>
+
+          <!-- 8. Vehicle Class / Category -->
+          <div>
+            <label for="inputVehicleClass" class="block text-xs font-semibold text-slate-700 mb-1">
+              ৮. যানবাহনের শ্রেণি / ক্যাটাগরি (Vehicle Class)
+            </label>
+            <input id="inputVehicleClass" type="text" value="LIGHT, MOTORCYCLE"
+              placeholder="যেমন: LIGHT, MOTORCYCLE, MEDIUM, HEAVY"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white font-en uppercase" />
+          </div>
+        </div>
+
+        <!-- Group B: Back Side Fields -->
+        <div class="bg-sky-50/60 p-4 rounded-xl border border-sky-200/80 space-y-4">
+          <h3 class="text-sm font-bold text-sky-900 uppercase tracking-wide flex items-center justify-between">
+            <span>২. পিছনের সাইডের তথ্যসমূহ (Back Side)</span>
+            <span class="text-[11px] font-normal text-sky-700">সিরিয়াল ১ - ৫</span>
+          </h3>
+
+          <!-- 1. Address -->
+          <div>
+            <label for="inputAddress" class="block text-xs font-semibold text-slate-700 mb-1">
+              ১. ঠিকানা (স্থায়ী ও/অথবা বর্তমান ঠিকানা)
+            </label>
+            <textarea id="inputAddress" rows="2"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none bg-white">বাসা-১২, রোড-০৫, ধানমন্ডি, ঢাকা-১২০৫ (House-12, Road-05, Dhanmondi, Dhaka-1205)</textarea>
+          </div>
+
+          <!-- 2. NID / Passport Number -->
+          <div>
+            <label for="inputNid" class="block text-xs font-semibold text-slate-700 mb-1">
+              ২. জাতীয় পরিচয়পত্র (NID) বা পাসপোর্ট নম্বর
+            </label>
+            <input id="inputNid" type="text" value="19942691234567890"
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none bg-white font-en" />
+          </div>
+
+          <!-- 3. Vehicle Category Conditions / Restrictions -->
+          <div>
+            <label for="inputConditions" class="block text-xs font-semibold text-slate-700 mb-1">
+              ৩. যানবাহনের ক্যাটাগরি-সংক্রান্ত অতিরিক্ত তথ্য বা শর্তাবলি
+            </label>
+            <input id="inputConditions" type="text"
+              value="Non-Professional (অপেশাদার) • Light Motor Vehicle & Motorcycle Only. No Special Restrictions."
+              class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none bg-white" />
+          </div>
+        </div>
+
+        <!-- Primary Action Button: Update Information -->
+        <div class="pt-1 flex flex-col sm:flex-row gap-3">
+          <button id="btnUpdateInfo" type="submit"
+            class="flex-1 py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-base shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            তথ্য আপডেট করুন (Update Card)
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Default Data Object
+      const defaultData = {
+        fullName: 'MD. ARIFUL ISLAM (মোঃ আরিফুল ইসলাম)',
+        parentName: 'MD. ABDUR RAHMAN (মোঃ আব্দুর রহমান)',
+        dob: '15 AUG 1994',
+        bloodGroup: 'B+',
+        licenceNo: 'DK0123456CL0009',
+        issueDate: '10 JAN 2024',
+        expiryDate: '09 JAN 2034',
+        vehicleClass: 'LIGHT, MOTORCYCLE',
+        signatureText: 'Ariful Islam',
+        address: 'বাসা-১২, রোড-০৫, ধানমন্ডি, ঢাকা-১২০৫ (House-12, Road-05, Dhanmondi, Dhaka-1205)',
+        nid: '19942691234567890',
+        conditions: 'Non-Professional (অপেশাদার) • Light Motor Vehicle & Motorcycle Only. No Special Restrictions.',
+        photoDataUrl: 'https://placehold.co/200x230/e2e8f0/334155?text=Driver+Photo',
+        signatureDataUrl: ''
+      };
+
+      const STORAGE_KEY = 'smart_driving_licence_data_v1';
+
+      // DOM References: Side Toggle Buttons & Card Flipper
+      const flipper = document.getElementById('smartCardFlipper');
+      const btnShowFront = document.getElementById('btnShowFront');
+      const btnShowBack = document.getElementById('btnShowBack');
+
+      // DOM References: Form Inputs
+      const form = document.getElementById('licenceForm');
+      const inputPhoto = document.getElementById('inputPhoto');
+      const inputSignatureImg = document.getElementById('inputSignatureImg');
+      const inputFullName = document.getElementById('inputFullName');
+      const inputParentName = document.getElementById('inputParentName');
+      const inputDob = document.getElementById('inputDob');
+      const inputBloodGroup = document.getElementById('inputBloodGroup');
+      const inputLicenceNo = document.getElementById('inputLicenceNo');
+      const inputSignatureText = document.getElementById('inputSignatureText');
+      const inputIssueDate = document.getElementById('inputIssueDate');
+      const inputExpiryDate = document.getElementById('inputExpiryDate');
+      const inputVehicleClass = document.getElementById('inputVehicleClass');
+      const inputAddress = document.getElementById('inputAddress');
+      const inputNid = document.getElementById('inputNid');
+      const inputConditions = document.getElementById('inputConditions');
+      const btnResetForm = document.getElementById('btnResetForm');
+
+      // DOM References: Card Preview Elements
+      const previewPhoto = document.getElementById('previewPhoto');
+      const previewSignatureImg = document.getElementById('previewSignatureImg');
+      const previewSignatureText = document.getElementById('previewSignatureText');
+      const previewFullName = document.getElementById('previewFullName');
+      const previewParentName = document.getElementById('previewParentName');
+      const previewDob = document.getElementById('previewDob');
+      const previewBloodGroup = document.getElementById('previewBloodGroup');
+      const previewLicenceNo = document.getElementById('previewLicenceNo');
+      const previewIssueDate = document.getElementById('previewIssueDate');
+      const previewExpiryDate = document.getElementById('previewExpiryDate');
+      const previewVehicleClass = document.getElementById('previewVehicleClass');
+      const previewAddress = document.getElementById('previewAddress');
+      const previewNid = document.getElementById('previewNid');
+      const previewConditions = document.getElementById('previewConditions');
+      const previewBarcodeLabel = document.getElementById('previewBarcodeLabel');
+      const qrcodeContainer = document.getElementById('qrcodeContainer');
+
+      let currentPhotoUrl = defaultData.photoDataUrl;
+      let currentSignatureUrl = defaultData.signatureDataUrl;
+
+      // Toast Notification Helper
+      function showToast(msg) {
+        const banner = document.getElementById('toastBanner');
+        const messageEl = document.getElementById('toastMessage');
+        messageEl.textContent = msg;
+        banner.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          banner.classList.remove('translate-y-4', 'opacity-0');
+        });
+        setTimeout(() => {
+          banner.classList.add('translate-y-4', 'opacity-0');
+          setTimeout(() => banner.classList.add('hidden'), 300);
+        }, 2600);
+      }
+
+      // Switch to Front Side
+      function showFrontSide() {
+        flipper.classList.remove('is-flipped');
+        btnShowFront.className = 'py-2.5 px-4 rounded-xl font-semibold text-sm sm:text-base transition-all flex items-center justify-center gap-2 bg-emerald-600 text-white shadow-md';
+        btnShowBack.className = 'py-2.5 px-4 rounded-xl font-semibold text-sm sm:text-base transition-all flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200';
+      }
+
+      // Switch to Back Side
+      function showBackSide() {
+        flipper.classList.add('is-flipped');
+        btnShowBack.className = 'py-2.5 px-4 rounded-xl font-semibold text-sm sm:text-base transition-all flex items-center justify-center gap-2 bg-sky-700 text-white shadow-md';
+        btnShowFront.className = 'py-2.5 px-4 rounded-xl font-semibold text-sm sm:text-base transition-all flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200';
+      }
+
+      btnShowFront.addEventListener('click', showFrontSide);
+      btnShowBack.addEventListener('click', showBackSide);
+
+      // Generate Dynamic QR Code on Back Side
+      function renderQRCode(data) {
+        qrcodeContainer.innerHTML = '';
+        const qrPayload = `DL:${data.licenceNo}|NAME:${data.fullName}|DOB:${data.dob}|NID:${data.nid}|EXP:${data.expiryDate}`;
+        try {
+          new QRCode(qrcodeContainer, {
+            text: qrPayload,
+            width: 88,
+            height: 88,
+            colorDark: '#0f172a',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        } catch (err) {
+          qrcodeContainer.innerHTML = '<span class="text-[9px] text-slate-500">QR READY</span>';
+        }
+      }
+
+      // Sync Form Values to Card Preview
+      function syncCardPreview(saveToStorage = false) {
+        const data = {
+          fullName: inputFullName.value.trim() || 'N/A',
+          parentName: inputParentName.value.trim() || 'N/A',
+          dob: inputDob.value.trim() || 'N/A',
+          bloodGroup: inputBloodGroup.value,
+          licenceNo: inputLicenceNo.value.trim().toUpperCase() || 'N/A',
+          issueDate: inputIssueDate.value.trim() || 'N/A',
+          expiryDate: inputExpiryDate.value.trim() || 'N/A',
+          vehicleClass: inputVehicleClass.value.trim().toUpperCase() || 'LIGHT',
+          signatureText: inputSignatureText.value.trim() || 'Signature',
+          address: inputAddress.value.trim() || 'N/A',
+          nid: inputNid.value.trim() || 'N/A',
+          conditions: inputConditions.value.trim() || 'Standard Conditions',
+          photoDataUrl: currentPhotoUrl,
+          signatureDataUrl: currentSignatureUrl
+        };
+
+        // Update Front Side Fields
+        previewPhoto.src = data.photoDataUrl;
+        previewFullName.textContent = data.fullName;
+        previewParentName.textContent = data.parentName;
+        previewDob.textContent = data.dob;
+        previewBloodGroup.textContent = data.bloodGroup;
+        previewLicenceNo.textContent = data.licenceNo;
+        previewIssueDate.textContent = data.issueDate;
+        previewExpiryDate.textContent = data.expiryDate;
+        previewVehicleClass.textContent = data.vehicleClass;
+
+        // Signature handling (uploaded image takes priority, else cursive text)
+        if (data.signatureDataUrl) {
+          previewSignatureImg.src = data.signatureDataUrl;
+          previewSignatureImg.classList.remove('hidden');
+          previewSignatureText.classList.add('hidden');
+        } else {
+          previewSignatureImg.classList.add('hidden');
+          previewSignatureText.classList.remove('hidden');
+          previewSignatureText.textContent = data.signatureText;
+        }
+
+        // Update Back Side Fields
+        previewAddress.textContent = data.address;
+        previewNid.textContent = data.nid;
+        previewConditions.textContent = data.conditions;
+        previewBarcodeLabel.textContent = data.licenceNo.slice(0, 10);
+
+        // Update QR Code
+        renderQRCode(data);
+
+        if (saveToStorage) {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          } catch (e) {
+            console.warn('LocalStorage limit reached for large image.');
+          }
+        }
+      }
+
+      // Load Saved Data if Available
+      function loadSavedData() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const saved = JSON.parse(raw);
+            inputFullName.value = saved.fullName || defaultData.fullName;
+            inputParentName.value = saved.parentName || defaultData.parentName;
+            inputDob.value = saved.dob || defaultData.dob;
+            inputBloodGroup.value = saved.bloodGroup || defaultData.bloodGroup;
+            inputLicenceNo.value = saved.licenceNo || defaultData.licenceNo;
+            inputIssueDate.value = saved.issueDate || defaultData.issueDate;
+            inputExpiryDate.value = saved.expiryDate || defaultData.expiryDate;
+            inputVehicleClass.value = saved.vehicleClass || defaultData.vehicleClass;
+            inputSignatureText.value = saved.signatureText || defaultData.signatureText;
+            inputAddress.value = saved.address || defaultData.address;
+            inputNid.value = saved.nid || defaultData.nid;
+            inputConditions.value = saved.conditions || defaultData.conditions;
+            currentPhotoUrl = saved.photoDataUrl || defaultData.photoDataUrl;
+            currentSignatureUrl = saved.signatureDataUrl || '';
+          }
+        } catch (err) {
+          console.error('Error loading saved data:', err);
+        }
+        syncCardPreview(false);
+      }
+
+      // Handle Driver Photo File Upload
+      inputPhoto.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          currentPhotoUrl = event.target.result;
+          syncCardPreview(true);
+          showToast('চালকের ছবি আপডেট করা হয়েছে!');
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // Handle Signature Image File Upload
+      inputSignatureImg.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          currentSignatureUrl = event.target.result;
+          syncCardPreview(true);
+          showToast('স্বাক্ষরের ছবি আপডেট করা হয়েছে!');
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // If user types signature text, clear uploaded signature image so text displays
+      inputSignatureText.addEventListener('input', () => {
+        currentSignatureUrl = '';
+        inputSignatureImg.value = '';
+        syncCardPreview(false);
+      });
+
+      // Live real-time preview while typing in any input
+      const liveInputs = [
+        inputFullName, inputParentName, inputDob, inputBloodGroup,
+        inputLicenceNo, inputIssueDate, inputExpiryDate, inputVehicleClass,
+        inputAddress, inputNid, inputConditions
+      ];
+      liveInputs.forEach(el => {
+        el.addEventListener('input', () => syncCardPreview(false));
+        el.addEventListener('change', () => syncCardPreview(false));
+      });
+
+      // Form Submit ("তথ্য আপডেট করুন")
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        syncCardPreview(true);
+        showToast('সকল তথ্য সফলভাবে কার্ডে আপডেট ও সংরক্ষণ হয়েছে!');
+      });
+
+      // Reset Button
+      btnResetForm.addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        inputFullName.value = defaultData.fullName;
+        inputParentName.value = defaultData.parentName;
+        inputDob.value = defaultData.dob;
+        inputBloodGroup.value = defaultData.bloodGroup;
+        inputLicenceNo.value = defaultData.licenceNo;
+        inputIssueDate.value = defaultData.issueDate;
+        inputExpiryDate.value = defaultData.expiryDate;
+        inputVehicleClass.value = defaultData.vehicleClass;
+        inputSignatureText.value = defaultData.signatureText;
+        inputAddress.value = defaultData.address;
+        inputNid.value = defaultData.nid;
+        inputConditions.value = defaultData.conditions;
+        currentPhotoUrl = defaultData.photoDataUrl;
+        currentSignatureUrl = '';
+        inputPhoto.value = '';
+        inputSignatureImg.value = '';
+        syncCardPreview(false);
+        showToast('কার্ডের তথ্য ডিফল্ট অবস্থায় রিসেট করা হয়েছে!');
+      });
+
+      // Download Front or Back Side as PNG
+      async function downloadCardSide(elementId, filename, prepareFn) {
+        if (typeof html2canvas === 'undefined') {
+          showToast('ডাউনলোড লাইব্রেরি লোড হচ্ছে, অনুগ্রহ করে আবার চেষ্টা করুন।');
+          return;
+        }
+        prepareFn();
+        showToast('ছবি তৈরি হচ্ছে...');
+        setTimeout(async () => {
+          try {
+            const target = document.getElementById(elementId);
+            // Temporarily neutralize 3D transform on back card for crisp capture
+            const originalTransform = target.style.transform;
+            target.style.transform = 'none';
+
+            const canvas = await html2canvas(target, {
+              scale: 3,
+              useCORS: true,
+              backgroundColor: null
+            });
+
+            target.style.transform = originalTransform;
+
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast(`${filename} ডাউনলোড সম্পন্ন হয়েছে!`);
+          } catch (err) {
+            console.error(err);
+            showToast('ছবি ডাউনলোড করতে সমস্যা হয়েছে।');
+          }
+        }, 450);
+      }
+
+      document.getElementById('btnDownloadFront').addEventListener('click', () => {
+        downloadCardSide('cardFrontCapture', 'Driving-Licence-Front.png', showFrontSide);
+      });
+
+      document.getElementById('btnDownloadBack').addEventListener('click', () => {
+        downloadCardSide('cardBackCapture', 'Driving-Licence-Back.png', showBackSide);
+      });
+
+      // Initialize App
+      loadSavedData();
+    });
+  </script>
+</body>
+</html>
