@@ -870,7 +870,7 @@
             </div>
             <div class="input-group">
               <label>Electricity Rate (Tk/kWh)</label>
-              <input type="number" step="0.01" id="compElecRate" value="11.50" oninput="triggerCompAutoSave()">
+              <input type="number" step="0.01" id="compElecRate" value="11.50" oninput="recalcCompShift('day'); recalcCompShift('night'); triggerCompAutoSave();">
             </div>
           </div>
 
@@ -892,8 +892,8 @@
               <input type="number" step="any" id="c_day_air_kg" value="0" oninput="recalcCompShift('day'); triggerCompAutoSave();">
             </div>
             <div class="metric-input-card">
-              <label>Total Hourly Prod (Kg Auto)</label>
-              <input type="number" id="c_day_prod_air_auto" value="0.0" readonly>
+              <label>Total Comp Prod (Kg Auto)</label>
+              <input type="number" id="c_day_comp_prod_auto" value="0.0" readonly>
             </div>
             <div class="metric-input-card">
               <label>Total Hourly Dept Air (Kg Auto)</label>
@@ -919,8 +919,8 @@
               <input type="number" step="any" id="c_night_air_kg" value="0" oninput="recalcCompShift('night'); triggerCompAutoSave();">
             </div>
             <div class="metric-input-card">
-              <label>Total Hourly Prod (Kg Auto)</label>
-              <input type="number" id="c_night_prod_air_auto" value="0.0" readonly>
+              <label>Total Comp Prod (Kg Auto)</label>
+              <input type="number" id="c_night_comp_prod_auto" value="0.0" readonly>
             </div>
             <div class="metric-input-card">
               <label>Total Hourly Dept Air (Kg Auto)</label>
@@ -1743,7 +1743,7 @@ function saveCurrentSectionData(category, silent = false) {
     entry.snapshot = snapshot;
     entry.dayComp = dayComp;
     entry.nightComp = nightComp;
-    entry.summary = `Date: ${dateVal} | Prod: ${(dayComp.totalProdAir + nightComp.totalProdAir).toFixed(1)} Kg | kWh: ${(dayComp.kwh + nightComp.kwh).toLocaleString()}`;
+    entry.summary = `Date: ${dateVal} | Air: ${(dayComp.totalProdAir + nightComp.totalProdAir).toLocaleString()} Kg | kWh: ${(dayComp.kwh + nightComp.kwh).toLocaleString()}`;
     localStorage.setItem("pn_latest_comp_draft", JSON.stringify(snapshot));
   }
 
@@ -1896,9 +1896,9 @@ function viewSavedFullReport(category, index, autoPrint = false) {
       <div class="night-page-spacer"></div>
       <div class="report-page">${createCompReportPageHtml('NIGHT SHIFT (9:00 PM - 8:00 AM)', formattedDate, record.nightComp, 'scmp_night_' + index)}</div>
     `;
-    renderBarChart('scmp_day_' + index + '_gen', record.dayComp.rows.map(r => r.time), record.dayComp.rows.map(r => r.hrDeptAir), '#14452f', false);
+    renderBarChart('scmp_day_' + index + '_gen', record.dayComp.rows.map(r => r.time), record.dayComp.rows.map(r => r.hrProdAir), '#14452f', false);
     renderBarChart('scmp_day_' + index + '_dept', record.dayComp.secSummary.map(s => s.sec), record.dayComp.secSummary.map(s => s.airKg), '#e86c1f', false);
-    renderBarChart('scmp_night_' + index + '_gen', record.nightComp.rows.map(r => r.time), record.nightComp.rows.map(r => r.hrDeptAir), '#14452f', false);
+    renderBarChart('scmp_night_' + index + '_gen', record.nightComp.rows.map(r => r.time), record.nightComp.rows.map(r => r.hrProdAir), '#14452f', false);
     renderBarChart('scmp_night_' + index + '_dept', record.nightComp.secSummary.map(s => s.sec), record.nightComp.secSummary.map(s => s.airKg), '#e86c1f', false);
   }
 
@@ -1942,7 +1942,7 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-/* ================= AIR COMPRESSOR (6 UNITS, HOURLY PRODUCTION & % SHARE, HOURLY DEPT CONSUMPTION) ================= */
+/* ================= AIR COMPRESSOR (6 UNITS, kWh, AIR KG & HOURLY DEPT CONSUMPTION) ================= */
 function renderCompGrid(shift, hours) {
   const p = `c_${shift}`;
   let html = `<table class="entry-grid">
@@ -1950,7 +1950,7 @@ function renderCompGrid(shift, hours) {
       <tr>
         <th>Time</th>
         ${COMP_UNITS.map(u => `<th>${u}<br>(Kg)</th>`).join('')}
-        <th>Hr Prod<br>(Kg Auto)</th>
+        <th class="lpg-th">Hr Prod<br>(Kg Auto)</th>
         <th class="lpg-th">Hr Dept Air<br>(Kg Auto)</th>
         ${COMP_SECTIONS.map(s => `<th class="dept-th">${s}<br>(Kg)</th>`).join('')}
       </tr>
@@ -1975,7 +1975,7 @@ function recalcCompShift(shift) {
   const p = `c_${shift}`;
   const kwh = parseFloat(document.getElementById(`${p}_kwh`).value) || 0;
   const rate = parseFloat(document.getElementById('compElecRate').value) || 0;
-  let totalProdAir = 0;
+  let totalCompProd = 0;
   let totalDeptAir = 0;
 
   for (let i = 0; i < 12; i++) {
@@ -1984,7 +1984,7 @@ function recalcCompShift(shift) {
       hrProd += parseFloat(document.getElementById(`${p}_u${uIdx+1}_${i}`).value) || 0;
     }
     document.getElementById(`${p}_hrprod_${i}`).value = hrProd.toFixed(1);
-    totalProdAir += hrProd;
+    totalCompProd += hrProd;
 
     let hrSum = 0;
     COMP_SECTIONS.forEach(s => {
@@ -1994,7 +1994,7 @@ function recalcCompShift(shift) {
     totalDeptAir += hrSum;
   }
 
-  document.getElementById(`${p}_prod_air_auto`).value = totalProdAir.toFixed(1);
+  document.getElementById(`${p}_comp_prod_auto`).value = totalCompProd.toFixed(1);
   document.getElementById(`${p}_dept_air_auto`).value = totalDeptAir.toFixed(1);
   document.getElementById(`${p}_cost_auto`).value = Math.round(kwh * rate);
 }
@@ -2018,18 +2018,18 @@ function computeCompShift(shift, hours) {
   let unitSums = [0, 0, 0, 0, 0, 0];
   let secSums = {};
   COMP_SECTIONS.forEach(s => secSums[s.toLowerCase()] = 0);
-  let totalProdAir = 0;
+  let totalHrProdAir = 0;
   let totalHrDeptAir = 0;
 
   hours.forEach((time, idx) => {
-    let hrProd = 0;
+    let hrProdAir = 0;
     const uVals = COMP_UNITS.map((_, uIdx) => {
       const v = parseFloat(document.getElementById(`${p}_u${uIdx+1}_${idx}`).value) || 0;
       unitSums[uIdx] += v;
-      hrProd += v;
+      hrProdAir += v;
       return v;
     });
-    totalProdAir += hrProd;
+    totalHrProdAir += hrProdAir;
 
     let sVals = {};
     let hrDeptAir = 0;
@@ -2042,11 +2042,19 @@ function computeCompShift(shift, hours) {
     });
     totalHrDeptAir += hrDeptAir;
 
-    rows.push({ time, uVals, hrProd, hrDeptAir, sVals });
+    rows.push({ time, uVals, hrProdAir, hrDeptAir, sVals });
   });
 
-  const effectiveProducedAir = totalProdAir > 0 ? totalProdAir : manualAirKg;
-  const unitPcts = unitSums.map(u => totalProdAir > 0 ? ((u / totalProdAir) * 100).toFixed(1) : '0.0');
+  const totalProdAir = totalHrProdAir > 0 ? totalHrProdAir : manualAirKg;
+  const compShareSummary = COMP_UNITS.map((unit, uIdx) => {
+    const prodVal = unitSums[uIdx];
+    const ratio = totalProdAir > 0 ? (prodVal / totalProdAir) : 0;
+    return {
+      unit,
+      prodKg: prodVal,
+      pct: (ratio * 100).toFixed(2)
+    };
+  });
 
   const secSummary = COMP_SECTIONS.map(sec => {
     const k = sec.toLowerCase();
@@ -2055,15 +2063,15 @@ function computeCompShift(shift, hours) {
     return {
       sec,
       airKg: kgVal,
-      pct: (ratio * 100).toFixed(1),
+      pct: (ratio * 100).toFixed(2),
       kwhShare: (ratio * kwh).toFixed(1),
       costShare: Math.round(ratio * totalCost)
     };
   });
 
   return {
-    rows, kwh, manualAirKg, totalProdAir, effectiveProducedAir, unitPcts,
-    rate, totalCost, unitSums, secSums, totalHrDeptAir, secSummary
+    rows, kwh, manualAirKg, totalProdAir, totalHrProdAir, rate, totalCost,
+    unitSums, compShareSummary, secSums, totalHrDeptAir, secSummary
   };
 }
 
@@ -2075,7 +2083,7 @@ function createCompReportPageHtml(shiftLabel, dateStr, data, chartIdPrefix) {
         <p>Ambag, Kunabari, Gazipur.</p>
       </div>
       <div class="rep-title-box">
-        <h3>Air Compressor Hourly Air & Cost Analysis</h3>
+        <h3>Air Compressor Hourly Production & Cost Analysis</h3>
         <span>${shiftLabel} &bull; Date: ${dateStr}</span>
       </div>
       <div class="rep-logo">${getLogoHtml()}</div>
@@ -2083,7 +2091,7 @@ function createCompReportPageHtml(shiftLabel, dateStr, data, chartIdPrefix) {
 
     <div class="kpi-strip">
       <div class="kpi-item"><div class="k-lbl">Electricity Used</div><div class="k-val">${data.kwh.toLocaleString()} kWh</div></div>
-      <div class="kpi-item"><div class="k-lbl">Total Air Produced</div><div class="k-val">${data.effectiveProducedAir.toLocaleString()} Kg</div></div>
+      <div class="kpi-item"><div class="k-lbl">Total Comp Air Prod</div><div class="k-val">${data.totalProdAir.toLocaleString()} Kg</div></div>
       <div class="kpi-item"><div class="k-lbl">Hourly Dept Air</div><div class="k-val">${data.totalHrDeptAir.toLocaleString()} Kg</div></div>
       <div class="kpi-item"><div class="k-lbl">Active Compressors</div><div class="k-val">6 Units</div></div>
       <div class="kpi-item orange"><div class="k-lbl">Total Shift Cost</div><div class="k-val">৳ ${data.totalCost.toLocaleString()}</div></div>
@@ -2093,17 +2101,16 @@ function createCompReportPageHtml(shiftLabel, dateStr, data, chartIdPrefix) {
     <table class="clean-rep-table">
       <thead>
         <tr>
-          <th colspan="${COMP_UNITS.length + 3}" class="grp-gen">6 Compressors Production (Kg) & Hourly Air</th>
+          <th colspan="${COMP_UNITS.length + 2}" class="grp-gen">6 Compressors Production & Hourly Air (Kg)</th>
           <th colspan="${COMP_SECTIONS.length}" class="grp-dept">Section-Wise Hourly Air Consumption (Kg)</th>
-          <th colspan="5" class="grp-sum">Section-Wise Air % & Shift Summary</th>
+          <th colspan="4" class="grp-sum">Section-Wise Shift Summary</th>
         </tr>
         <tr>
           <th class="sub-gen">Time</th>
           ${COMP_UNITS.map(u => `<th class="sub-gen">${u}</th>`).join('')}
           <th class="sub-gen">Hr Prod</th>
-          <th class="sub-gen">Hr Air</th>
           ${COMP_SECTIONS.map(s => `<th class="sub-dept">${s}</th>`).join('')}
-          <th class="sub-sum">Section</th><th class="sub-sum">Air (Kg)</th><th class="sub-sum">Air %</th><th class="sub-sum">kWh</th><th class="sub-sum">Cost (Tk)</th>
+          <th class="sub-sum">Section</th><th class="sub-sum">Air (Kg)</th><th class="sub-sum">kWh</th><th class="sub-sum">Cost (Tk)</th>
         </tr>
       </thead>
       <tbody>`;
@@ -2114,16 +2121,14 @@ function createCompReportPageHtml(shiftLabel, dateStr, data, chartIdPrefix) {
     html += `<tr>
       <td class="col-highlight">${r.time}</td>
       ${r.uVals.map(v => `<td>${v}</td>`).join('')}
-      <td class="col-highlight">${r.hrProd.toFixed(1)}</td>
-      <td class="col-highlight">${r.hrDeptAir.toFixed(1)}</td>
+      <td class="col-highlight">${r.hrProdAir.toFixed(1)}</td>
       ${COMP_SECTIONS.map(s => `<td>${r.sVals[s.toLowerCase()]}</td>`).join('')}
       ${ss ? `
         <td class="col-sum-cell" style="text-align:left; padding-left:4px;">${ss.sec}</td>
         <td class="col-sum-cell">${ss.airKg.toLocaleString()}</td>
-        <td class="col-sum-cell" style="font-weight:700; color:#14452f;">${ss.pct}%</td>
         <td class="col-sum-cell">${ss.kwhShare}</td>
         <td class="col-sum-cell" style="font-weight:700; color:#9a3412;">${ss.costShare.toLocaleString()}</td>
-      ` : `<td></td><td></td><td></td><td></td><td></td>`}
+      ` : `<td></td><td></td><td></td><td></td>`}
     </tr>`;
   }
 
@@ -2131,28 +2136,27 @@ function createCompReportPageHtml(shiftLabel, dateStr, data, chartIdPrefix) {
     <tr class="total-row">
       <td>TOTAL:</td>
       ${data.unitSums.map(u => `<td>${u.toLocaleString()}</td>`).join('')}
-      <td>${data.totalProdAir.toFixed(1)}</td>
-      <td>${data.totalHrDeptAir.toFixed(1)}</td>
+      <td>${data.totalProdAir.toLocaleString()}</td>
       ${COMP_SECTIONS.map(s => `<td>${data.secSums[s.toLowerCase()].toLocaleString()}</td>`).join('')}
       <td>TOTAL</td>
       <td>${data.totalHrDeptAir.toLocaleString()}</td>
-      <td>100%</td>
       <td>${data.kwh.toLocaleString()}</td>
       <td style="color:#9a3412;">৳ ${data.totalCost.toLocaleString()}</td>
     </tr>
     <tr class="pct-row">
-      <td>SHARE AIR:</td>
-      ${data.unitPcts.map(pct => `<td>${pct}%</td>`).join('')}
-      <td>${data.totalProdAir > 0 ? '100%' : '0%'}</td>
-      <td></td>
-      ${COMP_SECTIONS.map(() => `<td></td>`).join('')}
-      <td style="text-align:left; padding-left:4px;">Section-Wise Air % & Shift Summary</td>
-      <td colspan="4" style="text-align:left; padding-left:4px;">${data.secSummary.map(s => `${s.sec}: ${s.pct}%`).join(' | ')}</td>
+      <td>SHARE AIR %:</td>
+      ${data.compShareSummary.map(cs => `<td>${cs.pct}%</td>`).join('')}
+      <td>100%</td>
+      ${data.secSummary.map(ss => `<td>${ss.pct}%</td>`).join('')}
+      <td>SHARE</td>
+      <td>100%</td>
+      <td>100%</td>
+      <td>100%</td>
     </tr>
   </tbody></table>
 
   <div class="rep-charts">
-    <div class="rep-chart-card"><h4>Hourly Section Air Consumption (Kg)</h4><div class="canvas-wrap"><canvas id="${chartIdPrefix}_gen"></canvas></div></div>
+    <div class="rep-chart-card"><h4>Hourly Compressor Air Production (Kg)</h4><div class="canvas-wrap"><canvas id="${chartIdPrefix}_gen"></canvas></div></div>
     <div class="rep-chart-card"><h4>Section-Wise Air Consumption (Kg)</h4><div class="canvas-wrap"><canvas id="${chartIdPrefix}_dept"></canvas></div></div>
   </div>
 
@@ -2187,9 +2191,9 @@ function buildCompReport(mode = 'separate') {
   document.getElementById('comp-report-container').style.display = 'block';
 
   const isCompact = (mode === 'combined');
-  renderBarChart('cday_gen', dayComp.rows.map(r => r.time), dayComp.rows.map(r => r.hrDeptAir), '#14452f', isCompact);
+  renderBarChart('cday_gen', dayComp.rows.map(r => r.time), dayComp.rows.map(r => r.hrProdAir), '#14452f', isCompact);
   renderBarChart('cday_dept', dayComp.secSummary.map(s => s.sec), dayComp.secSummary.map(s => s.airKg), '#e86c1f', isCompact);
-  renderBarChart('cnight_gen', nightComp.rows.map(r => r.time), nightComp.rows.map(r => r.hrDeptAir), '#14452f', isCompact);
+  renderBarChart('cnight_gen', nightComp.rows.map(r => r.time), nightComp.rows.map(r => r.hrProdAir), '#14452f', isCompact);
   renderBarChart('cnight_dept', nightComp.secSummary.map(s => s.sec), nightComp.secSummary.map(s => s.airKg), '#e86c1f', isCompact);
 
   saveCurrentSectionData('compressor', true);
@@ -2225,12 +2229,8 @@ function downloadCompExcelSheet() {
   const rows = [
     ["P.N. COMPOSITE LTD. - Air Compressor Report"],
     ["Report Date", dateVal],
-    ["Day kWh", dayC.kwh, "Day Prod Air (Kg)", dayC.totalProdAir.toFixed(1), "Day Cost", dayC.totalCost],
-    ["Day Comp %", dayC.unitPcts.map((p, i) => `Comp-${i+1}: ${p}%`).join(" | ")],
-    ["Day Sec %", dayC.secSummary.map(s => `${s.sec}: ${s.pct}%`).join(" | ")],
-    ["Night kWh", nightC.kwh, "Night Prod Air (Kg)", nightC.totalProdAir.toFixed(1), "Night Cost", nightC.totalCost],
-    ["Night Comp %", nightC.unitPcts.map((p, i) => `Comp-${i+1}: ${p}%`).join(" | ")],
-    ["Night Sec %", nightC.secSummary.map(s => `${s.sec}: ${s.pct}%`).join(" | ")]
+    ["Day kWh", dayC.kwh, "Day Air Prod (Kg)", dayC.totalProdAir, "Day Cost", dayC.totalCost],
+    ["Night kWh", nightC.kwh, "Night Air Prod (Kg)", nightC.totalProdAir, "Night Cost", nightC.totalCost]
   ];
   const csv = "\uFEFF" + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
