@@ -1277,12 +1277,12 @@
 const PN_LOGO_DATA_URL = "PN LOGO";
 
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBqrEtn-oWVZP3Z_LTdTLd_m6wAt0wsb8s",
-  authDomain: "pn-composite-utility-6a495.firebaseapp.com",
-  projectId: "pn-composite-utility-6a495",
-  storageBucket: "pn-composite-utility-6a495.firebasestorage.app",
-  messagingSenderId: "884103698256",
-  appId: "1:884103698256:web:e6d58953a0ece029e43e55"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 
 let firebaseDb = null;
@@ -1294,17 +1294,6 @@ try {
     firebaseDb = firebase.firestore();
   }
 } catch (e) {}
-
-async function syncRecordToFirestore(category, entry) {
-  if (!firebaseDb || !entry || !entry.date) return;
-  try {
-    const docId = `${category}_${entry.date}`;
-    await firebaseDb.collection("pn_utility_logs").doc(docId).set({
-      ...entry,
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-  } catch (err) {}
-}
 
 function getLogoHtml(cssClass = "") {
   if (PN_LOGO_DATA_URL && PN_LOGO_DATA_URL !== "PN LOGO") {
@@ -1768,7 +1757,6 @@ function saveCurrentSectionData(category, silent = false) {
   }
 
   localStorage.setItem(storeKey, JSON.stringify(existing.slice(0, 30)));
-  syncRecordToFirestore(category, entry);
 
   const badge = document.getElementById("autoSaveStatus");
   if (badge) {
